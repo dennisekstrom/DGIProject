@@ -100,12 +100,12 @@ struct Light {
 };
 
 // constants
-const glm::vec2 SCREEN_SIZE(1024, 800);
+const glm::vec2 SCREEN_SIZE(1024, 512);
 
 // globals
 tdogl::Camera gCamera; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
-bool ONLY_LEFT_CAMERA = true;
+bool LEFT_CAMERA_FULLSCREEN = true;
 
 RangeTerrain gTerrain;
 ModelAsset gTerrainModelAsset;
@@ -388,8 +388,8 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
 //}
 
 
-//renders a single `ModelInstance` //TODO add camera as argument
-static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera) {
+//renders a single `ModelInstance`
+static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera, bool ortho) {
     ModelAsset* asset = inst.asset;
     tdogl::Program* shaders = asset->shaders;
 
@@ -397,7 +397,10 @@ static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera) {
     shaders->use();
 
     //set the shader uniforms
-    shaders->setUniform("camera", camera.matrix());
+    if (ortho)
+        shaders->setUniform("camera", camera.orthoMatrix());
+    else
+        shaders->setUniform("camera", camera.matrix());
     shaders->setUniform("model", inst.transform);
     shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
 //    shaders->setUniform("materialShininess", asset->shininess);
@@ -428,26 +431,25 @@ static void Render() {
     // clear everything
     glClearColor(0, 0, 0, 1); // black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
     int viewports = 2;
 
     // render all the instances for each viewport
     for (int i = 0; i < viewports; i++) {
         
         
-        if (i == 0 && !ONLY_LEFT_CAMERA)
-            glViewport(0, SCREEN_SIZE.y/2, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
-        else if (!ONLY_LEFT_CAMERA)
-            glViewport(SCREEN_SIZE.x/2, SCREEN_SIZE.y/2, SCREEN_SIZE.x, SCREEN_SIZE.y);
+        if (i == 0 && !LEFT_CAMERA_FULLSCREEN)
+            glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
+        else if (!LEFT_CAMERA_FULLSCREEN)
+            glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
         else
             glViewport(0, 0, SCREEN_SIZE.x, SCREEN_SIZE.y);
         
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
-            if (i==0 || ONLY_LEFT_CAMERA)
-                RenderInstance(*it, gCamera);
+            if (i==0 || LEFT_CAMERA_FULLSCREEN)
+                RenderInstance(*it, gCamera, false);
             else
-                RenderInstance(*it, gCamera2);
+                RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
         }
     }
     
@@ -504,7 +506,23 @@ static void Update(float dt) {
         if(fieldOfView > 130.0f) fieldOfView = 130.0f;
         gCamera.setFieldOfView(fieldOfView);
     }
-
+    
+    //Mouse click
+    if(glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
+        int xpos,ypos;
+        glfwGetMousePos(&xpos, &ypos);
+        
+        //TODO, do something with the cursor coordinates
+        if (xpos >= SCREEN_SIZE.x/2) {
+            std::cout << "x: "<< xpos << " y:" << ypos << std::endl;
+            
+            //float x =(2.0f * xpos) / (SCREEN_SIZE.x/2) - 1.0f;
+           // float y = 1.0f - (2.0f*)
+        }
+        
+    }
+    
+    
     //move light
     if(glfwGetKey('1'))
         gLight.position = gCamera.position();
@@ -535,10 +553,11 @@ void AppMain() {
         throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 3.2?");
 
     // GLFW settings
-    glfwDisable(GLFW_MOUSE_CURSOR);
+    //glfwDisable(GLFW_MOUSE_CURSOR);
     glfwSetMousePos(0, 0);
     glfwSetMouseWheel(0);
-
+    
+    
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
     if(glewInit() != GLEW_OK)
@@ -570,9 +589,6 @@ void AppMain() {
     // create all the instances in the 3D scene based on the gWoodenCrate asset
 //    CreateInstances();
     
-    //mouse cursor
-    glfwEnable(GLFW_MOUSE_CURSOR);
-    
 
     // setup gCamera (left camera)
     gCamera.setPosition(glm::vec3(0,4,15));
@@ -584,6 +600,7 @@ void AppMain() {
     gCamera2.setPosition(glm::vec3(0,20,0));
     gCamera2.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
     gCamera2.setNearAndFarPlanes(0.5f, 100.0f);
+    gCamera2.offsetOrientation(90, 0); //top-down view
 
     // setup gLight
     gLight.position = glm::vec3(0,6,0);
@@ -602,6 +619,9 @@ void AppMain() {
         
         //setup two viewports and draw one frame
         Render();
+        
+        //draw tweak bar
+//        TwDraw();
 
         // check for errors
         GLenum error = glGetError();

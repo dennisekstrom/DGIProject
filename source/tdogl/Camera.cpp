@@ -125,8 +125,17 @@ glm::mat4 Camera::matrix() const {
     return projection() * view();
 }
 
+glm::mat4 Camera::orthoMatrix() const {
+    return orthoProjection() * view();
+}
+
 glm::mat4 Camera::projection() const {
     return glm::perspective(_fieldOfView, _viewportAspectRatio, _nearPlane, _farPlane);
+}
+
+glm::mat4 Camera::orthoProjection() const {
+    return glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, 0.5f, 1000.0f);
+
 }
 
 glm::mat4 Camera::view() const {

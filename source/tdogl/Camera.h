@@ -130,11 +130,13 @@ namespace tdogl {
          This is the complete matrix to use in the vertex shader.
          */
         glm::mat4 matrix() const;
+        glm::mat4 orthoMatrix() const;
 
         /**
          The perspective projection transformation matrix
          */
         glm::mat4 projection() const;
+        glm::mat4 orthoProjection() const;
 
         /**
          The translation and rotation matrix of the camera.
