@@ -104,6 +104,7 @@ const glm::vec2 SCREEN_SIZE(1024, 800);
 // globals
 tdogl::Camera gCamera; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
+bool ONLY_LEFT_CAMERA = true;
 
 ModelAsset gWoodenCrate;
 std::list<ModelInstance> gInstances;
@@ -312,14 +313,15 @@ static void Render() {
     // render all the instances for each viewport
     for (int i = 0; i < viewports; i++) {
         
-        if (i == 0)
+        
+        if (i == 0 && !ONLY_LEFT_CAMERA)
             glViewport(0, SCREEN_SIZE.y/2, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
-        else
+        else if (!ONLY_LEFT_CAMERA)
             glViewport(SCREEN_SIZE.x/2, SCREEN_SIZE.y/2, SCREEN_SIZE.x, SCREEN_SIZE.y);
         
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
-            if (i==0)
+            if (i==0 || ONLY_LEFT_CAMERA)
                 RenderInstance(*it, gCamera);
             else
                 RenderInstance(*it, gCamera2);
