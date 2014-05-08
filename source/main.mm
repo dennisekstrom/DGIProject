@@ -428,6 +428,8 @@ void AppMain() {
     // create all the instances in the 3D scene based on the gWoodenCrate asset
     CreateInstances();
     
+    //mouse cursor
+    glfwEnable(GLFW_MOUSE_CURSOR);
     
 
     // setup gCamera
@@ -450,6 +452,11 @@ void AppMain() {
         lastTime = thisTime;
 
         // draw one frame
+        //setup viewport
+        
+        glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y/2);
+        Render();
+        glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/3, SCREEN_SIZE.y/3);
         Render();
 
         // check for errors
