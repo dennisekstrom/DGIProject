@@ -430,6 +430,8 @@ void AppMain() {
 
     // create all the instances in the 3D scene based on the gWoodenCrate asset
     CreateInstances();
+    
+    
 
     // setup gCamera
     gCamera.setPosition(glm::vec3(-4,0,17));
