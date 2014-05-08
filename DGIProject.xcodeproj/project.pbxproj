@@ -12,6 +12,7 @@
 		95916810191B83D1001A0A44 /* fragment-shader.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 95F74DCF191B784700384CFF /* fragment-shader.txt */; };
 		95916811191B83D5001A0A44 /* vertex-shader.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 95F74DD0191B784700384CFF /* vertex-shader.txt */; };
 		95916812191B83D8001A0A44 /* wooden-crate.jpg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 95F74DD1191B784700384CFF /* wooden-crate.jpg */; };
+		95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95916814191B92D6001A0A44 /* rangeterrain.cpp */; };
 		95F7507C191B784900384CFF /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD3191B784700384CFF /* main.mm */; };
 		95F7507D191B784900384CFF /* Bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD5191B784700384CFF /* Bitmap.cpp */; };
 		95F7507E191B784900384CFF /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD7191B784700384CFF /* Camera.cpp */; };
@@ -42,6 +43,7 @@
 		9591680A191B8147001A0A44 /* libglfw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw.a; path = glfw/libglfw.a; sourceTree = "<group>"; };
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
+		95916814191B92D6001A0A44 /* rangeterrain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangeterrain.cpp; sourceTree = "<group>"; };
 		95F74DBF191B780000384CFF /* DGIProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DGIProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		95F74DCF191B784700384CFF /* fragment-shader.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "fragment-shader.txt"; sourceTree = "<group>"; };
 		95F74DD0191B784700384CFF /* vertex-shader.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "vertex-shader.txt"; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				95F74DD3191B784700384CFF /* main.mm */,
+				95916814191B92D6001A0A44 /* rangeterrain.cpp */,
 				95916813191B89D9001A0A44 /* rangeterrain.h */,
 				95F74DD4191B784700384CFF /* tdogl */,
 			);
@@ -198,6 +201,7 @@
 				95F7507F191B784900384CFF /* Program.cpp in Sources */,
 				95F7507D191B784900384CFF /* Bitmap.cpp in Sources */,
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
+				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,

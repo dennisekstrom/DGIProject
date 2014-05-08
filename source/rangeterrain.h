@@ -24,12 +24,22 @@ struct ControlPoint {
 };
 
 class RangeTerrain {
+// private variables
 private:
-    float hmap[1024][1024];
     vector<ControlPoint> controlPoints;
+    bool controlPointChanged;
     
+// public variables
 public:
-    void GenerateHMap
+    float hmap[1024][1024];
+    
+// public functions
+public:
+    void SetControlPoint(int x, int y, ControlPointFunc func);
+    void SetControlPoint(ControlPoint cp);
+    void GenerateHMapFromControlPoints();
+    
+    inline void ControlPointChanged() { return controlPointChanged; }
 }
 
 #endif

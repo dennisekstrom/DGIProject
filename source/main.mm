@@ -35,6 +35,9 @@
 #include "tdogl/Texture.h"
 #include "tdogl/Camera.h"
 
+#define SW ([[UIScreen mainScreen] bounds].size.width)
+#define SH ([[UIScreen mainScreen] bounds].size.height)
+
 /*
  Represents a textured geometry asset
 
