@@ -99,10 +99,12 @@ struct Light {
 };
 
 // constants
-const glm::vec2 SCREEN_SIZE(800, 600);
+const glm::vec2 SCREEN_SIZE(1024, 800);
 
 // globals
-tdogl::Camera gCamera;
+tdogl::Camera gCamera; //Left camera
+tdogl::Camera gCamera2; //Right camera, overview
+
 ModelAsset gWoodenCrate;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
@@ -264,8 +266,8 @@ static void CreateInstances() {
 }
 
 
-//renders a single `ModelInstance`
-static void RenderInstance(const ModelInstance& inst) {
+//renders a single `ModelInstance` //TODO add camera as argument
+static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera) {
     ModelAsset* asset = inst.asset;
     tdogl::Program* shaders = asset->shaders;
 
@@ -273,7 +275,7 @@ static void RenderInstance(const ModelInstance& inst) {
     shaders->use();
 
     //set the shader uniforms
-    shaders->setUniform("camera", gCamera.matrix());
+    shaders->setUniform("camera", camera.matrix());
     shaders->setUniform("model", inst.transform);
     shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
     shaders->setUniform("materialShininess", asset->shininess);
@@ -282,7 +284,7 @@ static void RenderInstance(const ModelInstance& inst) {
     shaders->setUniform("light.intensities", gLight.intensities);
     shaders->setUniform("light.attenuation", gLight.attenuation);
     shaders->setUniform("light.ambientCoefficient", gLight.ambientCoefficient);
-    shaders->setUniform("cameraPosition", gCamera.position());
+    shaders->setUniform("cameraPosition", camera.position());
 
     //bind the texture
     glActiveTexture(GL_TEXTURE0);
@@ -304,12 +306,26 @@ static void Render() {
     // clear everything
     glClearColor(0, 0, 0, 1); // black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    int viewports = 2;
 
-    // render all the instances
-    std::list<ModelInstance>::const_iterator it;
-    for(it = gInstances.begin(); it != gInstances.end(); ++it){
-        RenderInstance(*it);
+    // render all the instances for each viewport
+    for (int i = 0; i < viewports; i++) {
+        
+        if (i == 0)
+            glViewport(0, SCREEN_SIZE.y/2, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
+        else
+            glViewport(SCREEN_SIZE.x/2, SCREEN_SIZE.y/2, SCREEN_SIZE.x, SCREEN_SIZE.y);
+        
+        std::list<ModelInstance>::const_iterator it;
+        for(it = gInstances.begin(); it != gInstances.end(); ++it){
+            if (i==0)
+                RenderInstance(*it, gCamera);
+            else
+                RenderInstance(*it, gCamera2);
+        }
     }
+    
 
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers();
@@ -435,10 +451,15 @@ void AppMain() {
     glfwEnable(GLFW_MOUSE_CURSOR);
     
 
-    // setup gCamera
+    // setup gCamera (left camera)
     gCamera.setPosition(glm::vec3(-4,0,17));
-    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
+    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y/2);
     gCamera.setNearAndFarPlanes(0.5f, 100.0f);
+    
+    // setup gCamera2 (right camera)
+    gCamera2.setPosition(glm::vec3(-4,0,17));
+    gCamera2.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
+    gCamera2.setNearAndFarPlanes(0.5f, 100.0f);
 
     // setup gLight
     gLight.position = glm::vec3(-4,0,4);
@@ -456,10 +477,6 @@ void AppMain() {
 
         
         //setup two viewports and draw one frame
-        
-        glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y/2);
-        Render();
-        glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/3, SCREEN_SIZE.y/3);
         Render();
 
         // check for errors
