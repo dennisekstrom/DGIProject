@@ -17,10 +17,12 @@
 
 #include <vector>
 #include <math.h>
+#include <glm/glm.hpp>
 
 #define PI              3.14159265359
 #define X_INTERVAL      1024
 #define Y_INTERVAL      1024
+#define GRID_RES        0.5f // 0.5 meter between points
 
 using namespace std;
 
@@ -74,31 +76,31 @@ public:
     float lift(int x, int y) {
         float dx = this->x - x;
         float dy = this->y - y;
-        float dist = sqrt(dx * dx + dy * dy);
+        float dist = sqrt(dx * dx + dy * dy) * GRID_RES;
         return this->liftfunc(this->h, this->spread, dist);
     }
 };
 
 class RangeTerrain {
-// private variables
 private:
-    vector<ControlPoint> controlPoints;
+    ControlPoint* controlPoints[X_INTERVAL][Y_INTERVAL];
     bool controlPointChanged;
     
-// public variables
 public:
     float hmap[X_INTERVAL][Y_INTERVAL];
+    glm::vec3 normals[X_INTERVAL][Y_INTERVAL];
     
-    
-// private functions
 private:
+//    void InitiateModel();
+//    void GenerateModelFromHMap();
 
-    
-// public functions
 public:
+    RangeTerrain();
+    ~RangeTerrain();
+    
     void SetControlPoint(int x, int y, float h, float spread, ControlPointFuncType func);
-    void SetControlPoint(ControlPoint cp);
     void GenerateHMapFromControlPoints();
+    void GenerateNormalsFromHMap();
     
     inline bool ControlPointChanged() { return controlPointChanged; }
 };

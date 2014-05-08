@@ -29,25 +29,25 @@
 #include <stdexcept>
 #include <cmath>
 #include <list>
+#include <array>
 
 // tdogl classes
 #include "tdogl/Program.h"
 #include "tdogl/Texture.h"
 #include "tdogl/Camera.h"
 
-#define SW ([[UIScreen mainScreen] bounds].size.width)
-#define SH ([[UIScreen mainScreen] bounds].size.height)
+#include "rangeterrain.h"
 
 /*
  Represents a textured geometry asset
-
+ 
  Contains everything necessary to draw arbitrary geometry with a single texture:
-
-  - shaders
-  - a texture
-  - a VBO
-  - a VAO
-  - the parameters to glDrawArrays (drawType, drawStart, drawCount)
+ 
+ - shaders
+ - a texture
+ - a VBO
+ - a VAO
+ - the parameters to glDrawArrays (drawType, drawStart, drawCount)
  */
 struct ModelAsset {
     tdogl::Program* shaders;
@@ -59,34 +59,35 @@ struct ModelAsset {
     GLint drawCount;
     GLfloat shininess;
     glm::vec3 specularColor;
-
+    
     ModelAsset() :
-        shaders(NULL),
-        texture(NULL),
-        vbo(0),
-        vao(0),
-        drawType(GL_TRIANGLES),
-        drawStart(0),
-        drawCount(0),
-        shininess(0.0f),
-        specularColor(1.0f, 1.0f, 1.0f)
+    shaders(NULL),
+    texture(NULL),
+    vbo(0),
+    vao(0),
+    drawType(GL_TRIANGLES),
+    drawStart(0),
+    drawCount(0),
+    shininess(0.0f),
+    specularColor(1.0f, 1.0f, 1.0f)
     {}
 };
 
 /*
  Represents an instance of an `ModelAsset`
-
+ 
  Contains a pointer to the asset, and a model transformation matrix to be used when drawing.
  */
 struct ModelInstance {
     ModelAsset* asset;
     glm::mat4 transform;
-
+    
     ModelInstance() :
-        asset(NULL),
-        transform()
+    asset(NULL),
+    transform()
     {}
 };
+
 
 /*
  Represents a point light
@@ -106,7 +107,8 @@ tdogl::Camera gCamera; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
 bool ONLY_LEFT_CAMERA = true;
 
-ModelAsset gWoodenCrate;
+RangeTerrain gTerrain;
+ModelAsset gTerrainModelAsset;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
 Light gLight;
@@ -136,93 +138,199 @@ static tdogl::Texture* LoadTexture(const char* filename) {
     return new tdogl::Texture(bmp);
 }
 
-
 // initialises the gWoodenCrate global
-static void LoadWoodenCrateAsset() {
+static void LoadAsset(ModelAsset &asset) {
     // set all the elements of gWoodenCrate
-    gWoodenCrate.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
-    gWoodenCrate.drawType = GL_TRIANGLES;
-    gWoodenCrate.drawStart = 0;
-    gWoodenCrate.drawCount = 6*2*3;
-    gWoodenCrate.texture = LoadTexture("wooden-crate.jpg");
-    gWoodenCrate.shininess = 80.0;
-    gWoodenCrate.specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    glGenBuffers(1, &gWoodenCrate.vbo);
-    glGenVertexArrays(1, &gWoodenCrate.vao);
+    asset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    asset.drawType = GL_TRIANGLES;
+    asset.drawStart = 0;
+    asset.drawCount = (X_INTERVAL - 1) * (Y_INTERVAL - 1) * 6;
+//    asset.drawCount = 6*2*3;
+    asset.texture = LoadTexture("wooden-crate.jpg");
+    asset.shininess = 80.0;
+    asset.specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    
+    glGenBuffers(1, &asset.vbo);
+    glGenVertexArrays(1, &asset.vao);
 
     // bind the VAO
-    glBindVertexArray(gWoodenCrate.vao);
+    glBindVertexArray(asset.vao);
 
     // bind the VBO
-    glBindBuffer(GL_ARRAY_BUFFER, gWoodenCrate.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, asset.vbo);
 
+    // **************** TERRAIN FROM HMAP ****************
+
+//    GLfloat vdata[7*8];
+    
+    const int valuesPerVertex = 8;
+    GLfloat* vdata = new GLfloat[asset.drawCount * 8];
+
+    float h1, h2, h3, h4;
+    glm::vec3 *n1, *n2, *n3, *n4;
+    int v = 0;
+    for (int y=1; y<Y_INTERVAL; y++) {
+        for (int x=1; x<X_INTERVAL; x++) {
+            h1 = gTerrain.hmap[y-1][x-1];
+            h2 = gTerrain.hmap[y][x-1];
+            h3 = gTerrain.hmap[y-1][x];
+            h4 = gTerrain.hmap[y][x];
+            
+            n1 = &gTerrain.normals[y-1][x-1];
+            n2 = &gTerrain.normals[y][x-1];
+            n3 = &gTerrain.normals[y-1][x];
+            n4 = &gTerrain.normals[y][x];
+            
+            vdata[v++] = (x-1) * GRID_RES;
+            vdata[v++] = gTerrain.hmap[y-1][x-1];
+            vdata[v++] = (y-1) * GRID_RES;
+
+            vdata[v++] = 0;
+            vdata[v++] = 0;
+            
+            vdata[v++] = n1->x;
+            vdata[v++] = n1->y;
+            vdata[v++] = n1->z;
+            
+            
+            
+            vdata[v++] = (x-1) * GRID_RES;
+            vdata[v++] = h2;
+            vdata[v++] = y * GRID_RES;
+            
+            vdata[v++] = 0;
+            vdata[v++] = 1;
+            
+            vdata[v++] = n2->x;
+            vdata[v++] = n2->y;
+            vdata[v++] = n2->z;
+            
+            
+            
+            vdata[v++] = x * GRID_RES;
+            vdata[v++] = h3;
+            vdata[v++] = (y-1) * GRID_RES;
+            
+            vdata[v++] = 1;
+            vdata[v++] = 0;
+            
+            vdata[v++] = n3->x;
+            vdata[v++] = n3->y;
+            vdata[v++] = n3->z;
+            
+            
+            
+            vdata[v++] = x * GRID_RES;
+            vdata[v++] = h4;
+            vdata[v++] = y * GRID_RES;
+            
+            vdata[v++] = 1;
+            vdata[v++] = 1;
+            
+            vdata[v++] = n4->x;
+            vdata[v++] = n4->y;
+            vdata[v++] = n4->z;
+            
+            
+            
+            vdata[v++] = x * GRID_RES;
+            vdata[v++] = h3;
+            vdata[v++] = (y-1) * GRID_RES;
+            
+            vdata[v++] = 1;
+            vdata[v++] = 0;
+            
+            vdata[v++] = n3->x;
+            vdata[v++] = n3->y;
+            vdata[v++] = n3->z;
+            
+            
+            
+            vdata[v++] = (x-1) * GRID_RES;;
+            vdata[v++] = h2;
+            vdata[v++] = y * GRID_RES;
+            
+            vdata[v++] = 0;
+            vdata[v++] = 1;
+            
+            vdata[v++] = n2->x;
+            vdata[v++] = n2->y;
+            vdata[v++] = n2->z;
+        }
+    }
+    
     // Make a cube out of triangles (two triangles per side)
-    GLfloat vertexData[] = {
-        //  X     Y     Z       U     V          Normal
-        // bottom
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-
-        // top
-        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-         1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-         1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-         1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-
-        // front
-        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-         1.0f,-1.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-         1.0f,-1.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-         1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-
-        // back
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-         1.0f, 1.0f,-1.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-
-        // left
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-
-        // right
-         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-         1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-         1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-         1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f
-    };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+//    GLfloat vdata[] = {
+//        //  X     Y     Z       U     V          Normal
+//        // bottom
+//        /*-1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+//        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
+//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+//         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   0.0f, -1.0f, 0.0f,
+//        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
+//
+//        // top
+//        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+//        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+//        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,*/
+//
+//        // front
+//        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+//         1.0f,-1.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+//        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
+//         1.0f,-1.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+//         1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 0.0f, 1.0f,
+//        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
+//
+//        // back
+//        /*-1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+//        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
+//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+//        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
+//         1.0f, 1.0f,-1.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,*/
+//
+//        // left
+//        /*-1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+//        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
+//        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
+//        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+//        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+//        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
+//
+//        // right
+//         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+//         1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+//         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+//         1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+//         1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f*/
+//    };
+    
+    // **************** TERRAIN FROM HMAP ****************
+    
+    glBufferData(GL_ARRAY_BUFFER, asset.drawCount * valuesPerVertex * sizeof(GLfloat), vdata, GL_STATIC_DRAW);
 
     // connect the xyz to the "vert" attribute of the vertex shader
-    glEnableVertexAttribArray(gWoodenCrate.shaders->attrib("vert"));
-    glVertexAttribPointer(gWoodenCrate.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), NULL);
+    glEnableVertexAttribArray(asset.shaders->attrib("vert"));
+    glVertexAttribPointer(asset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), NULL);
 
     // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
-    glEnableVertexAttribArray(gWoodenCrate.shaders->attrib("vertTexCoord"));
-    glVertexAttribPointer(gWoodenCrate.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  8*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(asset.shaders->attrib("vertTexCoord"));
+    glVertexAttribPointer(asset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  8*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
     // connect the normal to the "vertNormal" attribute of the vertex shader
-    glEnableVertexAttribArray(gWoodenCrate.shaders->attrib("vertNormal"));
-    glVertexAttribPointer(gWoodenCrate.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE,  8*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(asset.shaders->attrib("vertNormal"));
+    glVertexAttribPointer(asset.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE,  8*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
 
     // unbind the VAO
     glBindVertexArray(0);
+    
+    delete vdata;
 }
 
 
@@ -237,34 +345,47 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
     return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
 
+//static void BuildRangeModel(ModelInstance &instance) {
+//    
+//    // set all the elements of gWoodenCrate
+//    instance.asset->shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+//    instance.asset->drawType = GL_TRIANGLES;
+//    instance.asset->drawStart = 0;
+//    instance.asset->drawCount = 6*2*3;
+//    instance.asset->texture = LoadTexture("wooden-crate.jpg");
+//    instance.asset->shininess = 80.0;
+//    instance.asset->specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+//    
+//    // TODO build vertex data
+//}
 
 //create all the `instance` structs for the 3D scene, and add them to `gInstances`
-static void CreateInstances() {
-    ModelInstance dot;
-    dot.asset = &gWoodenCrate;
-    dot.transform = glm::mat4();
-    gInstances.push_back(dot);
-
-    ModelInstance i;
-    i.asset = &gWoodenCrate;
-    i.transform = translate(0,-4,0) * scale(1,2,1);
-    gInstances.push_back(i);
-
-    ModelInstance hLeft;
-    hLeft.asset = &gWoodenCrate;
-    hLeft.transform = translate(-8,0,0) * scale(1,6,1);
-    gInstances.push_back(hLeft);
-
-    ModelInstance hRight;
-    hRight.asset = &gWoodenCrate;
-    hRight.transform = translate(-4,0,0) * scale(1,6,1);
-    gInstances.push_back(hRight);
-
-    ModelInstance hMid;
-    hMid.asset = &gWoodenCrate;
-    hMid.transform = translate(-6,0,0) * scale(2,1,0.8f);
-    gInstances.push_back(hMid);
-}
+//static void CreateInstances() {
+//    ModelInstance dot;
+//    dot.asset = &gWoodenCrate;
+//    dot.transform = glm::mat4();
+//    gInstances.push_back(dot);
+//
+//    ModelInstance i;
+//    i.asset = &gWoodenCrate;
+//    i.transform = translate(0,-4,0) * scale(1,2,1);
+//    gInstances.push_back(i);
+//
+//    ModelInstance hLeft;
+//    hLeft.asset = &gWoodenCrate;
+//    hLeft.transform = translate(-8,0,0) * scale(1,6,1);
+//    gInstances.push_back(hLeft);
+//
+//    ModelInstance hRight;
+//    hRight.asset = &gWoodenCrate;
+//    hRight.transform = translate(-4,0,0) * scale(1,6,1);
+//    gInstances.push_back(hRight);
+//
+//    ModelInstance hMid;
+//    hMid.asset = &gWoodenCrate;
+//    hMid.transform = translate(-6,0,0) * scale(2,1,0.8f);
+//    gInstances.push_back(hMid);
+//}
 
 
 //renders a single `ModelInstance` //TODO add camera as argument
@@ -279,8 +400,8 @@ static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera) {
     shaders->setUniform("camera", camera.matrix());
     shaders->setUniform("model", inst.transform);
     shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
-    shaders->setUniform("materialShininess", asset->shininess);
-    shaders->setUniform("materialSpecularColor", asset->specularColor);
+//    shaders->setUniform("materialShininess", asset->shininess);
+//    shaders->setUniform("materialSpecularColor", asset->specularColor);
     shaders->setUniform("light.position", gLight.position);
     shaders->setUniform("light.intensities", gLight.intensities);
     shaders->setUniform("light.attenuation", gLight.attenuation);
@@ -338,11 +459,6 @@ static void Render() {
 
 // update the scene based on the time elapsed since last update
 static void Update(float dt) {
-    //rotate the first instance in `gInstances`
-    const GLfloat degreesPerSecond = 180.0f;
-    gDegreesRotated += dt * degreesPerSecond;
-    while(gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;
-    gInstances.front().transform = glm::rotate(glm::mat4(), gDegreesRotated, glm::vec3(0,1,0));
 
     //move position of camera based on WASD keys, and QE keys for up and down
     const float moveSpeed = glfwGetKey(GLFW_KEY_LSHIFT) ? 50.0 : 10.0; //units per second
@@ -357,9 +473,9 @@ static void Update(float dt) {
         gCamera.offsetPosition(dt * moveSpeed * gCamera.right());
     }
     if(glfwGetKey('E')){
-        gCamera.offsetPosition(dt * moveSpeed * -glm::vec3(0,1,0));
+        gCamera.offsetPosition(dt * moveSpeed * -gCamera.up());
     } else if(glfwGetKey('Q')){
-        gCamera.offsetPosition(dt * moveSpeed * glm::vec3(0,1,0));
+        gCamera.offsetPosition(dt * moveSpeed * gCamera.up());
     }
     
     // rotate the camera based on arrow keys
@@ -445,31 +561,35 @@ void AppMain() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // initialise the gWoodenCrate asset
-    LoadWoodenCrateAsset();
-
+    // initialise the asset
+    LoadAsset(gTerrainModelAsset);
+    ModelInstance instance;
+    instance.asset = &gTerrainModelAsset;
+    gInstances.push_back(instance);
+    
     // create all the instances in the 3D scene based on the gWoodenCrate asset
-    CreateInstances();
+//    CreateInstances();
     
     //mouse cursor
     glfwEnable(GLFW_MOUSE_CURSOR);
     
 
     // setup gCamera (left camera)
-    gCamera.setPosition(glm::vec3(-4,0,17));
+    gCamera.setPosition(glm::vec3(0,4,15));
     gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
     gCamera.setNearAndFarPlanes(0.5f, 100.0f);
+    gCamera.lookAt(glm::vec3(8,4,8));
     
     // setup gCamera2 (right camera)
-    gCamera2.setPosition(glm::vec3(-4,0,17));
+    gCamera2.setPosition(glm::vec3(0,20,0));
     gCamera2.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
     gCamera2.setNearAndFarPlanes(0.5f, 100.0f);
 
     // setup gLight
-    gLight.position = glm::vec3(-4,0,4);
+    gLight.position = glm::vec3(0,6,0);
     gLight.intensities = glm::vec3(1,1,1); //white
     gLight.attenuation = 0.2f;
-    gLight.ambientCoefficient = 0.005f;
+    gLight.ambientCoefficient = 0.05f;
 
     // run while the window is open
     double lastTime = glfwGetTime();
