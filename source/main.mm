@@ -314,29 +314,56 @@ static void Render() {
 
 
 // update the scene based on the time elapsed since last update
-static void Update(float secondsElapsed) {
+static void Update(float dt) {
     //rotate the first instance in `gInstances`
     const GLfloat degreesPerSecond = 180.0f;
-    gDegreesRotated += secondsElapsed * degreesPerSecond;
+    gDegreesRotated += dt * degreesPerSecond;
     while(gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;
     gInstances.front().transform = glm::rotate(glm::mat4(), gDegreesRotated, glm::vec3(0,1,0));
 
-    //move position of camera based on WASD keys, and XZ keys for up and down
-    const float moveSpeed = 4.0; //units per second
+    //move position of camera based on WASD keys, and QE keys for up and down
+    const float moveSpeed = glfwGetKey(GLFW_KEY_LSHIFT) ? 50.0 : 10.0; //units per second
     if(glfwGetKey('S')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.forward());
+        gCamera.offsetPosition(dt * moveSpeed * -gCamera.forward());
     } else if(glfwGetKey('W')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.forward());
+        gCamera.offsetPosition(dt * moveSpeed * gCamera.forward());
     }
     if(glfwGetKey('A')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.right());
+        gCamera.offsetPosition(dt * moveSpeed * -gCamera.right());
     } else if(glfwGetKey('D')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.right());
+        gCamera.offsetPosition(dt * moveSpeed * gCamera.right());
     }
-    if(glfwGetKey('Z')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0,1,0));
-    } else if(glfwGetKey('X')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0,1,0));
+    if(glfwGetKey('E')){
+        gCamera.offsetPosition(dt * moveSpeed * -glm::vec3(0,1,0));
+    } else if(glfwGetKey('Q')){
+        gCamera.offsetPosition(dt * moveSpeed * glm::vec3(0,1,0));
+    }
+    
+    // rotate the camera based on arrow keys
+    const float rotSpeed = 45.0; //degrees per second
+    if(glfwGetKey(GLFW_KEY_UP)){
+        gCamera.offsetOrientation(dt * -rotSpeed, 0);
+    } else if(glfwGetKey(GLFW_KEY_DOWN)){
+        gCamera.offsetOrientation(dt * rotSpeed, 0);
+    }
+    if(glfwGetKey(GLFW_KEY_RIGHT)){
+        gCamera.offsetOrientation(0, dt * rotSpeed);
+    } else if(glfwGetKey(GLFW_KEY_LEFT)){
+        gCamera.offsetOrientation(0, dt * -rotSpeed);
+    }
+    
+    // zoom based on XZ keys
+    const float zoomSpeed = 30.0; //degrees per second
+    if(glfwGetKey('X')){
+        float fieldOfView = gCamera.fieldOfView() - dt * zoomSpeed;
+        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
+        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+        gCamera.setFieldOfView(fieldOfView);
+    } else if(glfwGetKey('Z')){
+        float fieldOfView = gCamera.fieldOfView() + dt * zoomSpeed;
+        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
+        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+        gCamera.setFieldOfView(fieldOfView);
     }
 
     //move light
@@ -349,23 +376,9 @@ static void Update(float secondsElapsed) {
     else if(glfwGetKey('3'))
         gLight.intensities = glm::vec3(0,1,0); //green
     else if(glfwGetKey('4'))
+        gLight.intensities = glm::vec3(0,0,1); //blue
+    else if(glfwGetKey('5'))
         gLight.intensities = glm::vec3(1,1,1); //white
-
-
-    //rotate camera based on mouse movement
-    const float mouseSensitivity = 0.1f;
-    int mouseX, mouseY;
-    glfwGetMousePos(&mouseX, &mouseY);
-    gCamera.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
-    glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
-
-    //increase or decrease field of view based on mouse wheel
-    const float zoomSensitivity = -0.2f;
-    float fieldOfView = gCamera.fieldOfView() + zoomSensitivity * (float)glfwGetMouseWheel();
-    if(fieldOfView < 5.0f) fieldOfView = 5.0f;
-    if(fieldOfView > 130.0f) fieldOfView = 130.0f;
-    gCamera.setFieldOfView(fieldOfView);
-    glfwSetMouseWheel(0);
 }
 
 // the program starts here

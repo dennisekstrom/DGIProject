@@ -41,6 +41,7 @@
 /* Begin PBXFileReference section */
 		9591680A191B8147001A0A44 /* libglfw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw.a; path = glfw/libglfw.a; sourceTree = "<group>"; };
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
+		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
 		95F74DBF191B780000384CFF /* DGIProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DGIProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		95F74DCF191B784700384CFF /* fragment-shader.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "fragment-shader.txt"; sourceTree = "<group>"; };
 		95F74DD0191B784700384CFF /* vertex-shader.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "vertex-shader.txt"; sourceTree = "<group>"; };
@@ -108,6 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				95F74DD3191B784700384CFF /* main.mm */,
+				95916813191B89D9001A0A44 /* rangeterrain.h */,
 				95F74DD4191B784700384CFF /* tdogl */,
 			);
 			path = source;
