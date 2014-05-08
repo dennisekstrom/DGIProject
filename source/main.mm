@@ -457,10 +457,10 @@ void AppMain() {
         
         //setup two viewports and draw one frame
         
-        glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y/2);
+        glViewport(0, 0, SCREEN_SIZE.x, SCREEN_SIZE.y);
         Render();
-        glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/3, SCREEN_SIZE.y/3);
-        Render();
+//        glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/3, SCREEN_SIZE.y/3);
+//        Render();
 
         // check for errors
         GLenum error = glGetError();
