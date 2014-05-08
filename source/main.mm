@@ -452,7 +452,7 @@ void AppMain() {
         lastTime = thisTime;
 
         
-        //setup two viewports and draw one frame test
+        //setup two viewports and draw one frame
         
         glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y/2);
         Render();
