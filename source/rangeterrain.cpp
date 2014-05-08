@@ -1,23 +1,23 @@
+////
+////  rangeterrain.cpp
+////  DGIProject
+////
+////  Created by Dennis Ekström on 08/05/14.
+////  Copyright (c) 2014 Dennis Ekström. All rights reserved.
+////
 //
-//  rangeterrain.cpp
-//  DGIProject
+//#include "rangeterrain.h"
 //
-//  Created by Dennis Ekström on 08/05/14.
-//  Copyright (c) 2014 Dennis Ekström. All rights reserved.
+//void RangeTerrain::SetControlPoint(int x, int y, ControlPointFunc func) {
+//    SetControlPoint( ControlPoint { x, y, func } );
+//}
 //
-
-#include "rangeterrain.h"
-
-void RangeTerrain::SetControlPoint(int x, int y, ControlPointFunc func) {
-    SetControlPoint( ControlPoint { x, y, func } );
-}
-
-
-void RangeTerrain::SetControlPoint(ControlPoint cp) {
-    controlPoints.push_back(cp);
-}
-
-
-void RangeTerrain::GenerateHMapFromControlPoints() {
-    
-}
+//
+//void RangeTerrain::SetControlPoint(ControlPoint cp) {
+//    controlPoints.push_back(cp);
+//}
+//
+//
+//void RangeTerrain::GenerateHMapFromControlPoints() {
+//    
+//}
