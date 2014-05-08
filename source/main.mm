@@ -141,6 +141,20 @@ static tdogl::Texture* LoadTexture(const char* filename) {
     return new tdogl::Texture(bmp);
 }
 
+static void SendDataToBuffer(GLfloat* vdata, ModelAsset &asset, int floatsPerVertex) {
+    // bind the VAO
+    glBindVertexArray(asset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, asset.vbo);
+    
+    // write the data
+    glBufferData(GL_ARRAY_BUFFER, asset.drawCount * floatsPerVertex * sizeof(GLfloat), vdata, GL_STATIC_DRAW);
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+}
+
 // initialises the gWoodenCrate global
 static void LoadAsset(ModelAsset &asset) {
     // set all the elements of gWoodenCrate
@@ -155,168 +169,12 @@ static void LoadAsset(ModelAsset &asset) {
     
     glGenBuffers(1, &asset.vbo);
     glGenVertexArrays(1, &asset.vao);
-
+    
     // bind the VAO
     glBindVertexArray(asset.vao);
 
     // bind the VBO
     glBindBuffer(GL_ARRAY_BUFFER, asset.vbo);
-
-    // **************** TERRAIN FROM HMAP ****************
-
-//    GLfloat vdata[7*8];
-    
-    const int valuesPerVertex = 8;
-    GLfloat* vdata = new GLfloat[asset.drawCount * 8];
-
-    float h1, h2, h3, h4;
-    glm::vec3 *n1, *n2, *n3, *n4;
-    int v = 0;
-    for (int y=1; y<Y_INTERVAL; y++) {
-        for (int x=1; x<X_INTERVAL; x++) {
-            h1 = gTerrain.hmap[y-1][x-1];
-            h2 = gTerrain.hmap[y][x-1];
-            h3 = gTerrain.hmap[y-1][x];
-            h4 = gTerrain.hmap[y][x];
-            
-            n1 = &gTerrain.normals[y-1][x-1];
-            n2 = &gTerrain.normals[y][x-1];
-            n3 = &gTerrain.normals[y-1][x];
-            n4 = &gTerrain.normals[y][x];
-            
-            vdata[v++] = (x-1) * GRID_RES;
-            vdata[v++] = gTerrain.hmap[y-1][x-1];
-            vdata[v++] = (y-1) * GRID_RES;
-
-            vdata[v++] = 0;
-            vdata[v++] = 0;
-            
-            vdata[v++] = n1->x;
-            vdata[v++] = n1->y;
-            vdata[v++] = n1->z;
-            
-            
-            
-            vdata[v++] = (x-1) * GRID_RES;
-            vdata[v++] = h2;
-            vdata[v++] = y * GRID_RES;
-            
-            vdata[v++] = 0;
-            vdata[v++] = 1;
-            
-            vdata[v++] = n2->x;
-            vdata[v++] = n2->y;
-            vdata[v++] = n2->z;
-            
-            
-            
-            vdata[v++] = x * GRID_RES;
-            vdata[v++] = h3;
-            vdata[v++] = (y-1) * GRID_RES;
-            
-            vdata[v++] = 1;
-            vdata[v++] = 0;
-            
-            vdata[v++] = n3->x;
-            vdata[v++] = n3->y;
-            vdata[v++] = n3->z;
-            
-            
-            
-            vdata[v++] = x * GRID_RES;
-            vdata[v++] = h4;
-            vdata[v++] = y * GRID_RES;
-            
-            vdata[v++] = 1;
-            vdata[v++] = 1;
-            
-            vdata[v++] = n4->x;
-            vdata[v++] = n4->y;
-            vdata[v++] = n4->z;
-            
-            
-            
-            vdata[v++] = x * GRID_RES;
-            vdata[v++] = h3;
-            vdata[v++] = (y-1) * GRID_RES;
-            
-            vdata[v++] = 1;
-            vdata[v++] = 0;
-            
-            vdata[v++] = n3->x;
-            vdata[v++] = n3->y;
-            vdata[v++] = n3->z;
-            
-            
-            
-            vdata[v++] = (x-1) * GRID_RES;;
-            vdata[v++] = h2;
-            vdata[v++] = y * GRID_RES;
-            
-            vdata[v++] = 0;
-            vdata[v++] = 1;
-            
-            vdata[v++] = n2->x;
-            vdata[v++] = n2->y;
-            vdata[v++] = n2->z;
-        }
-    }
-    
-    // Make a cube out of triangles (two triangles per side)
-//    GLfloat vdata[] = {
-//        //  X     Y     Z       U     V          Normal
-//        // bottom
-//        /*-1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-//        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-//         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-//        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-//
-//        // top
-//        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-//        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-//        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,*/
-//
-//        // front
-//        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-//         1.0f,-1.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-//        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-//         1.0f,-1.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-//         1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-//        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-//
-//        // back
-//        /*-1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-//        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-//        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-//         1.0f, 1.0f,-1.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,*/
-//
-//        // left
-//        /*-1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-//        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-//        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-//        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-//        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-//        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-//
-//        // right
-//         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-//         1.0f,-1.0f,-1.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-//         1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-//         1.0f,-1.0f, 1.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-//         1.0f, 1.0f,-1.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-//         1.0f, 1.0f, 1.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f*/
-//    };
-    
-    // **************** TERRAIN FROM HMAP ****************
-    
-    glBufferData(GL_ARRAY_BUFFER, asset.drawCount * valuesPerVertex * sizeof(GLfloat), vdata, GL_STATIC_DRAW);
 
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vert"));
@@ -333,7 +191,8 @@ static void LoadAsset(ModelAsset &asset) {
     // unbind the VAO
     glBindVertexArray(0);
     
-    delete vdata;
+    // Send data to buffer
+    SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
 }
 
 
@@ -347,48 +206,6 @@ glm::mat4 translate(GLfloat x, GLfloat y, GLfloat z) {
 glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
     return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
-
-//static void BuildRangeModel(ModelInstance &instance) {
-//    
-//    // set all the elements of gWoodenCrate
-//    instance.asset->shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
-//    instance.asset->drawType = GL_TRIANGLES;
-//    instance.asset->drawStart = 0;
-//    instance.asset->drawCount = 6*2*3;
-//    instance.asset->texture = LoadTexture("wooden-crate.jpg");
-//    instance.asset->shininess = 80.0;
-//    instance.asset->specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
-//    
-//    // TODO build vertex data
-//}
-
-//create all the `instance` structs for the 3D scene, and add them to `gInstances`
-//static void CreateInstances() {
-//    ModelInstance dot;
-//    dot.asset = &gWoodenCrate;
-//    dot.transform = glm::mat4();
-//    gInstances.push_back(dot);
-//
-//    ModelInstance i;
-//    i.asset = &gWoodenCrate;
-//    i.transform = translate(0,-4,0) * scale(1,2,1);
-//    gInstances.push_back(i);
-//
-//    ModelInstance hLeft;
-//    hLeft.asset = &gWoodenCrate;
-//    hLeft.transform = translate(-8,0,0) * scale(1,6,1);
-//    gInstances.push_back(hLeft);
-//
-//    ModelInstance hRight;
-//    hRight.asset = &gWoodenCrate;
-//    hRight.transform = translate(-4,0,0) * scale(1,6,1);
-//    gInstances.push_back(hRight);
-//
-//    ModelInstance hMid;
-//    hMid.asset = &gWoodenCrate;
-//    hMid.transform = translate(-6,0,0) * scale(2,1,0.8f);
-//    gInstances.push_back(hMid);
-//}
 
 
 //renders a single `ModelInstance` //TODO add camera as argument
@@ -482,6 +299,18 @@ static void Update(float dt) {
     } else if(glfwGetKey('Q')){
         gCamera.offsetPosition(dt * moveSpeed * gCamera.up());
     }
+    
+    // ************ TEMP ************
+    if(glfwGetKey('O')){
+        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_COS);
+        gTerrain.GenerateEverythingFromControlPoints();
+        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
+    } else if(glfwGetKey('P')){
+        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_COS);
+        gTerrain.GenerateEverythingFromControlPoints();
+        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
+    }
+    // ************ TEMP ************
     
     // rotate the camera based on arrow keys
     const float rotSpeed = 45.0; //degrees per second
@@ -621,8 +450,10 @@ void AppMain() {
     while(glfwGetWindowParam(GLFW_OPENED)){
         // update the scene based on the time elapsed since last update
         double thisTime = glfwGetTime();
-        Update((float)(thisTime - lastTime));
+        float dt = thisTime - lastTime;
+        Update(dt);
         lastTime = thisTime;
+        cout << "render time: " << round(dt * 1000) << " ms" << endl;
 
         
         //setup two viewports and draw one frame
