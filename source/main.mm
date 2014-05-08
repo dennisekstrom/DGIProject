@@ -37,6 +37,9 @@
 #include "tdogl/Camera.h"
 
 #include "rangeterrain.h"
+//AntTweakBar
+//#include <AntTweakBar.h>
+
 
 /*
  Represents a textured geometry asset
@@ -146,7 +149,7 @@ static void LoadAsset(ModelAsset &asset) {
     asset.drawStart = 0;
     asset.drawCount = (X_INTERVAL - 1) * (Y_INTERVAL - 1) * 6;
 //    asset.drawCount = 6*2*3;
-    asset.texture = LoadTexture("wooden-crate.jpg");
+    asset.texture = LoadTexture("grass.png");
     asset.shininess = 80.0;
     asset.specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
     
@@ -388,7 +391,7 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
 //}
 
 
-//renders a single `ModelInstance`
+//renders a single `ModelInstance` //TODO add camera as argument
 static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera, bool ortho) {
     ModelAsset* asset = inst.asset;
     tdogl::Program* shaders = asset->shaders;
@@ -597,7 +600,7 @@ void AppMain() {
     gCamera.lookAt(glm::vec3(8,4,8));
     
     // setup gCamera2 (right camera)
-    gCamera2.setPosition(glm::vec3(0,20,0));
+    gCamera2.setPosition(glm::vec3(-1,60,4));
     gCamera2.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
     gCamera2.setNearAndFarPlanes(0.5f, 100.0f);
     gCamera2.offsetOrientation(90, 0); //top-down view
@@ -606,8 +609,13 @@ void AppMain() {
     gLight.position = glm::vec3(0,6,0);
     gLight.intensities = glm::vec3(1,1,1); //white
     gLight.attenuation = 0.2f;
-    gLight.ambientCoefficient = 0.05f;
-
+    gLight.ambientCoefficient = 0.080f;
+    
+    // setup AntTweakBar
+//    TwInit(TW_OPENGL, NULL);
+//    TwWindowSize(100, 100);
+//    TwBar *tweakBar;
+//    tweakBar = TwNewBar("Controls");
     // run while the window is open
     double lastTime = glfwGetTime();
     while(glfwGetWindowParam(GLFW_OPENED)){
