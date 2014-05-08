@@ -318,6 +318,8 @@ static void Render() {
             glViewport(0, SCREEN_SIZE.y/2, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
         else if (!ONLY_LEFT_CAMERA)
             glViewport(SCREEN_SIZE.x/2, SCREEN_SIZE.y/2, SCREEN_SIZE.x, SCREEN_SIZE.y);
+        else
+            glViewport(0, 0, SCREEN_SIZE.x, SCREEN_SIZE.y);
         
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
@@ -455,7 +457,7 @@ void AppMain() {
 
     // setup gCamera (left camera)
     gCamera.setPosition(glm::vec3(-4,0,17));
-    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y/2);
+    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
     gCamera.setNearAndFarPlanes(0.5f, 100.0f);
     
     // setup gCamera2 (right camera)
@@ -479,11 +481,7 @@ void AppMain() {
 
         
         //setup two viewports and draw one frame
-        
-        glViewport(0, 0, SCREEN_SIZE.x, SCREEN_SIZE.y);
         Render();
-//        glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/3, SCREEN_SIZE.y/3);
-//        Render();
 
         // check for errors
         GLenum error = glGetError();
