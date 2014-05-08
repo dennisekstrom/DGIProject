@@ -106,15 +106,20 @@ struct Light {
 const glm::vec2 SCREEN_SIZE(1024, 512);
 
 // globals
+
 tdogl::Camera gCamera; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
-bool LEFT_CAMERA_FULLSCREEN = true;
+bool LEFT_CAMERA_FULLSCREEN = false;
 
 RangeTerrain gTerrain;
 ModelAsset gTerrainModelAsset;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
 Light gLight;
+
+bool mouseButtonDown = false;
+int prevCursorPosX, prevCursorPosY;
+
 
 
 // returns the full path to the file `fileName` in the resources directory of the app bundle
@@ -345,12 +350,34 @@ static void Update(float dt) {
         glfwGetMousePos(&xpos, &ypos);
         
         //TODO, do something with the cursor coordinates
-        if (xpos >= SCREEN_SIZE.x/2) {
+        if (xpos >= SCREEN_SIZE.x/2) { //right viewport
             std::cout << "x: "<< xpos << " y:" << ypos << std::endl;
             
-            //float x =(2.0f * xpos) / (SCREEN_SIZE.x/2) - 1.0f;
-           // float y = 1.0f - (2.0f*)
+           
+        } else {
+            glfwDisable(GLFW_MOUSE_CURSOR);
+            
+            //rotate camera based on mouse movement
+            const float mouseSensitivity = 0.1f;
+            int mouseX, mouseY;
+            glfwGetMousePos(&mouseX, &mouseY);
+            
+            if (!mouseButtonDown) {
+                prevCursorPosX = mouseX;
+                prevCursorPosY = mouseY;
+                glfwSetMousePos(0, 0);
+                mouseX = 0; mouseY = 0;
+            }
+            mouseButtonDown = true;
+            
+            gCamera.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
+            glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
         }
+        
+    } else if (mouseButtonDown){
+        glfwEnable(GLFW_MOUSE_CURSOR);
+        glfwSetMousePos(prevCursorPosX, prevCursorPosY);
+        mouseButtonDown = false;
         
     }
     
