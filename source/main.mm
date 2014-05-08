@@ -451,8 +451,8 @@ void AppMain() {
         Update((float)(thisTime - lastTime));
         lastTime = thisTime;
 
-        // draw one frame
-        //setup viewport
+        
+        //setup two viewports and draw one frame
         
         glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y/2);
         Render();
