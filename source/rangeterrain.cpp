@@ -20,6 +20,8 @@
 using namespace std;
 using glm::vec3;
 
+const int RangeTerrain::floatsPerVertex = 8;
+
 RangeTerrain::RangeTerrain() {
     
     /*

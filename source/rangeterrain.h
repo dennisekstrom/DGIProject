@@ -20,12 +20,12 @@
 #include <glm/glm.hpp>
 #include <GL/glfw.h>
 
-#define PI              3.14159265359
-#define X_INTERVAL      64
-#define Y_INTERVAL      64
-#define GRID_RES        0.5f // 0.5 meter between points
-#define TERRAIN_WIDTH   (X_INTERVAL - 1) * GRID_RES
-#define TERRAIN_DEPTH   (Y_INTERVAL - 1) * GRID_RES
+#define PI                  3.14159265359
+#define X_INTERVAL          64
+#define Y_INTERVAL          64
+#define GRID_RES            0.5f // 0.5 meter between points
+#define TERRAIN_WIDTH       (X_INTERVAL - 1) * GRID_RES
+#define TERRAIN_DEPTH       (Y_INTERVAL - 1) * GRID_RES
 
 using namespace std;
 
@@ -90,6 +90,8 @@ private:
     bool dataChanged;
     
 public:
+    static const int floatsPerVertex;
+    
     float hmap[X_INTERVAL][Y_INTERVAL];
     glm::vec3 normals[X_INTERVAL][Y_INTERVAL];
     GLfloat vdata[(X_INTERVAL - 1) * (Y_INTERVAL - 1) * 2 * 3 * 8];

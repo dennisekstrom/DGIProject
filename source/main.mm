@@ -160,6 +160,13 @@ static void SendDataToBuffer(GLfloat* vdata, ModelAsset &asset, int floatsPerVer
     glBindVertexArray(0);
 }
 
+//void* gMappedBuffer;
+//static void ChangeBufferData(GLfloat* data, int* idx, int &length) {
+//    for (int i=0; i<length; i++) {
+//        gMappedBuffer[
+//    }
+//}
+
 // initialises the gWoodenCrate global
 static void LoadAsset(ModelAsset &asset) {
     // set all the elements of gWoodenCrate
@@ -197,7 +204,7 @@ static void LoadAsset(ModelAsset &asset) {
     glBindVertexArray(0);
     
     // Send data to buffer
-    SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
+    SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
 }
 
 
@@ -309,11 +316,11 @@ static void Update(float dt) {
     if(glfwGetKey('O')){
         gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_COS);
         gTerrain.GenerateEverythingFromControlPoints();
-        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
+        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
     } else if(glfwGetKey('P')){
         gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_COS);
         gTerrain.GenerateEverythingFromControlPoints();
-        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
+        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
     }
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
@@ -348,6 +355,8 @@ static void Update(float dt) {
     if(glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
         int xpos,ypos;
         glfwGetMousePos(&xpos, &ypos);
+        
+        // get the
         
         //TODO, do something with the cursor coordinates
         if (xpos >= SCREEN_SIZE.x/2) { //right viewport
