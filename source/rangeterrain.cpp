@@ -22,12 +22,14 @@ using glm::vec3;
 
 RangeTerrain::RangeTerrain() {
     
+    /*
     SetControlPoint(0, 0, 4, 4, FUNC_COS);
     SetControlPoint(8, 8, 3, 7, FUNC_LINEAR);
     SetControlPoint(10, 12, 6, 2, FUNC_SIN);
     SetControlPoint(11, 12, 6, 2, FUNC_SIN);
     SetControlPoint(10, 13, 6, 2, FUNC_SIN);
     SetControlPoint(11, 13, 6, 2, FUNC_SIN);
+    */
     
     GenerateEverythingFromControlPoints();
 }

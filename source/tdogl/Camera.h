@@ -114,6 +114,9 @@ namespace tdogl {
          */
         float viewportAspectRatio() const;
         void setViewportAspectRatio(float viewportAspectRatio);
+        
+        /** The parameters for producing the orthogonal projection matrix */
+        void setOrtho(const float &left, const float &right, const float &bottom, const float &top, const float &zNear, const float &zFar);
 
         /** A unit vector representing the direction the camera is facing */
         glm::vec3 forward() const;
@@ -130,12 +133,22 @@ namespace tdogl {
          This is the complete matrix to use in the vertex shader.
          */
         glm::mat4 matrix() const;
+        
+        /**
+         The combined camera transformation matrix, including orthogonal projection.
+         
+         This is the complete matrix to use in the vertex shader.
+         */
         glm::mat4 orthoMatrix() const;
 
         /**
          The perspective projection transformation matrix
          */
         glm::mat4 projection() const;
+        
+        /**
+         The orthogonal projection transformation matrix
+         */
         glm::mat4 orthoProjection() const;
 
         /**
@@ -145,6 +158,8 @@ namespace tdogl {
          transformation.
          */
         glm::mat4 view() const;
+        
+        void SetAboveMode(const bool &mode) { _aboveMode = mode; };
 
     private:
         glm::vec3 _position;
@@ -154,6 +169,16 @@ namespace tdogl {
         float _nearPlane;
         float _farPlane;
         float _viewportAspectRatio;
+        
+        // ortho projection
+        float _orthoLeft;
+        float _orthoRight;
+        float _orthoBottom;
+        float _orthoTop;
+        float _orthoZNear;
+        float _orthoZFar;
+        
+        bool _aboveMode;
 
         void normalizeAngles();
     };

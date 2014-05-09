@@ -16,11 +16,13 @@
  limitations under the License.
  */
 #define _USE_MATH_DEFINES
+#include <iostream>
 #include <cmath>
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace tdogl;
+using namespace std;
 
 static const float MaxVerticalAngle = 85.0f; //must be less than 90 to avoid gimbal lock
 
@@ -77,6 +79,12 @@ void Camera::setNearAndFarPlanes(float nearPlane, float farPlane) {
 }
 
 glm::mat4 Camera::orientation() const {
+    if (_aboveMode)
+        return glm::mat4(1,  0,  0,  0,
+                         0,  0,  1,  0,
+                         0, -1,  0,  0,
+                         0,  0,  0,  1);
+    
     glm::mat4 orientation;
     orientation = glm::rotate(orientation, _verticalAngle, glm::vec3(1,0,0));
     orientation = glm::rotate(orientation, _horizontalAngle, glm::vec3(0,1,0));
@@ -84,12 +92,22 @@ glm::mat4 Camera::orientation() const {
 }
 
 void Camera::offsetOrientation(float upAngle, float rightAngle) {
+    if (_aboveMode) {
+        cout << "WARNING: Orientation constant when in above mode." << endl;
+        return;
+    }
+    
     _horizontalAngle += rightAngle;
     _verticalAngle += upAngle;
     normalizeAngles();
 }
 
 void Camera::lookAt(glm::vec3 position) {
+    if (_aboveMode) {
+        cout << "WARNING: Orientation constant when in above mode." << endl;
+        return;
+    }
+    
     assert(position != _position);
     glm::vec3 direction = glm::normalize(position - _position);
     _verticalAngle = RadiansToDegrees(asinf(-direction.y));
@@ -106,17 +124,35 @@ void Camera::setViewportAspectRatio(float viewportAspectRatio) {
     _viewportAspectRatio = viewportAspectRatio;
 }
 
+void Camera::setOrtho(const float &left, const float &right, const float &bottom, const float &top, const float &zNear, const float &zFar) {
+    _orthoLeft = left;
+    _orthoRight = right;
+    _orthoBottom = bottom;
+    _orthoTop = top;
+    _orthoZNear = zNear;
+    _orthoZFar = zFar;
+}
+
 glm::vec3 Camera::forward() const {
+    if (_aboveMode)
+        return glm::vec3(0, -1, 0);
+    
     glm::vec4 forward = glm::inverse(orientation()) * glm::vec4(0,0,-1,1);
     return glm::vec3(forward);
 }
 
 glm::vec3 Camera::right() const {
+    if (_aboveMode)
+        return glm::vec3(1, 0, 0);
+    
     glm::vec4 right = glm::inverse(orientation()) * glm::vec4(1,0,0,1);
     return glm::vec3(right);
 }
 
 glm::vec3 Camera::up() const {
+    if (_aboveMode)
+        return glm::vec3(0, 0, -1);
+    
     glm::vec4 up = glm::inverse(orientation()) * glm::vec4(0,1,0,1);
     return glm::vec3(up);
 }
@@ -134,8 +170,7 @@ glm::mat4 Camera::projection() const {
 }
 
 glm::mat4 Camera::orthoProjection() const {
-    return glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, 0.5f, 1000.0f);
-
+    return glm::ortho(_orthoLeft, _orthoRight, _orthoBottom, _orthoTop, _orthoZNear, _orthoZFar);
 }
 
 glm::mat4 Camera::view() const {

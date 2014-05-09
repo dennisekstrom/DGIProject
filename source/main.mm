@@ -107,7 +107,7 @@ const glm::vec2 SCREEN_SIZE(1024, 512);
 
 // globals
 
-tdogl::Camera gCamera; //Left camera
+tdogl::Camera gCamera1; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
 bool LEFT_CAMERA_FULLSCREEN = false;
 
@@ -272,7 +272,7 @@ static void Render() {
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
             if (i==0 || LEFT_CAMERA_FULLSCREEN)
-                RenderInstance(*it, gCamera, false);
+                RenderInstance(*it, gCamera1, false);
             else
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
         }
@@ -290,22 +290,22 @@ static void Update(float dt) {
     //move position of camera based on WASD keys, and QE keys for up and down
     const float moveSpeed = glfwGetKey(GLFW_KEY_LSHIFT) ? 50.0 : 10.0; //units per second
     if(glfwGetKey('S')){
-        gCamera.offsetPosition(dt * moveSpeed * -gCamera.forward());
+        gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.forward());
     } else if(glfwGetKey('W')){
-        gCamera.offsetPosition(dt * moveSpeed * gCamera.forward());
+        gCamera1.offsetPosition(dt * moveSpeed * gCamera1.forward());
     }
     if(glfwGetKey('A')){
-        gCamera.offsetPosition(dt * moveSpeed * -gCamera.right());
+        gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.right());
     } else if(glfwGetKey('D')){
-        gCamera.offsetPosition(dt * moveSpeed * gCamera.right());
+        gCamera1.offsetPosition(dt * moveSpeed * gCamera1.right());
     }
     if(glfwGetKey('E')){
-        gCamera.offsetPosition(dt * moveSpeed * -gCamera.up());
+        gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.up());
     } else if(glfwGetKey('Q')){
-        gCamera.offsetPosition(dt * moveSpeed * gCamera.up());
+        gCamera1.offsetPosition(dt * moveSpeed * gCamera1.up());
     }
     
-    // ************ TEMP ************
+    // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT BELOW ************
     if(glfwGetKey('O')){
         gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_COS);
         gTerrain.GenerateEverythingFromControlPoints();
@@ -315,33 +315,33 @@ static void Update(float dt) {
         gTerrain.GenerateEverythingFromControlPoints();
         SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, 8);
     }
-    // ************ TEMP ************
+    // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
     // rotate the camera based on arrow keys
     const float rotSpeed = 45.0; //degrees per second
     if(glfwGetKey(GLFW_KEY_UP)){
-        gCamera.offsetOrientation(dt * -rotSpeed, 0);
+        gCamera1.offsetOrientation(dt * -rotSpeed, 0);
     } else if(glfwGetKey(GLFW_KEY_DOWN)){
-        gCamera.offsetOrientation(dt * rotSpeed, 0);
+        gCamera1.offsetOrientation(dt * rotSpeed, 0);
     }
     if(glfwGetKey(GLFW_KEY_RIGHT)){
-        gCamera.offsetOrientation(0, dt * rotSpeed);
+        gCamera1.offsetOrientation(0, dt * rotSpeed);
     } else if(glfwGetKey(GLFW_KEY_LEFT)){
-        gCamera.offsetOrientation(0, dt * -rotSpeed);
+        gCamera1.offsetOrientation(0, dt * -rotSpeed);
     }
     
     // zoom based on XZ keys
     const float zoomSpeed = 30.0; //degrees per second
     if(glfwGetKey('X')){
-        float fieldOfView = gCamera.fieldOfView() - dt * zoomSpeed;
+        float fieldOfView = gCamera1.fieldOfView() - dt * zoomSpeed;
         if(fieldOfView < 5.0f) fieldOfView = 5.0f;
         if(fieldOfView > 130.0f) fieldOfView = 130.0f;
-        gCamera.setFieldOfView(fieldOfView);
+        gCamera1.setFieldOfView(fieldOfView);
     } else if(glfwGetKey('Z')){
-        float fieldOfView = gCamera.fieldOfView() + dt * zoomSpeed;
+        float fieldOfView = gCamera1.fieldOfView() + dt * zoomSpeed;
         if(fieldOfView < 5.0f) fieldOfView = 5.0f;
         if(fieldOfView > 130.0f) fieldOfView = 130.0f;
-        gCamera.setFieldOfView(fieldOfView);
+        gCamera1.setFieldOfView(fieldOfView);
     }
     
     //Mouse click
@@ -370,7 +370,7 @@ static void Update(float dt) {
             }
             mouseButtonDown = true;
             
-            gCamera.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
+            gCamera1.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
             glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
         }
         
@@ -381,10 +381,9 @@ static void Update(float dt) {
         
     }
     
-    
     //move light
     if(glfwGetKey('1'))
-        gLight.position = gCamera.position();
+        gLight.position = gCamera1.position();
 
     // change light color
     if(glfwGetKey('2'))
@@ -444,27 +443,22 @@ void AppMain() {
     ModelInstance instance;
     instance.asset = &gTerrainModelAsset;
     gInstances.push_back(instance);
-    
-    // create all the instances in the 3D scene based on the gWoodenCrate asset
-//    CreateInstances();
-    
 
-    // setup gCamera (left camera)
-    gCamera.setPosition(glm::vec3(0,4,15));
-    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
-    gCamera.setNearAndFarPlanes(0.5f, 100.0f);
-    gCamera.lookAt(glm::vec3(8,4,8));
+    // setup gCamera1 (left camera)
+    gCamera1.setPosition(glm::vec3(0, 10, 0));
+    gCamera1.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
+    gCamera1.setNearAndFarPlanes(0.5f, 100.0f);
+    gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, TERRAIN_DEPTH / 2));
     
     // setup gCamera2 (right camera)
-    gCamera2.setPosition(glm::vec3(-1,60,4));
-    gCamera2.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
-    gCamera2.setNearAndFarPlanes(0.5f, 100.0f);
-    gCamera2.offsetOrientation(90, 0); //top-down view
+    gCamera2.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 20, TERRAIN_DEPTH / 2));
+    gCamera2.setOrtho(-TERRAIN_WIDTH / 2, TERRAIN_WIDTH / 2, -TERRAIN_DEPTH / 2, TERRAIN_DEPTH / 2, 0.5f, 100.0f);
+    gCamera2.SetAboveMode(true);
 
     // setup gLight
-    gLight.position = glm::vec3(0,6,0);
+    gLight.position = glm::vec3(TERRAIN_WIDTH / 2, 10, TERRAIN_DEPTH / 2);
     gLight.intensities = glm::vec3(1,1,1); //white
-    gLight.attenuation = 0.2f;
+    gLight.attenuation = 0.001f;
     gLight.ambientCoefficient = 0.080f;
     
     // setup AntTweakBar
