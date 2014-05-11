@@ -146,7 +146,7 @@ static tdogl::Texture* LoadTexture(const char* filename) {
     return new tdogl::Texture(bmp);
 }
 
-static void SendDataToBuffer(GLfloat* vdata, ModelAsset &asset, int floatsPerVertex) {
+/*static void SendDataToBuffer(GLfloat* vdata, ModelAsset &asset, int floatsPerVertex) {
     // bind the VAO
     glBindVertexArray(asset.vao);
     
@@ -158,18 +158,24 @@ static void SendDataToBuffer(GLfloat* vdata, ModelAsset &asset, int floatsPerVer
     
     // unbind the VAO
     glBindVertexArray(0);
+}*/
+
+static void UpdateUsingMapBuffer(const ModelAsset &asset, GLfloat* data, vector<int> &indices, const int &floatsPerVertex) {
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, asset.vbo);
+    GLfloat* buf = (GLfloat*) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    
+    for (int &idx : indices)
+        memcpy(buf + idx, data + idx, floatsPerVertex * sizeof(GLfloat));
+    
+    // bind the VBO
+    glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-//void* gMappedBuffer;
-//static void ChangeBufferData(GLfloat* data, int* idx, int &length) {
-//    for (int i=0; i<length; i++) {
-//        gMappedBuffer[
-//    }
-//}
-
-// initialises the gWoodenCrate global
+// initialises the gWoodenCrate global [TODO: WRONG COMMENT]
 static void LoadAsset(ModelAsset &asset) {
-    // set all the elements of gWoodenCrate
+    // set all the elements of gWoodenCrate [TODO: WRONG COMMENT]
     asset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
     asset.drawType = GL_TRIANGLES;
     asset.drawStart = 0;
@@ -187,6 +193,9 @@ static void LoadAsset(ModelAsset &asset) {
 
     // bind the VBO
     glBindBuffer(GL_ARRAY_BUFFER, asset.vbo);
+    
+    // write initial data
+    glBufferData(GL_ARRAY_BUFFER, asset.drawCount * RangeTerrain::floatsPerVertex * sizeof(GLfloat), gTerrain.vertexData, GL_DYNAMIC_DRAW);
 
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vert"));
@@ -203,8 +212,8 @@ static void LoadAsset(ModelAsset &asset) {
     // unbind the VAO
     glBindVertexArray(0);
     
-    // Send data to buffer
-    SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+//    // Send data to buffer
+//    SendDataToBuffer(gTerrain.vertexData, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
 }
 
 
@@ -314,13 +323,19 @@ static void Update(float dt) {
     
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT BELOW ************
     if(glfwGetKey('O')){
-        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_COS);
-        gTerrain.GenerateEverythingFromControlPoints();
-        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_SIN);
+        gTerrain.UpdateAll();
+        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, RangeTerrain::floatsPerVertex);
+//        gTerrain.GenerateAll();
+//        SendDataToBuffer(gTerrain.vertexData, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+        gTerrain.changedVertexIndices.clear();
     } else if(glfwGetKey('P')){
-        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_COS);
-        gTerrain.GenerateEverythingFromControlPoints();
-        SendDataToBuffer(gTerrain.vdata, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_SIN);
+        gTerrain.UpdateAll();
+        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, RangeTerrain::floatsPerVertex);
+//        gTerrain.GenerateAll();
+//        SendDataToBuffer(gTerrain.vertexData, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+        gTerrain.changedVertexIndices.clear();
     }
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
