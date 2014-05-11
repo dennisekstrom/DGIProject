@@ -2,6 +2,8 @@
 
 uniform mat4 model;
 uniform vec3 cameraPosition;
+uniform bool useColor;
+uniform bool monotoneLight;
 
 // material settings
 uniform sampler2D materialTex;
@@ -18,21 +20,34 @@ uniform struct Light {
 in vec2 fragTexCoord;
 in vec3 fragNormal;
 in vec3 fragVert;
+in vec4 fragColor;
 
 out vec4 finalColor;
 
 void main() {
     vec3 normal = normalize(transpose(inverse(mat3(model))) * fragNormal);
     vec3 surfacePos = vec3(model * vec4(fragVert, 1));
-    vec4 surfaceColor = texture(materialTex, fragTexCoord);
+    vec4 surfaceColor;
+    if (useColor)
+        surfaceColor = fragColor;
+    else
+        surfaceColor = texture(materialTex, fragTexCoord);
     vec3 surfaceToLight = normalize(light.position - surfacePos);
     vec3 surfaceToCamera = normalize(cameraPosition - surfacePos);
     
     //ambient
-    vec3 ambient = light.ambientCoefficient * surfaceColor.rgb * light.intensities;
+    vec3 ambient;
+    if (monotoneLight)
+        ambient = surfaceColor.rgb * light.intensities;
+    else
+        ambient = light.ambientCoefficient * surfaceColor.rgb * light.intensities;
 
     //diffuse
-    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
+    float diffuseCoefficient;
+    if (monotoneLight)
+        diffuseCoefficient = 0;
+    else
+        diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
     vec3 diffuse = diffuseCoefficient * surfaceColor.rgb * light.intensities;
     
     //specular

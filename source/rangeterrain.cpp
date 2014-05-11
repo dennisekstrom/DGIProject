@@ -13,10 +13,10 @@
 //using namespace std;
 using glm::vec3;
 
-const int RangeTerrain::floatsPerVertex         = 8;
-const int RangeTerrain::floatsPerTriangle       = floatsPerVertex * 3;
-const int RangeTerrain::floatsPerTrianglePair   = floatsPerTriangle * 2;
-const int RangeTerrain::floatsPerRow            = floatsPerTrianglePair * (X_INTERVAL - 1);
+//const int RangeTerrain::floatsPerVertex         = 12;
+//const int RangeTerrain::floatsPerTriangle       = floatsPerVertex * 3;
+//const int RangeTerrain::floatsPerTrianglePair   = floatsPerTriangle * 2;
+//const int RangeTerrain::floatsPerRow            = floatsPerTrianglePair * (X_INTERVAL - 1);
 
 RangeTerrain::RangeTerrain() {
 
@@ -25,12 +25,6 @@ RangeTerrain::RangeTerrain() {
     changedControlPoints    = new ChangeManager(X_INTERVAL, Y_INTERVAL);
     changedHMapCoords       = new ChangeManager(X_INTERVAL, Y_INTERVAL);
     changedVertices         = new ChangeManager(X_INTERVAL, Y_INTERVAL);
-    
-//    hmapInternalChanges     = new HMapChangeManager();
-    
-//    changedControlPoints.reserve(Y_INTERVAL * X_INTERVAL);
-//    changedHMapCoords.reserve(Y_INTERVAL * X_INTERVAL);
-//    changedVertices.reserve(Y_INTERVAL * X_INTERVAL);
     
     changedVertexIndices.reserve(Y_INTERVAL * X_INTERVAL * 6); // Each vertex appears in 6 different triangles
     
@@ -51,8 +45,6 @@ RangeTerrain::~RangeTerrain() {
     delete changedControlPoints;
     delete changedHMapCoords;
     delete changedVertices;
-    
-//    delete hmapInternalChanges;
     
     for (int y=0; y<Y_INTERVAL; y++)
         for (int x=0; x<X_INTERVAL; x++)
@@ -127,7 +119,6 @@ void RangeTerrain::UpdateHMap() { // Changes only upwards
     int x, y;
     ControlPoint* cp;
     for ( xy &xy : changedControlPoints->identifiers ) {
-        // UpdateHMap(*controlPoints[xy.y][xy.x]);
 
         x = xy.x;
         y = xy.y;
@@ -166,7 +157,6 @@ void RangeTerrain::GenerateHMap() {
     for ( int y=0; y<Y_INTERVAL; y++ ) {
         for ( int x=0; x<X_INTERVAL; x++ ) {
             if (controlPoints[y][x]) {
-//                UpdateHMap(*controlPoints[y][x]);
                 
                 cp = controlPoints[y][x];
                 
@@ -400,41 +390,42 @@ void RangeTerrain::UpdateVertexData(const int &x, const int &y) {
     int idx;
     vec3 v = vec3(x * GRID_RES, hmap[y][x], y * GRID_RES);
     vec3 n = normals[y][x];
+    vec4 c = ColorFromHeight(hmap[y][x]);
     
     // v1 in South East triangle pair
     if (x < X_INTERVAL - 1 && y < Y_INTERVAL - 1) {
-        idx = (y  )*floatsPerRow + (x  )*floatsPerTrianglePair;
+        idx = (y  )*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR;
         changedVertexIndices.push_back( idx );
-        SetVertexData(idx, v, vec2(0, 0), n);
+        SetVertexData(idx, v, vec2(0, 0), n, c);
     }
     
     // v2 in North East triangle pair
     if (x < X_INTERVAL - 1 && y > 0) {
-        idx = (y-1)*floatsPerRow + (x  )*floatsPerTrianglePair + 1*floatsPerVertex;
+        idx = (y-1)*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR + 1*FLOATS_PER_VERTEX;
         changedVertexIndices.push_back( idx );
-        SetVertexData(idx, v, vec2(0, 1), n);
+        SetVertexData(idx, v, vec2(0, 1), n, c);
         
-        idx = (y-1)*floatsPerRow + (x  )*floatsPerTrianglePair + 5*floatsPerVertex;
+        idx = (y-1)*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR + 5*FLOATS_PER_VERTEX;
         changedVertexIndices.push_back( idx );
-        SetVertexData(idx, v, vec2(0, 1), n);
+        SetVertexData(idx, v, vec2(0, 1), n, c);
     }
     
     // v3 in South West triangle pair
     if (x > 0 && y < Y_INTERVAL - 1) {
-        idx = (y  )*floatsPerRow + (x-1)*floatsPerTrianglePair + 2*floatsPerVertex;
+        idx = (y  )*FLOATS_PER_ROW + (x-1)*FLOATS_PER_TRIANGLE_PAIR + 2*FLOATS_PER_VERTEX;
         changedVertexIndices.push_back( idx );
-        SetVertexData(idx, v, vec2(1, 0), n);
+        SetVertexData(idx, v, vec2(1, 0), n, c);
         
-        idx = (y  )*floatsPerRow + (x-1)*floatsPerTrianglePair + 4*floatsPerVertex;
+        idx = (y  )*FLOATS_PER_ROW + (x-1)*FLOATS_PER_TRIANGLE_PAIR + 4*FLOATS_PER_VERTEX;
         changedVertexIndices.push_back( idx );
-        SetVertexData(idx, v, vec2(1, 0), n);
+        SetVertexData(idx, v, vec2(1, 0), n, c);
     }
     
     // v4 in North West triangle pair
     if (x > 0 && y > 0) {
-        idx = (y-1)*floatsPerRow + (x-1)*floatsPerTrianglePair + 3*floatsPerVertex;
+        idx = (y-1)*FLOATS_PER_ROW + (x-1)*FLOATS_PER_TRIANGLE_PAIR + 3*FLOATS_PER_VERTEX;
         changedVertexIndices.push_back( idx );
-        SetVertexData(idx, v, vec2(1, 1), n);
+        SetVertexData(idx, v, vec2(1, 1), n, c);
     }
 }
 

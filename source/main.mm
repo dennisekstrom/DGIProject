@@ -102,6 +102,9 @@ struct Light {
     float ambientCoefficient;
 };
 
+char keyOnce[GLFW_KEY_LAST + 1];
+#define glfwGetKeyOnce(KEY) (glfwGetKey(KEY) ? (keyOnce[KEY] ? false : (keyOnce[KEY] = true)) : (keyOnce[KEY] = false))
+
 // constants
 const glm::vec2 SCREEN_SIZE(1024, 512);
 
@@ -109,7 +112,9 @@ const glm::vec2 SCREEN_SIZE(1024, 512);
 
 tdogl::Camera gCamera1; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
-bool LEFT_CAMERA_FULLSCREEN = false;
+bool gLeftCameraUseColor = false;
+bool gRightCameraUseColor = true;
+bool gLeftCameraFullscreen = false;
 
 RangeTerrain gTerrain;
 ModelAsset gTerrainModelAsset;
@@ -119,8 +124,6 @@ Light gLight;
 
 bool mouseButtonDown = false;
 int prevCursorPosX, prevCursorPosY;
-
-
 
 // returns the full path to the file `fileName` in the resources directory of the app bundle
 static std::string ResourcePath(std::string fileName) {
@@ -174,13 +177,12 @@ static void UpdateUsingMapBuffer(const ModelAsset &asset, GLfloat* data, vector<
 }
 
 // initialises the gWoodenCrate global [TODO: WRONG COMMENT]
-static void LoadAsset(ModelAsset &asset) {
+static void LoadAsset(ModelAsset &asset, const int &floatsPerVertex) {
     // set all the elements of gWoodenCrate [TODO: WRONG COMMENT]
     asset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
     asset.drawType = GL_TRIANGLES;
     asset.drawStart = 0;
     asset.drawCount = (X_INTERVAL - 1) * (Y_INTERVAL - 1) * 6;
-//    asset.drawCount = 6*2*3;
     asset.texture = LoadTexture("grass.png");
     asset.shininess = 80.0;
     asset.specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -195,19 +197,23 @@ static void LoadAsset(ModelAsset &asset) {
     glBindBuffer(GL_ARRAY_BUFFER, asset.vbo);
     
     // write initial data
-    glBufferData(GL_ARRAY_BUFFER, asset.drawCount * RangeTerrain::floatsPerVertex * sizeof(GLfloat), gTerrain.vertexData, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, asset.drawCount * floatsPerVertex*sizeof(GLfloat), gTerrain.vertexData, GL_DYNAMIC_DRAW);
 
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vert"));
-    glVertexAttribPointer(asset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), NULL);
+    glVertexAttribPointer(asset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, floatsPerVertex*sizeof(GLfloat), NULL);
 
     // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vertTexCoord"));
-    glVertexAttribPointer(asset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  8*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(asset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE, floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
     // connect the normal to the "vertNormal" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vertNormal"));
-    glVertexAttribPointer(asset.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE,  8*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
+    glVertexAttribPointer(asset.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE, floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
+    
+    // connect the normal to the "vertNormal" attribute of the vertex shader
+    glEnableVertexAttribArray(asset.shaders->attrib("vertColor"));
+    glVertexAttribPointer(asset.shaders->attrib("vertColor"), 4, GL_FLOAT, GL_TRUE,  floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(8 * sizeof(GLfloat)));
 
     // unbind the VAO
     glBindVertexArray(0);
@@ -229,7 +235,7 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
 }
 
 
-//renders a single `ModelInstance` //TODO add camera as argument
+//renders a single `ModelInstance`
 static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera, bool ortho) {
     ModelAsset* asset = inst.asset;
     tdogl::Program* shaders = asset->shaders;
@@ -238,10 +244,15 @@ static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera, boo
     shaders->use();
 
     //set the shader uniforms
-    if (ortho)
+    if (ortho) {
         shaders->setUniform("camera", camera.orthoMatrix());
-    else
+        shaders->setUniform("useColor", gRightCameraUseColor);
+        shaders->setUniform("monotoneLight", gRightCameraUseColor);
+    } else {
         shaders->setUniform("camera", camera.matrix());
+        shaders->setUniform("useColor", gLeftCameraUseColor);
+        shaders->setUniform("monotoneLight", false);
+    }
     shaders->setUniform("model", inst.transform);
     shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
 //    shaders->setUniform("materialShininess", asset->shininess);
@@ -278,16 +289,16 @@ static void Render() {
     for (int i = 0; i < viewports; i++) {
         
         
-        if (i == 0 && !LEFT_CAMERA_FULLSCREEN)
+        if (i == 0 && !gLeftCameraFullscreen)
             glViewport(0, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
-        else if (!LEFT_CAMERA_FULLSCREEN)
+        else if (!gLeftCameraFullscreen)
             glViewport(SCREEN_SIZE.x/2, 0, SCREEN_SIZE.x/2, SCREEN_SIZE.y);
         else
             glViewport(0, 0, SCREEN_SIZE.x, SCREEN_SIZE.y);
         
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
-            if (i==0 || LEFT_CAMERA_FULLSCREEN)
+            if (i==0 || gLeftCameraFullscreen)
                 RenderInstance(*it, gCamera1, false);
             else
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
@@ -325,16 +336,12 @@ static void Update(float dt) {
     if(glfwGetKey('O')){
         gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_SIN);
         gTerrain.UpdateAll();
-        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, RangeTerrain::floatsPerVertex);
-//        gTerrain.GenerateAll();
-//        SendDataToBuffer(gTerrain.vertexData, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
     } else if(glfwGetKey('P')){
         gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_SIN);
         gTerrain.UpdateAll();
-        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, RangeTerrain::floatsPerVertex);
-//        gTerrain.GenerateAll();
-//        SendDataToBuffer(gTerrain.vertexData, gTerrainModelAsset, RangeTerrain::floatsPerVertex);
+        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
     }
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
@@ -406,18 +413,30 @@ static void Update(float dt) {
     }
     
     //move light
-    if(glfwGetKey('1'))
+    if(glfwGetKey('L'))
         gLight.position = gCamera1.position();
 
     // change light color
-    if(glfwGetKey('2'))
+    if(glfwGetKey('7'))
         gLight.intensities = glm::vec3(1,0,0); //red
-    else if(glfwGetKey('3'))
+    else if(glfwGetKey('8'))
         gLight.intensities = glm::vec3(0,1,0); //green
-    else if(glfwGetKey('4'))
+    else if(glfwGetKey('9'))
         gLight.intensities = glm::vec3(0,0,1); //blue
-    else if(glfwGetKey('5'))
+    else if(glfwGetKey('0'))
         gLight.intensities = glm::vec3(1,1,1); //white
+    
+    // toggle fullscreen
+    if(glfwGetKeyOnce('F')) {
+        gLeftCameraFullscreen = !gLeftCameraFullscreen;
+        gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? SCREEN_SIZE.x / SCREEN_SIZE.y : (SCREEN_SIZE.x / 2) / SCREEN_SIZE.y);
+    }
+    
+    // toggle texture/color
+    if(glfwGetKeyOnce('1'))
+        gLeftCameraUseColor = !gLeftCameraUseColor;
+    if(glfwGetKeyOnce('2'))
+        gRightCameraUseColor = !gRightCameraUseColor;
 }
 
 // the program starts here
@@ -463,14 +482,14 @@ void AppMain() {
     glDepthFunc(GL_LESS);
 
     // initialise the asset
-    LoadAsset(gTerrainModelAsset);
+    LoadAsset(gTerrainModelAsset, FLOATS_PER_VERTEX);
     ModelInstance instance;
     instance.asset = &gTerrainModelAsset;
     gInstances.push_back(instance);
 
     // setup gCamera1 (left camera)
     gCamera1.setPosition(glm::vec3(0, 10, 0));
-    gCamera1.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
+    gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? SCREEN_SIZE.x / SCREEN_SIZE.y : (SCREEN_SIZE.x / 2) / SCREEN_SIZE.y);
     gCamera1.setNearAndFarPlanes(0.5f, 100.0f);
     gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, TERRAIN_DEPTH / 2));
     

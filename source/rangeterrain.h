@@ -1,15 +1,9 @@
-////
-////  rangeterrain.h
-////  DGIProject
-////
-////  Created by Dennis Ekström on 08/05/14.
-////  Copyright (c) 2014 Dennis Ekström. All rights reserved.
-////
 //
-//#ifndef DGIProject_rangeterrain_h
-//#define DGIProject_rangeterrain_h
+//  rangeterrain.h
+//  DGIProject
 //
-//#include <vector>
+//  Created by Dennis Ekström on 08/05/14.
+//  Copyright (c) 2014 Dennis Ekström. All rights reserved.
 //
 
 #ifndef DGIProject_rangeterrain_h
@@ -26,6 +20,11 @@
 #define GRID_RES            0.5f // 0.5 meter between points
 #define TERRAIN_WIDTH       (X_INTERVAL - 1) * GRID_RES
 #define TERRAIN_DEPTH       (Y_INTERVAL - 1) * GRID_RES
+
+#define FLOATS_PER_VERTEX           12
+#define FLOATS_PER_TRIANGLE         3*FLOATS_PER_VERTEX
+#define FLOATS_PER_TRIANGLE_PAIR    2*FLOATS_PER_TRIANGLE
+#define FLOATS_PER_ROW              (X_INTERVAL - 1)*FLOATS_PER_TRIANGLE_PAIR
 
 using namespace std;
 using namespace glm;
@@ -302,10 +301,10 @@ private:
 //    bool vertexNeedsUpdate[Y_INTERVAL][X_INTERVAL];
     
 public:
-    static const int floatsPerVertex;
-    static const int floatsPerTriangle;
-    static const int floatsPerTrianglePair;
-    static const int floatsPerRow;
+//    static const int floatsPerVertex;
+//    static const int floatsPerTriangle;
+//    static const int floatsPerTrianglePair;
+//    static const int floatsPerRow;
     
     
     float hmap[Y_INTERVAL][X_INTERVAL];
@@ -313,7 +312,7 @@ public:
     
     TrianglePair trianglePairs[(Y_INTERVAL - 1)][(X_INTERVAL - 1)];
     
-    GLfloat vertexData[(X_INTERVAL - 1) * (Y_INTERVAL - 1) * 2 * 3 * 8];
+    GLfloat vertexData[(X_INTERVAL - 1) * (Y_INTERVAL - 1) * 2 * 3 * FLOATS_PER_VERTEX];
     vector<int> changedVertexIndices;
 
 private:
@@ -334,7 +333,7 @@ private:
     void UpdateTrianglePair(const int &x, const int &y);    // Requires hmap and normal
     void UpdateVertexData(const int &x, const int &y);      // Requires hmap and normal
 
-    inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n) {
+    inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n, const vec4 &c) {
         vertexData[idx++] = v.x;
         vertexData[idx++] = v.y;
         vertexData[idx++] = v.z;
@@ -343,8 +342,41 @@ private:
         vertexData[idx++] = n.x;
         vertexData[idx++] = n.y;
         vertexData[idx++] = n.z;
+        vertexData[idx++] = c.r;
+        vertexData[idx++] = c.g;
+        vertexData[idx++] = c.b;
+        vertexData[idx++] = c.a;
     }
+    
+    inline vec4 ColorFromHeight(const float &h) const {
+        vector<vec4> levels;
+        levels.push_back( vec4( 0.5,      0,      0,      1) ); // dark red
+        levels.push_back( vec4(   1,      0,      0,      1) ); // red
+        levels.push_back( vec4(   1,    0.5,      0,      1) ); // orange
+        levels.push_back( vec4(   1,      1,      0,      1) ); // yellow
+        levels.push_back( vec4(   0,      1,      0,      1) ); // green
+        levels.push_back( vec4(   0,      1,      1,      1) ); // cyan
+        levels.push_back( vec4(   0,      0,      1,      1) ); // blue
+        levels.push_back( vec4( 0.5,    0.5,      1,      1) ); // light blue
+       
+        float h_min = -5, h_max = 5;
+        
+        if (h <= h_min)
+            return levels.front();
+        
+        if (h >= h_max)
+            return levels.back();
+        
+        float idx = (levels.size() - 1) * (h - h_min) / (h_max - h_min);
+        float idx_low = floor( idx );
+        float idx_high = ceil( idx );
 
+        vec4 level_low = levels[idx_low];
+        vec4 level_high = levels[idx_high];
+        
+        return level_low + (idx - idx_low) * (level_high - level_low);
+    }
+    
 public:
     RangeTerrain();
     ~RangeTerrain();
@@ -355,7 +387,7 @@ public:
     void GenerateAll();                         // Generate everything from control points
     
     
-    inline ControlPoint* GetControlPoint(const int &x, const int &y) {
+    inline ControlPoint* GetControlPoint(const int &x, const int &y) const {
         return controlPoints[y][x];
     }
 };
