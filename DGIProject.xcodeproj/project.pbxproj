@@ -349,7 +349,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(PROJECT_DIR)/thirdparty\"/**",
-					"/Users/tobbew92/Documents/workspace/DGIProject/thirdparty/freetype-2.5.3/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -367,7 +366,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(PROJECT_DIR)/thirdparty\"/**",
-					"/Users/tobbew92/Documents/workspace/DGIProject/thirdparty/freetype-2.5.3/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
