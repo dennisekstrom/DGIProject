@@ -314,7 +314,7 @@ static void Render() {
         }
     }
     
-    //DisplayText(); // render text
+    //DisplayText(); // render text 
     
 
     // swap the display buffers (displays what was just drawn)
