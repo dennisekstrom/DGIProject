@@ -37,9 +37,11 @@
 #include "tdogl/Camera.h"
 
 #include "rangeterrain.h"
+#include "rangedrawer.h"
 #include "skybox.h"
+#include "text.h"
 //AntTweakBar
-//#include <AntTweakBar.h>
+#include <AntTweakBar.h>
 
 #define ORTHO_RELATIVE_MARGIN   0.1
 
@@ -312,6 +314,8 @@ static void Render() {
         }
     }
     
+    //DisplayText(); // render text
+    
 
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers();
@@ -551,6 +555,9 @@ void AppMain() {
     
     // setup skybox
     //initSkybox();
+    
+    // setup text
+    //initFreeText();
     
     //glfwEnable(GL_TEXTURE_CUBE_MAP);
 

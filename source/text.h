@@ -10,8 +10,22 @@
 #define __DGIProject__text__
 
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <GL/glew.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+int initFreeText();
+void DisplayText();
+void free_text_resources();
 
 
 #endif /* defined(__DGIProject__text__) */

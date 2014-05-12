@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5DDBEA171920C3EB0027232F /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DDBEA161920C3EB0027232F /* libfreetype.a */; };
+		5DDBEA261920DA690027232F /* shader_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DDBEA241920DA690027232F /* shader_utils.cpp */; };
 		5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6A1920242A00EB8587 /* skybox.cpp */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		9591680B191B8147001A0A44 /* libglfw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9591680A191B8147001A0A44 /* libglfw.a */; };
@@ -48,6 +50,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5DDBEA161920C3EB0027232F /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = "freetype-2.5.3/libs/libfreetype.a"; sourceTree = "<group>"; };
+		5DDBEA1D1920C6E50027232F /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libAntTweakBar.a; sourceTree = "<group>"; };
+		5DDBEA1E1920C6E50027232F /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libAntTweakBar.dylib; sourceTree = "<group>"; };
+		5DDBEA1F1920C6E50027232F /* Readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
+		5DDBEA231920DA690027232F /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		5DDBEA241920DA690027232F /* shader_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader_utils.cpp; sourceTree = "<group>"; };
+		5DDBEA251920DA690027232F /* shader_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shader_utils.h; sourceTree = "<group>"; };
 		5DFACF6A1920242A00EB8587 /* skybox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skybox.cpp; sourceTree = "<group>"; };
 		5DFACF6B1920242A00EB8587 /* skybox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skybox.h; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
@@ -87,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5DDBEA171920C3EB0027232F /* libfreetype.a in Frameworks */,
 				9591680B191B8147001A0A44 /* libglfw.a in Frameworks */,
 				95F7508F191B7BB000384CFF /* Cocoa.framework in Frameworks */,
 				95F7508D191B7BA800384CFF /* IOKit.framework in Frameworks */,
@@ -97,9 +107,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5DDBEA1C1920C6E50027232F /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				5DDBEA1D1920C6E50027232F /* libAntTweakBar.a */,
+				5DDBEA1E1920C6E50027232F /* libAntTweakBar.dylib */,
+				5DDBEA1F1920C6E50027232F /* Readme.txt */,
+			);
+			name = lib;
+			path = thirdparty/anttweakbar/lib;
+			sourceTree = "<group>";
+		};
+		5DDBEA221920DA690027232F /* common */ = {
+			isa = PBXGroup;
+			children = (
+				5DDBEA231920DA690027232F /* README */,
+				5DDBEA241920DA690027232F /* shader_utils.cpp */,
+				5DDBEA251920DA690027232F /* shader_utils.h */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
 		95F74DB6191B780000384CFF = {
 			isa = PBXGroup;
 			children = (
+				5DDBEA1C1920C6E50027232F /* lib */,
 				95F5FB13191D54B00084FA41 /* temp.txt */,
 				95F74DCE191B784700384CFF /* resources */,
 				95F74DD2191B784700384CFF /* source */,
@@ -131,6 +163,7 @@
 		95F74DD2191B784700384CFF /* source */ = {
 			isa = PBXGroup;
 			children = (
+				5DDBEA221920DA690027232F /* common */,
 				5DFACF6B1920242A00EB8587 /* skybox.h */,
 				5DFACF6A1920242A00EB8587 /* skybox.cpp */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
@@ -166,6 +199,7 @@
 		95F74DDF191B784700384CFF /* thirdparty */ = {
 			isa = PBXGroup;
 			children = (
+				5DDBEA161920C3EB0027232F /* libfreetype.a */,
 				9591680E191B817C001A0A44 /* glew.c */,
 				9591680A191B8147001A0A44 /* libglfw.a */,
 				95F7508E191B7BB000384CFF /* Cocoa.framework */,
@@ -230,6 +264,7 @@
 				95F7507F191B784900384CFF /* Program.cpp in Sources */,
 				95F7507D191B784900384CFF /* Bitmap.cpp in Sources */,
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
+				5DDBEA261920DA690027232F /* shader_utils.cpp in Sources */,
 				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
 				5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */,
@@ -331,6 +366,11 @@
 					"\"$(PROJECT_DIR)/thirdparty\"/**",
 					"/Users/tobbew92/Documents/workspace/DGIProject/thirdparty/freetype-2.5.3/include",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/thirdparty/freetype-2.5.3/libs",
+					"$(PROJECT_DIR)/thirdparty/anttweakbar/lib",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -343,6 +383,11 @@
 					"$(inherited)",
 					"\"$(PROJECT_DIR)/thirdparty\"/**",
 					"/Users/tobbew92/Documents/workspace/DGIProject/thirdparty/freetype-2.5.3/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/thirdparty/freetype-2.5.3/libs",
+					"$(PROJECT_DIR)/thirdparty/anttweakbar/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
