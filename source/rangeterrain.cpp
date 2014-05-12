@@ -13,13 +13,13 @@
 //using namespace std;
 using glm::vec3;
 
-//const int RangeTerrain::floatsPerVertex         = 12;
-//const int RangeTerrain::floatsPerTriangle       = floatsPerVertex * 3;
-//const int RangeTerrain::floatsPerTrianglePair   = floatsPerTriangle * 2;
-//const int RangeTerrain::floatsPerRow            = floatsPerTrianglePair * (X_INTERVAL - 1);
+RangeTerrain gTerrain;
 
 RangeTerrain::RangeTerrain() {
 
+    assert(X_INTERVAL == Y_INTERVAL);
+    assert(TERRAIN_WIDTH == TERRAIN_DEPTH);
+    
     controlPointChangeRequiresHMapRegeneration = false;
     
     changedControlPoints    = new ChangeManager(X_INTERVAL, Y_INTERVAL);
@@ -38,6 +38,8 @@ RangeTerrain::RangeTerrain() {
     SetControlPoint(11, 13, 6, 2, FUNC_SIN);
     
     GenerateAll();
+    
+    changedVertexIndices.clear();
 }
 
 RangeTerrain::~RangeTerrain() {
@@ -70,6 +72,11 @@ void RangeTerrain::SetControlPoint(int x, int y, float h, float spread, ControlP
         
         // delete old pointer
         delete controlPoints[y][x];
+        
+    } else if (h < 0) {
+        
+        // control point is below ground - regeneration is necessary
+        controlPointChangeRequiresHMapRegeneration = true;
     }
     
     // perform change
@@ -94,7 +101,8 @@ void RangeTerrain::UpdateAll() {
         UpdateHMap();
 
     UpdateNormals();
-    UpdateTrianglePairs();
+//    UpdateTrianglePairs();
+    UpdateChangedVertices();
     UpdateVertexData();
     
     changedControlPoints->Reset();
@@ -105,7 +113,7 @@ void RangeTerrain::GenerateAll() {
     
     GenerateHMap();
     GenerateNormals();
-    GenerateTrianglePairs();
+//    GenerateTrianglePairs();
     GenerateVertexData();
     
     changedControlPoints->Reset();
@@ -123,13 +131,18 @@ void RangeTerrain::UpdateHMap() { // Changes only upwards
         x = xy.x;
         y = xy.y;
         cp = controlPoints[y][x];
+    
+        if (cp->h == 0) {
+            delete controlPoints[y][x];
+            continue;
+        }
         
         // Height of control point itself
         if (cp->h > hmap[y][x]) {
             hmap[y][x] = cp->h;
             changedHMapCoords->SetChanged(x, y);
         } else {
-            std::cout << "WARNING: Control point height (" << cp->h << ") ignored at (" << x << ", " << y << ")" << endl;
+            cout << "WARNING: Control point height (" << cp->h << ") ignored at (" << x << ", " << y << ")" << endl;
         }
         
         // Height of surrounding points
@@ -140,6 +153,9 @@ void RangeTerrain::UpdateHMap() { // Changes only upwards
         for (int yy=min_y; yy<=max_y; yy++) {
             for (int xx=min_x; xx<=max_x; xx++) {
                 float h = cp->lift(xx, yy);
+                if (h == 0)
+                    continue;
+                
                 if (h > hmap[yy][xx]) {
                     hmap[yy][xx] = h;
                     changedHMapCoords->SetChanged(xx, yy);
@@ -160,6 +176,11 @@ void RangeTerrain::GenerateHMap() {
                 
                 cp = controlPoints[y][x];
                 
+                if (cp->h == 0) {
+                    delete controlPoints[y][x];
+                    continue;
+                }
+                
                 // Height of control point itself
                 if (!changedHMapCoords->DidChange(x, y)) {  // Change if not previously changed...
                     hmap[y][x] = cp->h;
@@ -168,7 +189,7 @@ void RangeTerrain::GenerateHMap() {
                     hmap[y][x] = cp->h;
                     // No need to register change since we know it's already been registered
                 } else {
-                    std::cout << "WARNING: Control point height (" << cp->h << ") ignored at (" << x << ", " << y << ")" << endl;
+                    cout << "WARNING: Control point height (" << cp->h << ") ignored at (" << x << ", " << y << ")" << endl;
                 }
                 
                 // Height of surrounding points
@@ -179,6 +200,9 @@ void RangeTerrain::GenerateHMap() {
                 for (int yy=min_y; yy<=max_y; yy++) {
                     for (int xx=min_x; xx<=max_x; xx++) {
                         float h = cp->lift(xx, yy);
+                        if (h == 0)
+                            continue;
+                        
                         if (!changedHMapCoords->DidChange(xx, yy)) {    // Change if not previously changed...
                             hmap[yy][xx] = h;
                             changedHMapCoords->SetChanged(xx, yy);
@@ -194,6 +218,25 @@ void RangeTerrain::GenerateHMap() {
 
 }
 
+void RangeTerrain::UpdateChangedVertices() {
+    
+    changedVertices->Reset();
+    
+    int x, y;
+    for ( xy &xy : changedHMapCoords->identifiers ) {
+        // The grid of triangles is one less than the hmap, adjustment
+        // at boundary causes adjustment of the correct triangles
+        x = xy.x;
+        y = xy.y;
+        if (x == X_INTERVAL - 1) { x--; }
+        if (y == Y_INTERVAL - 1) { y--; }
+        
+        changedVertices->SetChanged( x  , y   );
+        changedVertices->SetChanged( x  , y+1 );
+        changedVertices->SetChanged( x+1, y   );
+        changedVertices->SetChanged( x+1, y+1 );
+    }
+}
 void RangeTerrain::UpdateNormals() {
     
     for ( xy &xy : changedHMapCoords->identifiers )
@@ -207,7 +250,7 @@ void RangeTerrain::GenerateNormals() {
             UpdateNormal(x, y);
 }
 
-void RangeTerrain::UpdateTrianglePairs() {
+/*void RangeTerrain::UpdateTrianglePairs() {
     
     changedVertices->Reset();
     
@@ -225,11 +268,6 @@ void RangeTerrain::UpdateTrianglePairs() {
         changedVertices->SetChanged( x  , y+1 );
         changedVertices->SetChanged( x+1, y   );
         changedVertices->SetChanged( x+1, y+1 );
-        
-//        vertexNeedsUpdate[x  ][y  ] = true;
-//        vertexNeedsUpdate[x  ][y+1] = true;
-//        vertexNeedsUpdate[x+1][y  ] = true;
-//        vertexNeedsUpdate[x+1][y+1] = true;
     }
 }
 
@@ -245,14 +283,9 @@ void RangeTerrain::GenerateTrianglePairs() {
             changedVertices->SetChanged( x  , y+1 );
             changedVertices->SetChanged( x+1, y   );
             changedVertices->SetChanged( x+1, y+1 );
-            
-//            vertexNeedsUpdate[x  ][y  ] = true;
-//            vertexNeedsUpdate[x  ][y+1] = true;
-//            vertexNeedsUpdate[x+1][y  ] = true;
-//            vertexNeedsUpdate[x+1][y+1] = true;
         }
     }
-}
+}*/
 
 void RangeTerrain::UpdateVertexData() {
     
@@ -347,7 +380,7 @@ void RangeTerrain::UpdateNormal(const int &x, const int &y) {
     normals[y][x] = glm::normalize(vec3(hw - he, 2 * GRID_RES, hn - hs));
 }
 
-void RangeTerrain::UpdateTrianglePair(const int &x, const int &y) {
+/*void RangeTerrain::UpdateTrianglePair(const int &x, const int &y) {
     
     TrianglePair &tp = trianglePairs[y][x];
     
@@ -371,11 +404,13 @@ void RangeTerrain::UpdateTrianglePair(const int &x, const int &y) {
     vec3 c4 = vec3(1,0,0); // [TODO]
     
     tp.SetColors(c1, c2, c3, c4);
-}
+}*/
 
 // [TODO: assuming diagonalUp == true]
-void RangeTerrain::UpdateVertexData(const int &x, const int &y) {
+void RangeTerrain::UpdateVertexData(const int &x, const int &y/*, const vec4* color*//*=NULL*/) {
     /*
+     x,y are vertex coordinates.
+     
      Vertex order in memory of TrianglePairs:
      diagonalUp == True:    v1  v2  v3  v4  v3  v2
      diagonalUp == False:   v1  v4  v3  v4  v1  v2
@@ -389,8 +424,9 @@ void RangeTerrain::UpdateVertexData(const int &x, const int &y) {
     
     int idx;
     vec3 v = vec3(x * GRID_RES, hmap[y][x], y * GRID_RES);
+//    vec2 t = vec2(x / float(X_INTERVAL), y / float(Y_INTERVAL)); // For texture covering entire ground
     vec3 n = normals[y][x];
-    vec4 c = ColorFromHeight(hmap[y][x]);
+    vec4 c = /*color ? *color : */ColorFromHeight(hmap[y][x]);
     
     // v1 in South East triangle pair
     if (x < X_INTERVAL - 1 && y < Y_INTERVAL - 1) {

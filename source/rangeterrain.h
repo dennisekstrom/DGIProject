@@ -15,8 +15,8 @@
 #include <GL/glfw.h>
 
 #define PI                  3.14159265359
-#define X_INTERVAL          64
-#define Y_INTERVAL          64
+#define X_INTERVAL          16
+#define Y_INTERVAL          16
 #define GRID_RES            0.5f // 0.5 meter between points
 #define TERRAIN_WIDTH       (X_INTERVAL - 1) * GRID_RES
 #define TERRAIN_DEPTH       (Y_INTERVAL - 1) * GRID_RES
@@ -95,12 +95,12 @@ public:
     }
 };
 
-struct Triangle {
+/*struct Triangle {
     vec3 v0, v1, v2;
     vec3 n0, n1, n2;
     vec3 c0, c1, c2;
     vec2 t0, t1, t2;
-};
+};*/
 
 /**
  Two triangles making up a square with side GRID_RES.
@@ -139,7 +139,7 @@ struct Triangle {
  | /   |            |   \ |
  +-----+            +-----+
  */
-struct TrianglePair {
+/*struct TrianglePair {
     bool diagonalUp;
     Triangle t1, t2;
     
@@ -193,12 +193,12 @@ struct TrianglePair {
                                             t2.v1 = v3;     t2.n1 = n3;     t2.c1 = c3; }
     
     void SetV4(vec3 v4, vec3 n4, vec3 c4) { t2.v0 = v4;     t2.n0 = n4;     t2.c0 = c4; }
-};
+};*/
 
 struct ChangeManager {
 private:
     const int size;
-    const int y_interval;
+    const int x_interval;
     bool* identifierInVector;
 
 public:
@@ -206,7 +206,7 @@ public:
     
     ChangeManager(const int &x_intvl, const int &y_intvl) :
     size(y_intvl * x_intvl),
-    y_interval(y_intvl) {
+    x_interval(x_intvl) {
         identifiers.reserve(size);
         identifierInVector = new bool[size];
         Reset();
@@ -217,7 +217,7 @@ public:
     }
     
     void SetChanged(const int &x, const int &y) {
-        int idx = y * y_interval + x;
+        int idx = xy2idx(x, y);
         if (!identifierInVector[idx]) { // This xy hasn't previously been changed
             identifierInVector[idx] = true;
             identifiers.push_back( { x, y } );
@@ -225,64 +225,25 @@ public:
     }
     
     inline bool DidChange(const int &x, const int &y) {
-        return identifierInVector[y * y_interval + x];
+        return identifierInVector[xy2idx(x, y)];
     }
     
     void Reset() {
         identifiers.clear();
         memset(identifierInVector, 0, size * sizeof(bool)); // Reset to zeros
     }
+    
+    inline int xy2idx(const int &x, const int &y) {
+        return y * x_interval + x;
+    }
 };
 
-/**
- In between calls to Reset(), the highest point will be chosen.
- */
-/*struct HMapChangeManager {
-private:
-    const int size;
-    const int y_interval;
-    size_t* identifierIndexInVector;
-    
-public:
-    vector<xyh> identifiers;
-    
-    HMapChangeManager() :
-    size(Y_INTERVAL * X_INTERVAL),
-    y_interval(Y_INTERVAL) {
-        identifiers.reserve(size);
-        identifierIndexInVector = new size_t[size];
-        Reset();
-    }
-    
-    ~HMapChangeManager() {
-        delete identifierIndexInVector;
-    }
-    
-    void SetHeight(const int &x, const int &y, const float &h) {
-        int idx = y * y_interval + x;
-        if (identifierIndexInVector[idx] == -1) { // This xy hasn't previously been changed
-            identifierIndexInVector[idx] = identifiers.size();
-            identifiers.push_back( { x, y, h } );
-        } else {
-            float &old_h = identifiers[identifierIndexInVector[idx]].h;
-            if (h > old_h)
-                identifiers[identifierIndexInVector[idx]].h = h;
-        }
-    }
-    
-    inline bool HeightChanged(const int &x, const int &y) {
-        int idx = y * y_interval + x;
-        return identifierIndexInVector[idx] != -1;
-    }
-    
-    void Reset() {
-        identifiers.clear();
-        memset(identifierIndexInVector, -1, size * sizeof(size_t)); // Reset all to -1
-    }
-};*/
-
 class RangeTerrain {
+    
+    friend class RangeDrawer;
+    
 private:
+    
     ControlPoint*   controlPoints[Y_INTERVAL][X_INTERVAL];
     bool            controlPointChangeRequiresHMapRegeneration;
     
@@ -290,48 +251,35 @@ private:
     ChangeManager*  changedHMapCoords;
     ChangeManager*  changedVertices;
     
-//    HMapChangeManager*  hmapInternalChanges;
-    
-//    vector<xy>      changedControlPoints;
-//    vector<xy>      changedHMapCoords;
-//    vector<xy>      changedVertices;
-
-//    vector<xy> changedTrianglePairs;
-    
-//    bool vertexNeedsUpdate[Y_INTERVAL][X_INTERVAL];
-    
 public:
-//    static const int floatsPerVertex;
-//    static const int floatsPerTriangle;
-//    static const int floatsPerTrianglePair;
-//    static const int floatsPerRow;
-    
     
     float hmap[Y_INTERVAL][X_INTERVAL];
     vec3 normals[X_INTERVAL][Y_INTERVAL];
     
-    TrianglePair trianglePairs[(Y_INTERVAL - 1)][(X_INTERVAL - 1)];
+//    TrianglePair trianglePairs[(Y_INTERVAL - 1)][(X_INTERVAL - 1)];
     
     GLfloat vertexData[(X_INTERVAL - 1) * (Y_INTERVAL - 1) * 2 * 3 * FLOATS_PER_VERTEX];
     vector<int> changedVertexIndices;
 
 private:
+    
     void FlattenHMap();
     
     void UpdateHMap();                          // Update from changed control points
     void UpdateNormals();                       // Requires hmap
-    void UpdateTrianglePairs();                 // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
+    void UpdateChangedVertices();               // Requires hmap (and should be ran after UpdateNormals() too)
+//    void UpdateTrianglePairs();                 // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void UpdateVertexData();                    // Requires hmap and normals (and for the moment that changedVertices is updated by running UpdateTrianglePairs)
 
     void GenerateHMap();                        // Generate from control points
     void GenerateNormals();                     // Requires hmap
-    void GenerateTrianglePairs();               // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
+//    void GenerateTrianglePairs();               // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void GenerateVertexData();                  // Requires hmap and normals
 
-    void UpdateHMap(ControlPoint &cp);                      // Updates hmap from the given control point
-    void UpdateNormal(const int &x, const int &y);          // Requires hmap
-    void UpdateTrianglePair(const int &x, const int &y);    // Requires hmap and normal
-    void UpdateVertexData(const int &x, const int &y);      // Requires hmap and normal
+    void UpdateHMap(ControlPoint &cp);                                          // Updates hmap from the given control point
+    void UpdateNormal(const int &x, const int &y);                              // Requires hmap
+    void UpdateTrianglePair(const int &x, const int &y);                        // Requires hmap and normal
+    void UpdateVertexData(const int &x, const int &y/*, const vec4* color=NULL*/);  // Requires hmap and normal
 
     inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n, const vec4 &c) {
         vertexData[idx++] = v.x;
@@ -358,7 +306,7 @@ private:
         levels.push_back( vec4(   0,      1,      1,      1) ); // cyan
         levels.push_back( vec4(   0,      0,      1,      1) ); // blue
         levels.push_back( vec4( 0.5,    0.5,      1,      1) ); // light blue
-       
+        
         float h_min = -5, h_max = 5;
         
         if (h <= h_min)
@@ -378,18 +326,22 @@ private:
     }
     
 public:
+    
     RangeTerrain();
     ~RangeTerrain();
     
+    void UpdateAll();       // Update everything from changed control points
+    void GenerateAll();     // Generate everything from control points
+    
     void SetControlPoint(int x, int y, float h, float spread, ControlPointFuncType func);
     
-    void UpdateAll();                           // Update everything from changed control points
-    void GenerateAll();                         // Generate everything from control points
+    inline ControlPoint* GetControlPoint(const int &x, const int &y) const { return controlPoints[y][x]; }
+    inline bool ControlPointChanged() { return !changedControlPoints->identifiers.empty(); }
+
+    inline bool VertexChanged() { return !changedVertexIndices.empty(); }
     
-    
-    inline ControlPoint* GetControlPoint(const int &x, const int &y) const {
-        return controlPoints[y][x];
-    }
 };
+
+extern RangeTerrain gTerrain;
 
 #endif

@@ -41,6 +41,7 @@
 //AntTweakBar
 //#include <AntTweakBar.h>
 
+#define ORTHO_RELATIVE_MARGIN   0.1
 
 /*
  Represents a textured geometry asset
@@ -106,6 +107,9 @@ struct Light {
 char keyOnce[GLFW_KEY_LAST + 1];
 #define glfwGetKeyOnce(KEY) (glfwGetKey(KEY) ? (keyOnce[KEY] ? false : (keyOnce[KEY] = true)) : (keyOnce[KEY] = false))
 
+char mouseButtonOnce[GLFW_MOUSE_BUTTON_LAST + 1];
+#define glfwGetMouseButtonOnce(BTN) (glfwGetMouseButton(BTN) ? (mouseButtonOnce[BTN] ? false : (mouseButtonOnce[BTN] = true)) : (mouseButtonOnce[BTN] = false))
+
 // constants
 const glm::vec2 SCREEN_SIZE(1024, 512);
 
@@ -117,7 +121,9 @@ bool gLeftCameraUseColor = false;
 bool gRightCameraUseColor = true;
 bool gLeftCameraFullscreen = false;
 
-RangeTerrain gTerrain;
+
+//RangeTerrain gTerrain;
+//RangeDrawer gRangeDrawer;
 ModelAsset gTerrainModelAsset;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
@@ -311,7 +317,6 @@ static void Render() {
     glfwSwapBuffers();
 }
 
-
 // update the scene based on the time elapsed since last update
 static void Update(float dt) {
 
@@ -334,17 +339,27 @@ static void Update(float dt) {
     }
     
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT BELOW ************
-    if(glfwGetKey('O')){
-        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_SIN);
-        gTerrain.UpdateAll();
+    
+
+    if (gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
+        gRangeDrawer.MarkTerrain(gTerrain);
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
-    } else if(glfwGetKey('P')){
-        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_SIN);
-        gTerrain.UpdateAll();
-        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
-        gTerrain.changedVertexIndices.clear();
+        gRangeDrawer.ResetMarkChanged();
     }
+    
+    
+//    if(glfwGetKey('O')){
+//        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_SIN);
+//        gTerrain.UpdateAll();
+//        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
+//        gTerrain.changedVertexIndices.clear();
+//    } else if(glfwGetKey('P')){
+//        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_SIN);
+//        gTerrain.UpdateAll();
+//        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
+//        gTerrain.changedVertexIndices.clear();
+//    }
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
     // rotate the camera based on arrow keys
@@ -375,15 +390,33 @@ static void Update(float dt) {
     }
     
     //Mouse click
-    if(glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
+    if(glfwGetMouseButtonOnce(GLFW_MOUSE_BUTTON_1)) {
         int xpos,ypos;
         glfwGetMousePos(&xpos, &ypos);
         
-        // get the
-        
         //TODO, do something with the cursor coordinates
-        if (xpos >= SCREEN_SIZE.x/2) { //right viewport
-            std::cout << "x: "<< xpos << " y:" << ypos << std::endl;
+        if (!gLeftCameraFullscreen && xpos >= SCREEN_SIZE.x/2) { //right viewport
+            
+            assert(SCREEN_SIZE.x / 2 == SCREEN_SIZE.y);
+            
+            float x = xpos - SCREEN_SIZE.x / 2, y = ypos;
+            float screen_side_px = SCREEN_SIZE.x / 2;
+            float terrain_side_px = (screen_side_px / (1 + 2*ORTHO_RELATIVE_MARGIN));
+            float margin_px = (screen_side_px - terrain_side_px) / 2;
+            
+            if (x < margin_px)                  { x = margin_px; };
+            if (x > screen_side_px - margin_px) { x = screen_side_px - margin_px; }
+            if (y < margin_px)                  { y = margin_px; };
+            if (y > screen_side_px - margin_px) { y = screen_side_px - margin_px; }
+            
+            x -= margin_px;
+            y -= margin_px;
+            
+            float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
+            float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
+
+            cout << "tx: "<< terrain_x << " ty:" << terrain_y << endl;
+            gRangeDrawer.ToggleMarkedTerrainCoord(terrain_x, terrain_y);
             
            
         } else {
@@ -496,7 +529,12 @@ void AppMain() {
     
     // setup gCamera2 (right camera)
     gCamera2.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 20, TERRAIN_DEPTH / 2));
-    gCamera2.setOrtho(-TERRAIN_WIDTH / 2, TERRAIN_WIDTH / 2, -TERRAIN_DEPTH / 2, TERRAIN_DEPTH / 2, 0.5f, 100.0f);
+    gCamera2.setOrtho(-TERRAIN_WIDTH / 2 - TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
+                      TERRAIN_WIDTH / 2 + TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
+                      -TERRAIN_DEPTH / 2 - TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
+                      TERRAIN_DEPTH / 2 + TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
+                      0.5f,
+                      100.0f);
     gCamera2.SetAboveMode(true);
 
     // setup gLight

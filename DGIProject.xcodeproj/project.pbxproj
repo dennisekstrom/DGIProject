@@ -15,7 +15,9 @@
 		95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) */ = {isa = PBXBuildFile; fileRef = 95F74DD0191B784700384CFF /* vertex-shader.txt */; };
 		95916812191B83D8001A0A44 /* wooden-crate.jpg in Copy Files (4 items) */ = {isa = PBXBuildFile; fileRef = 95F74DD1191B784700384CFF /* wooden-crate.jpg */; };
 		95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95916814191B92D6001A0A44 /* rangeterrain.cpp */; };
+		95EE55AF192025FA002E0789 /* grass_big.jpg in Copy Files (4 items) */ = {isa = PBXBuildFile; fileRef = 95EE55AE192025FA002E0789 /* grass_big.jpg */; };
 		95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) */ = {isa = PBXBuildFile; fileRef = 95F5FB11191C30C70084FA41 /* grass.png */; };
+		95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F5FB15191FF8540084FA41 /* rangedrawer.cpp */; };
 		95F7507C191B784900384CFF /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD3191B784700384CFF /* main.mm */; };
 		95F7507D191B784900384CFF /* Bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD5191B784700384CFF /* Bitmap.cpp */; };
 		95F7507E191B784900384CFF /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD7191B784700384CFF /* Camera.cpp */; };
@@ -34,6 +36,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				95EE55AF192025FA002E0789 /* grass_big.jpg in Copy Files (4 items) */,
 				95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) */,
 				95916812191B83D8001A0A44 /* wooden-crate.jpg in Copy Files (4 items) */,
 				95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) */,
@@ -54,8 +57,11 @@
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
 		95916814191B92D6001A0A44 /* rangeterrain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangeterrain.cpp; sourceTree = "<group>"; };
 		95EA8DDC191BC73100A76FD1 /* model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
+		95EE55AE192025FA002E0789 /* grass_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass_big.jpg; sourceTree = "<group>"; };
 		95F5FB11191C30C70084FA41 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		95F5FB13191D54B00084FA41 /* temp.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = temp.txt; sourceTree = "<group>"; };
+		95F5FB14191FF5B90084FA41 /* rangedrawer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangedrawer.h; sourceTree = "<group>"; };
+		95F5FB15191FF8540084FA41 /* rangedrawer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangedrawer.cpp; sourceTree = "<group>"; };
 		95F74DBF191B780000384CFF /* DGIProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DGIProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		95F74DCF191B784700384CFF /* fragment-shader.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "fragment-shader.txt"; sourceTree = "<group>"; };
 		95F74DD0191B784700384CFF /* vertex-shader.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "vertex-shader.txt"; sourceTree = "<group>"; };
@@ -113,6 +119,7 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				95EE55AE192025FA002E0789 /* grass_big.jpg */,
 				95F5FB11191C30C70084FA41 /* grass.png */,
 				95F74DCF191B784700384CFF /* fragment-shader.txt */,
 				95F74DD0191B784700384CFF /* vertex-shader.txt */,
@@ -130,6 +137,8 @@
 				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
 				95EA8DDC191BC73100A76FD1 /* model.h */,
+				95F5FB15191FF8540084FA41 /* rangedrawer.cpp */,
+				95F5FB14191FF5B90084FA41 /* rangedrawer.h */,
 				95916814191B92D6001A0A44 /* rangeterrain.cpp */,
 				95916813191B89D9001A0A44 /* rangeterrain.h */,
 				95F74DD4191B784700384CFF /* tdogl */,
@@ -217,6 +226,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */,
 				95F7507F191B784900384CFF /* Program.cpp in Sources */,
 				95F7507D191B784900384CFF /* Bitmap.cpp in Sources */,
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
