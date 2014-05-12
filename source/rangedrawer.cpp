@@ -36,6 +36,7 @@ void RangeDrawer::MarkTerrain(RangeTerrain &terrain) {
         
         // x, y are coordinates of the quad
         x = xy.x;
+        
         y = xy.y;
         
         

@@ -395,7 +395,6 @@ static void Update(float dt) {
         int xpos,ypos;
         glfwGetMousePos(&xpos, &ypos);
         
-        //TODO, do something with the cursor coordinates
         if (!gLeftCameraFullscreen && xpos >= SCREEN_SIZE.x/2) { //right viewport
             
             assert(SCREEN_SIZE.x / 2 == SCREEN_SIZE.y);
@@ -415,11 +414,11 @@ static void Update(float dt) {
             
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
-
+            
             cout << "tx: "<< terrain_x << " ty:" << terrain_y << endl;
             gRangeDrawer.ToggleMarkedTerrainCoord(terrain_x, terrain_y);
             
-           
+            
         } else {
             glfwDisable(GLFW_MOUSE_CURSOR);
             
