@@ -15,8 +15,8 @@
 #include <GL/glfw.h>
 
 #define PI                  3.14159265359
-#define X_INTERVAL          16
-#define Y_INTERVAL          16
+#define X_INTERVAL          64
+#define Y_INTERVAL          64
 #define GRID_RES            0.5f // 0.5 meter between points
 #define TERRAIN_WIDTH       (X_INTERVAL - 1) * GRID_RES
 #define TERRAIN_DEPTH       (Y_INTERVAL - 1) * GRID_RES
@@ -230,7 +230,7 @@ public:
     
     void Reset() {
         identifiers.clear();
-        memset(identifierInVector, 0, size * sizeof(bool)); // Reset to zeros
+        memset(identifierInVector, 0, size * sizeof(bool)); // Reset to zeros (false) [TODO: Potential speed up - iterate over identifiers and set one at a time]
     }
     
     inline int xy2idx(const int &x, const int &y) {

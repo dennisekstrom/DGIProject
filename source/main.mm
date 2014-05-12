@@ -131,8 +131,8 @@ std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
 Light gLight;
 
-bool mouseButtonDown = false;
-int prevCursorPosX, prevCursorPosY;
+bool gMouseButtonDown = false;
+int gPrevCursorPosX, gPrevCursorPosY;
 
 // returns the full path to the file `fileName` in the resources directory of the app bundle
 static std::string ResourcePath(std::string fileName) {
@@ -322,7 +322,7 @@ static void Render() {
 }
 
 // update the scene based on the time elapsed since last update
-static void Update(float dt) {
+static void Update(const float &dt) {
 
     //move position of camera based on WASD keys, and QE keys for up and down
     const float moveSpeed = glfwGetKey(GLFW_KEY_LSHIFT) ? 50.0 : 10.0; //units per second
@@ -343,27 +343,25 @@ static void Update(float dt) {
     }
     
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT BELOW ************
-    
-
     if (gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
-        gRangeDrawer.MarkTerrain(gTerrain);
+        gRangeDrawer.MarkTerrain();
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
         gRangeDrawer.ResetMarkChanged();
     }
     
+    if (gTerrain.ControlPointChanged()) {
+        gTerrain.UpdateAll();
+        gRangeDrawer.MarkTerrain();
+        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
+        gTerrain.changedVertexIndices.clear();
+    }
     
-//    if(glfwGetKey('O')){
-//        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) + 1 * dt, 8, FUNC_SIN);
-//        gTerrain.UpdateAll();
-//        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
-//        gTerrain.changedVertexIndices.clear();
-//    } else if(glfwGetKey('P')){
-//        gTerrain.SetControlPoint(32, 32, (gTerrain.GetControlPoint(32, 32) ? gTerrain.GetControlPoint(32, 32)->h : 0) - 1 * dt, 8, FUNC_SIN);
-//        gTerrain.UpdateAll();
-//        UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
-//        gTerrain.changedVertexIndices.clear();
-//    }
+    if(glfwGetKey('O')) {
+        gRangeDrawer.LiftMarkedTerrain(1*dt);
+    } else if(glfwGetKey('P')) {
+        gRangeDrawer.LiftMarkedTerrain(-1*dt);
+    }
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
     // rotate the camera based on arrow keys
@@ -394,12 +392,12 @@ static void Update(float dt) {
     }
     
     //Mouse click
-    if(glfwGetMouseButtonOnce(GLFW_MOUSE_BUTTON_1)) {
+    if(glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
+        
         int xpos,ypos;
         glfwGetMousePos(&xpos, &ypos);
         
-        //TODO, do something with the cursor coordinates
-        if (!gLeftCameraFullscreen && xpos >= SCREEN_SIZE.x/2) { //right viewport
+        if (!gLeftCameraFullscreen && xpos > SCREEN_SIZE.x/2) { // right viewport
             
             assert(SCREEN_SIZE.x / 2 == SCREEN_SIZE.y);
             
@@ -418,12 +416,14 @@ static void Update(float dt) {
             
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
-
-            cout << "tx: "<< terrain_x << " ty:" << terrain_y << endl;
-            gRangeDrawer.ToggleMarkedTerrainCoord(terrain_x, terrain_y);
             
-           
-        } else {
+//            cout << "tx: "<< terrain_x << " ty:" << terrain_y << endl;
+            
+            gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, glfwGetKey(GLFW_KEY_LSHIFT) != 0);
+            
+            
+        } else { // left viewport
+        
             glfwDisable(GLFW_MOUSE_CURSOR);
             
             //rotate camera based on mouse movement
@@ -431,23 +431,28 @@ static void Update(float dt) {
             int mouseX, mouseY;
             glfwGetMousePos(&mouseX, &mouseY);
             
-            if (!mouseButtonDown) {
-                prevCursorPosX = mouseX;
-                prevCursorPosY = mouseY;
+            if (!gMouseButtonDown) {
+                gPrevCursorPosX = mouseX;
+                gPrevCursorPosY = mouseY;
                 glfwSetMousePos(0, 0);
                 mouseX = 0; mouseY = 0;
             }
-            mouseButtonDown = true;
+            gMouseButtonDown = true;
             
             gCamera1.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
             glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
         }
         
-    } else if (mouseButtonDown){
+    } else if (gMouseButtonDown) {
+        // Remember mouse position before mouse orientation
         glfwEnable(GLFW_MOUSE_CURSOR);
-        glfwSetMousePos(prevCursorPosX, prevCursorPosY);
-        mouseButtonDown = false;
-        
+        glfwSetMousePos(gPrevCursorPosX, gPrevCursorPosY);
+        gMouseButtonDown = false;
+    }
+    
+    if(!glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
+        // For marking in camera 2
+        gRangeDrawer.MouseReleased();
     }
     
     //move light
@@ -475,6 +480,10 @@ static void Update(float dt) {
         gLeftCameraUseColor = !gLeftCameraUseColor;
     if(glfwGetKeyOnce('2'))
         gRightCameraUseColor = !gRightCameraUseColor;
+    
+    // clear marked
+    if(glfwGetKeyOnce('C'))
+        gRangeDrawer.UnmarkAll();
 }
 
 // the program starts here
@@ -571,7 +580,7 @@ void AppMain() {
         float dt = thisTime - lastTime;
         Update(dt);
         lastTime = thisTime;
-        cout << "render time: " << round(dt * 1000) << " ms" << endl;
+//        cout << "render time: " << round(dt * 1000) << " ms" << endl;
 
         
         //setup two viewports and draw one frame
