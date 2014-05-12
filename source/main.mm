@@ -41,7 +41,7 @@
 #include "skybox.h"
 #include "text.h"
 //AntTweakBar
-#include <AntTweakBar.h>
+//#include <AntTweakBar.h>
 
 #define ORTHO_RELATIVE_MARGIN   0.1
 
