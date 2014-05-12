@@ -51,9 +51,6 @@
 
 /* Begin PBXFileReference section */
 		5DDBEA161920C3EB0027232F /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = "freetype-2.5.3/libs/libfreetype.a"; sourceTree = "<group>"; };
-		5DDBEA1D1920C6E50027232F /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libAntTweakBar.a; sourceTree = "<group>"; };
-		5DDBEA1E1920C6E50027232F /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libAntTweakBar.dylib; sourceTree = "<group>"; };
-		5DDBEA1F1920C6E50027232F /* Readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
 		5DDBEA231920DA690027232F /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		5DDBEA241920DA690027232F /* shader_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader_utils.cpp; sourceTree = "<group>"; };
 		5DDBEA251920DA690027232F /* shader_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shader_utils.h; sourceTree = "<group>"; };
@@ -107,17 +104,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5DDBEA1C1920C6E50027232F /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				5DDBEA1D1920C6E50027232F /* libAntTweakBar.a */,
-				5DDBEA1E1920C6E50027232F /* libAntTweakBar.dylib */,
-				5DDBEA1F1920C6E50027232F /* Readme.txt */,
-			);
-			name = lib;
-			path = thirdparty/anttweakbar/lib;
-			sourceTree = "<group>";
-		};
 		5DDBEA221920DA690027232F /* common */ = {
 			isa = PBXGroup;
 			children = (
@@ -131,7 +117,6 @@
 		95F74DB6191B780000384CFF = {
 			isa = PBXGroup;
 			children = (
-				5DDBEA1C1920C6E50027232F /* lib */,
 				95F5FB13191D54B00084FA41 /* temp.txt */,
 				95F74DCE191B784700384CFF /* resources */,
 				95F74DD2191B784700384CFF /* source */,
