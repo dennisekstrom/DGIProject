@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6A1920242A00EB8587 /* skybox.cpp */; };
+		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		9591680B191B8147001A0A44 /* libglfw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9591680A191B8147001A0A44 /* libglfw.a */; };
 		9591680F191B817C001A0A44 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 9591680E191B817C001A0A44 /* glew.c */; };
 		95916810191B83D1001A0A44 /* fragment-shader.txt in Copy Files (4 items) */ = {isa = PBXBuildFile; fileRef = 95F74DCF191B784700384CFF /* fragment-shader.txt */; };
@@ -43,6 +45,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5DFACF6A1920242A00EB8587 /* skybox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skybox.cpp; sourceTree = "<group>"; };
+		5DFACF6B1920242A00EB8587 /* skybox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skybox.h; sourceTree = "<group>"; };
+		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
+		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		9591680A191B8147001A0A44 /* libglfw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw.a; path = glfw/libglfw.a; sourceTree = "<group>"; };
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
@@ -118,6 +124,10 @@
 		95F74DD2191B784700384CFF /* source */ = {
 			isa = PBXGroup;
 			children = (
+				5DFACF6B1920242A00EB8587 /* skybox.h */,
+				5DFACF6A1920242A00EB8587 /* skybox.cpp */,
+				5DFACF6D1920AA5500EB8587 /* text.cpp */,
+				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
 				95EA8DDC191BC73100A76FD1 /* model.h */,
 				95916814191B92D6001A0A44 /* rangeterrain.cpp */,
@@ -212,8 +222,10 @@
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
 				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
+				5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,
+				5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */,
 				95F75080191B784900384CFF /* Shader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -304,6 +316,11 @@
 		95F74DC9191B780000384CFF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/thirdparty\"/**",
+					"/Users/tobbew92/Documents/workspace/DGIProject/thirdparty/freetype-2.5.3/include",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -312,6 +329,11 @@
 		95F74DCA191B780000384CFF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/thirdparty\"/**",
+					"/Users/tobbew92/Documents/workspace/DGIProject/thirdparty/freetype-2.5.3/include",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

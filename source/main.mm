@@ -37,6 +37,7 @@
 #include "tdogl/Camera.h"
 
 #include "rangeterrain.h"
+#include "skybox.h"
 //AntTweakBar
 //#include <AntTweakBar.h>
 
@@ -298,9 +299,9 @@ static void Render() {
         
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
-            if (i==0 || gLeftCameraFullscreen)
+            if (i==0 || gLeftCameraFullscreen) {
                 RenderInstance(*it, gCamera1, false);
-            else
+            } else
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
         }
     }
@@ -509,6 +510,14 @@ void AppMain() {
 //    TwWindowSize(100, 100);
 //    TwBar *tweakBar;
 //    tweakBar = TwNewBar("Controls");
+    
+    // setup skybox
+    //initSkybox();
+    
+    //glfwEnable(GL_TEXTURE_CUBE_MAP);
+
+    
+    
     // run while the window is open
     double lastTime = glfwGetTime();
     while(glfwGetWindowParam(GLFW_OPENED)){
@@ -537,6 +546,7 @@ void AppMain() {
     }
 
     // clean up and exit
+    //deleteSkybox();
     glfwTerminate();
 }
 
