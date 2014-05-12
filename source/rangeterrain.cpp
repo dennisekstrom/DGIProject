@@ -407,8 +407,10 @@ void RangeTerrain::UpdateNormal(const int &x, const int &y) {
 }*/
 
 // [TODO: assuming diagonalUp == true]
-void RangeTerrain::UpdateVertexData(const int &x, const int &y, const vec4* color/*=NULL*/) {
+void RangeTerrain::UpdateVertexData(const int &x, const int &y/*, const vec4* color*//*=NULL*/) {
     /*
+     x,y are vertex coordinates.
+     
      Vertex order in memory of TrianglePairs:
      diagonalUp == True:    v1  v2  v3  v4  v3  v2
      diagonalUp == False:   v1  v4  v3  v4  v1  v2
@@ -422,8 +424,9 @@ void RangeTerrain::UpdateVertexData(const int &x, const int &y, const vec4* colo
     
     int idx;
     vec3 v = vec3(x * GRID_RES, hmap[y][x], y * GRID_RES);
+//    vec2 t = vec2(x / float(X_INTERVAL), y / float(Y_INTERVAL)); // For texture covering entire ground
     vec3 n = normals[y][x];
-    vec4 c = color ? *color : ColorFromHeight(hmap[y][x]);
+    vec4 c = /*color ? *color : */ColorFromHeight(hmap[y][x]);
     
     // v1 in South East triangle pair
     if (x < X_INTERVAL - 1 && y < Y_INTERVAL - 1) {

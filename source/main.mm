@@ -557,7 +557,7 @@ void AppMain() {
         float dt = thisTime - lastTime;
         Update(dt);
         lastTime = thisTime;
-//        cout << "render time: " << round(dt * 1000) << " ms" << endl;
+        cout << "render time: " << round(dt * 1000) << " ms" << endl;
 
         
         //setup two viewports and draw one frame

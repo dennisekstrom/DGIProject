@@ -279,7 +279,7 @@ private:
     void UpdateHMap(ControlPoint &cp);                                          // Updates hmap from the given control point
     void UpdateNormal(const int &x, const int &y);                              // Requires hmap
     void UpdateTrianglePair(const int &x, const int &y);                        // Requires hmap and normal
-    void UpdateVertexData(const int &x, const int &y, const vec4* color=NULL);  // Requires hmap and normal
+    void UpdateVertexData(const int &x, const int &y/*, const vec4* color=NULL*/);  // Requires hmap and normal
 
     inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n, const vec4 &c) {
         vertexData[idx++] = v.x;
