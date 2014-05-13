@@ -42,8 +42,6 @@
 #include "skybox.h"
 #include "text.h"
 
-#define _MACOSX
-
 #include <AntTweakBar.h>
 
 #define ORTHO_RELATIVE_MARGIN   0.1
@@ -643,7 +641,7 @@ void AppMain(int argc, char *argv[]) {
     TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
     TwBar *tweakBar;
     tweakBar = TwNewBar("Controls");
-    TwDefine(" Controls label='~ String variable examples ~' fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
+    TwDefine(" Controls fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
 //    TwDefine(" TweakBar size='200 300' ");
 //    TwDefine(" TweakBar resizable=false ");
 //    TwDefine(" TweakBar position='0 0' ");
@@ -677,4 +675,3 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
-// test
