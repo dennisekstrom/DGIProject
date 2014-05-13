@@ -19,7 +19,8 @@
 // third-party libraries
 #import <Foundation/Foundation.h>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLUT/glut.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -41,10 +42,7 @@
 #include "skybox.h"
 #include "text.h"
 
-
 #define _MACOSX
-#define GLFW_CDECL
-
 
 #include <AntTweakBar.h>
 
@@ -110,12 +108,6 @@ struct Light {
     float attenuation;
     float ambientCoefficient;
 };
-
-char keyOnce[GLFW_KEY_LAST + 1];
-#define glfwGetKeyOnce(KEY) (glfwGetKey(KEY) ? (keyOnce[KEY] ? false : (keyOnce[KEY] = true)) : (keyOnce[KEY] = false))
-
-char mouseButtonOnce[GLFW_MOUSE_BUTTON_LAST + 1];
-#define glfwGetMouseButtonOnce(BTN) (glfwGetMouseButton(BTN) ? (mouseButtonOnce[BTN] ? false : (mouseButtonOnce[BTN] = true)) : (mouseButtonOnce[BTN] = false))
 
 // constants
 const glm::vec2 SCREEN_SIZE(1024, 512);
@@ -325,53 +317,154 @@ static void Render() {
     
 
     // swap the display buffers (displays what was just drawn)
-    glfwSwapBuffers();
+    glutSwapBuffers();
 }
 
+int window_id;
+static void Quit() {
+    glutDestroyWindow(window_id);
+    exit(0);
+}
+
+static bool gShiftDown = false;
+static bool keys[256] = {false};
+static void KeyFunc(unsigned char key, int x, int y) {
+    assert(0 <= key && key < 255);
+    key = toupper(key);
+    keys[key] = true;
+    gShiftDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+}
+
+static void KeyUpFunc(unsigned char key, int x, int y) {
+    assert(0 <= key && key < 255);
+    key = toupper(key);
+    keys[key] = false;
+    gShiftDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+//    cout << "up:   " << key << endl; // TODO TEMP
+}
+
+static bool KeyOnce(unsigned char key) {
+    assert(0 <= key && key < 255);
+    bool ret = keys[key];
+    keys[key] = false;
+    return ret;
+}
+
+static bool special[256] = {false};
+static void SpecialFunc(int key, int x, int y) {
+    assert(0 <= key && key < 255);
+    special[key] = true;
+    gShiftDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+}
+
+static void SpecialUpFunc(int key, int x, int y) {
+    assert(0 <= key && key < 255);
+    special[key] = false;
+    gShiftDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+}
+
+static bool gMouseBtnDown;
+static void MouseFunc(int button, int state, int x, int y) {
+    gMouseBtnDown = (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN);
+    gShiftDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+}
+
+static int gMouseX, gMouseY;
+static void MotionFunc(int x, int y) {
+    gMouseX = x;
+    gMouseY = y;
+}
+
+#define KEY_ESCAPE  0x1B
+#define KEY_SPACE   0x20
 // update the scene based on the time elapsed since last update
 static void Update(const float &dt) {
-
-    //move position of camera based on WASD keys, and QE keys for up and down
-    const float moveSpeed = glfwGetKey(GLFW_KEY_LSHIFT) ? 50.0 : 10.0; //units per second
-    if(glfwGetKey('S')){
+   
+    if (keys[KEY_ESCAPE]) // Escape
+        Quit();
+    
+    // move position of camera based on WASD keys, and QE keys for up and down
+    const float moveSpeed = gShiftDown ? 50.0 : 10.0; //units per second
+    if (keys['S'])
         gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.forward());
-    } else if(glfwGetKey('W')){
+    if (keys['W'])
         gCamera1.offsetPosition(dt * moveSpeed * gCamera1.forward());
-    }
-    if(glfwGetKey('A')){
+    if (keys['A'])
         gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.right());
-    } else if(glfwGetKey('D')){
+    if (keys['D'])
         gCamera1.offsetPosition(dt * moveSpeed * gCamera1.right());
-    }
-    if(glfwGetKey('E')){
+    if (keys['E'])
         gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.up());
-    } else if(glfwGetKey('Q')){
+    if (keys['Q'])
         gCamera1.offsetPosition(dt * moveSpeed * gCamera1.up());
+    
+    // rotate the camera based on arrow keys
+    const float rotSpeed = 45.0; //degrees per second
+    if (special[GLUT_KEY_UP])
+        gCamera1.offsetOrientation(dt * -rotSpeed, 0);
+    if (special[GLUT_KEY_DOWN])
+        gCamera1.offsetOrientation(dt * rotSpeed, 0);
+    if (special[GLUT_KEY_RIGHT])
+        gCamera1.offsetOrientation(0, dt * rotSpeed);
+    if (special[GLUT_KEY_LEFT])
+        gCamera1.offsetOrientation(0, dt * -rotSpeed);
+    
+    // zoom based on XZ keys
+    const float zoomSpeed = 30.0; //degrees per second
+    if (keys['X']) {
+        float fieldOfView = gCamera1.fieldOfView() - dt * zoomSpeed;
+        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
+        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+        gCamera1.setFieldOfView(fieldOfView);
+    }
+    
+    if (keys['Z']) {
+        float fieldOfView = gCamera1.fieldOfView() + dt * zoomSpeed;
+        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
+        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
+        gCamera1.setFieldOfView(fieldOfView);
+    }
+    
+    // set light at camera
+    if(keys['L'])
+        gLight.position = gCamera1.position();
+    
+    // change light color
+    if(keys['7'])
+        gLight.intensities = glm::vec3(1,0,0); //red
+    if(keys['8'])
+        gLight.intensities = glm::vec3(0,1,0); //green
+    if(keys['9'])
+        gLight.intensities = glm::vec3(0,0,1); //blue
+    if(keys['0'])
+        gLight.intensities = glm::vec3(1,1,1); //white
+    
+    // toggle fullscreen
+    if(KeyOnce('F')) {
+        gLeftCameraFullscreen = !gLeftCameraFullscreen;
+        gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? SCREEN_SIZE.x / SCREEN_SIZE.y : (SCREEN_SIZE.x / 2) / SCREEN_SIZE.y);
     }
     
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT BELOW ************
-    
-    if(glfwGetKey('Y'))
+    if (keys['Y'])
         gRangeDrawer.LiftMarked(1*dt);
-    if(glfwGetKey('I'))
+    if (keys['I'])
         gRangeDrawer.LiftMarked(-1*dt);
-    
-    if(glfwGetKey('U'))
+    if (keys['U'])
         gRangeDrawer.TiltMarked(0, 45*dt);
-    if(glfwGetKey('J'))
+    if (keys['J'])
         gRangeDrawer.TiltMarked(0, -45*dt);
-    
-    if(glfwGetKey('H'))
+    if (keys['H'])
         gRangeDrawer.TiltMarked(-45*dt, 0);
-    if(glfwGetKey('K'))
+    if (keys['K'])
         gRangeDrawer.TiltMarked(45*dt, 0);
     
-    if (glfwGetKey('R')) {
+    if (keys['R']) {
         gTerrain.Reset();
         gRangeDrawer.UnmarkAll();
     }
     
-    if (glfwGetKey(GLFW_KEY_SPACE)) {
+    if (keys[KEY_SPACE]) {
         float h = gRangeDrawer.GetAverageHeightOfMarked();
         gRangeDrawer.FlattenMarked(h);
     }
@@ -389,46 +482,26 @@ static void Update(const float &dt) {
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
     }
+    
+    // toggle texture/color
+    if(KeyOnce('1'))
+        gLeftCameraUseColor = !gLeftCameraUseColor;
+    if(KeyOnce('2'))
+        gRightCameraUseColor = !gRightCameraUseColor;
+    
+    // clear marked
+    if(KeyOnce('C'))
+        gRangeDrawer.UnmarkAll();
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
-    // rotate the camera based on arrow keys
-    const float rotSpeed = 45.0; //degrees per second
-    if(glfwGetKey(GLFW_KEY_UP)){
-        gCamera1.offsetOrientation(dt * -rotSpeed, 0);
-    } else if(glfwGetKey(GLFW_KEY_DOWN)){
-        gCamera1.offsetOrientation(dt * rotSpeed, 0);
-    }
-    if(glfwGetKey(GLFW_KEY_RIGHT)){
-        gCamera1.offsetOrientation(0, dt * rotSpeed);
-    } else if(glfwGetKey(GLFW_KEY_LEFT)){
-        gCamera1.offsetOrientation(0, dt * -rotSpeed);
-    }
-    
-    // zoom based on XZ keys
-    const float zoomSpeed = 30.0; //degrees per second
-    if(glfwGetKey('X')){
-        float fieldOfView = gCamera1.fieldOfView() - dt * zoomSpeed;
-        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
-        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
-        gCamera1.setFieldOfView(fieldOfView);
-    } else if(glfwGetKey('Z')){
-        float fieldOfView = gCamera1.fieldOfView() + dt * zoomSpeed;
-        if(fieldOfView < 5.0f) fieldOfView = 5.0f;
-        if(fieldOfView > 130.0f) fieldOfView = 130.0f;
-        gCamera1.setFieldOfView(fieldOfView);
-    }
-    
     //Mouse click
-    if(glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
+    if(gMouseBtnDown) {
         
-        int xpos,ypos;
-        glfwGetMousePos(&xpos, &ypos);
-        
-        if (!gLeftCameraFullscreen && xpos > SCREEN_SIZE.x/2) { // right viewport
+        if (!gLeftCameraFullscreen && gMouseX > SCREEN_SIZE.x/2) { // right viewport
             
             assert(SCREEN_SIZE.x / 2 == SCREEN_SIZE.y);
             
-            float x = xpos - SCREEN_SIZE.x / 2, y = SCREEN_SIZE.y - ypos;
+            float x = gMouseX - SCREEN_SIZE.x / 2, y = SCREEN_SIZE.y - gMouseY;
             float screen_side_px = SCREEN_SIZE.x / 2;
             float terrain_side_px = (screen_side_px / (1 + 2*ORTHO_RELATIVE_MARGIN));
             float margin_px = (screen_side_px - terrain_side_px) / 2;
@@ -444,11 +517,11 @@ static void Update(const float &dt) {
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
             
-            gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, glfwGetKey(GLFW_KEY_LSHIFT) != 0);
+            gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
             
             
-        } else { // left viewport
-        
+        } /*else { // left viewport
+            
             glfwDisable(GLFW_MOUSE_CURSOR);
             
             //rotate camera based on mouse movement
@@ -466,76 +539,59 @@ static void Update(const float &dt) {
             
             gCamera1.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
             glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
+           */
         }
         
+    /*
     } else if (gMouseButtonDown) {
         // Remember mouse position before mouse orientation
         glfwEnable(GLFW_MOUSE_CURSOR);
         glfwSetMousePos(gPrevCursorPosX, gPrevCursorPosY);
         gMouseButtonDown = false;
     }
+    */
     
-    if(!glfwGetMouseButton(GLFW_MOUSE_BUTTON_1)) {
+    if(!gMouseBtnDown) {
         // For marking in camera 2
         gRangeDrawer.MouseReleased();
     }
-    
-    //move light
-    if(glfwGetKey('L'))
-        gLight.position = gCamera1.position();
+}
 
-    // change light color
-    if(glfwGetKey('7'))
-        gLight.intensities = glm::vec3(1,0,0); //red
-    else if(glfwGetKey('8'))
-        gLight.intensities = glm::vec3(0,1,0); //green
-    else if(glfwGetKey('9'))
-        gLight.intensities = glm::vec3(0,0,1); //blue
-    else if(glfwGetKey('0'))
-        gLight.intensities = glm::vec3(1,1,1); //white
+double lastTime = 0;
+static void Display() {
     
-    // toggle fullscreen
-    if(glfwGetKeyOnce('F')) {
-        gLeftCameraFullscreen = !gLeftCameraFullscreen;
-        gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? SCREEN_SIZE.x / SCREEN_SIZE.y : (SCREEN_SIZE.x / 2) / SCREEN_SIZE.y);
-    }
+    double thisTime = double(glutGet(GLUT_ELAPSED_TIME)) / 1000;
+    float dt = thisTime - lastTime;
+    lastTime = thisTime;
+    cout << "render time: " << round(dt * 1000) << " ms" << endl;
+
+    // update the scene based on the time elapsed since last update
+    Update(dt);
     
-    // toggle texture/color
-    if(glfwGetKeyOnce('1'))
-        gLeftCameraUseColor = !gLeftCameraUseColor;
-    if(glfwGetKeyOnce('2'))
-        gRightCameraUseColor = !gRightCameraUseColor;
+    // render the scene
+    Render();
     
-    // clear marked
-    if(glfwGetKeyOnce('C'))
-        gRangeDrawer.UnmarkAll();
+    // check for errors
+    GLenum error;
+    if((error = glGetError()) != GL_NO_ERROR)
+        std::cerr << "OpenGL Error " << error << ": " << (const char*)gluErrorString(error) << std::endl;
+    
+    glutPostRedisplay();
 }
 
 // the program starts here
-void AppMain() {
-    // initialise GLFW
-    if(!glfwInit())
-        throw std::runtime_error("glfwInit failed");
+void AppMain(int argc, char *argv[]) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_SINGLE | GLUT_DEPTH);
+    glutInitWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
+    glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - SCREEN_SIZE.x) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - SCREEN_SIZE.y) / 2);
+    window_id = glutCreateWindow("DGI Project");
 
-    // open a window with GLFW
-    glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 2);
-    glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-    if(!glfwOpenWindow((int)SCREEN_SIZE.x, (int)SCREEN_SIZE.y, 8, 8, 8, 8, 16, 0, GLFW_WINDOW))
-        throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 3.2?");
-
-    // GLFW settings
-    //glfwDisable(GLFW_MOUSE_CURSOR);
-    glfwSetMousePos(0, 0);
-    glfwSetMouseWheel(0);
-    
-    
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
     if(glewInit() != GLEW_OK)
         throw std::runtime_error("glewInit failed");
-
+    
     // GLEW throws some errors, so discard all the errors so far
     while(glGetError() != GL_NO_ERROR) {}
 
@@ -578,62 +634,42 @@ void AppMain() {
     // setup gLight
     gLight.position = glm::vec3(TERRAIN_WIDTH / 2, 10, TERRAIN_DEPTH / 2);
     gLight.intensities = glm::vec3(1,1,1); //white
-    gLight.attenuation = 0.001f;
+    gLight.attenuation = 0.0001f;
     gLight.ambientCoefficient = 0.080f;
 
-    // setup skybox
-    //initSkybox();
-    
-    // setup text
-    //initFreeText();
-    
-    //glfwEnable(GL_TEXTURE_CUBE_MAP);
 
     // setup AntTweakBar
-    TwInit(TW_OPENGL, NULL);
+    TwInit(TW_OPENGL_CORE, NULL);
     TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
     TwBar *tweakBar;
     tweakBar = TwNewBar("Controls");
+    TwDefine(" Controls label='~ String variable examples ~' fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
 //    TwDefine(" TweakBar size='200 300' ");
 //    TwDefine(" TweakBar resizable=false ");
 //    TwDefine(" TweakBar position='0 0' ");
     
-    // run while the window is open
-    double lastTime = glfwGetTime();
-    while(glfwGetWindowParam(GLFW_OPENED)){
-        // update the scene based on the time elapsed since last update
-        double thisTime = glfwGetTime();
-        float dt = thisTime - lastTime;
-        Update(dt);
-        lastTime = thisTime;
-        cout << "render time: " << round(dt * 1000) << " ms" << endl;
-
-        
-        //setup two viewports and draw one frame
-        Render();
-        
-        //draw tweak bar
-//        TwDraw();
-
-        // check for errors
-        GLenum error = glGetError();
-        if(error != GL_NO_ERROR)
-            std::cerr << "OpenGL Error " << error << ": " << (const char*)gluErrorString(error) << std::endl;
-
-        //exit program if escape key is pressed
-        if(glfwGetKey(GLFW_KEY_ESC))
-            glfwCloseWindow();
-    }
-
-    // clean up and exit
-    //deleteSkybox();
-    glfwTerminate();
+    // glut settings
+    glutIgnoreKeyRepeat(1);
+    
+    // glut callbacks
+    glutDisplayFunc(Display);
+    glutKeyboardFunc(KeyFunc);
+    glutKeyboardUpFunc(KeyUpFunc);
+    glutSpecialFunc(SpecialFunc);
+    glutSpecialUpFunc(SpecialUpFunc);
+    glutMouseFunc(MouseFunc);
+    glutMotionFunc(MotionFunc);
+    
+    TwGLUTModifiersFunc(glutGetModifiers);
+    
+    // start main loop
+    glutMainLoop();
 }
 
 
 int main(int argc, char *argv[]) {
     try {
-        AppMain();
+        AppMain(argc, argv);
     } catch (const std::exception& e){
         std::cerr << "ERROR: " << e.what() << std::endl;
         return EXIT_FAILURE;

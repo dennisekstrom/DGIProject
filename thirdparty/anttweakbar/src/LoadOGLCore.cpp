@@ -8,6 +8,7 @@
 //  ---------------------------------------------------------------------------
 
 
+#include <iostream>
 #include "TwPrecomp.h"
 #include "LoadOGLCore.h"
 
@@ -484,7 +485,8 @@ namespace GLCore { PFNGLGetProcAddress _glGetProcAddress = NULL; }
         void *proc=NULL;
         if (gl_dyld == NULL) 
         {
-            gl_dyld = dlopen("OpenGL",RTLD_LAZY);
+            gl_dyld = dlopen("/System/Library/Frameworks/OpenGL.framework/OpenGL",RTLD_LAZY);
+            std::cout << "gl_dyld: " << gl_dyld << std::endl;
         }
         if (gl_dyld) 
         {
