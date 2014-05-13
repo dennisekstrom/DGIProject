@@ -40,8 +40,13 @@
 #include "rangedrawer.h"
 #include "skybox.h"
 #include "text.h"
-//AntTweakBar
-//#include <AntTweakBar.h>
+
+
+#define _MACOSX
+#define GLFW_CDECL
+
+
+#include <AntTweakBar.h>
 
 #define ORTHO_RELATIVE_MARGIN   0.1
 
@@ -214,7 +219,7 @@ static void LoadAsset(ModelAsset &asset, const int &floatsPerVertex) {
 
     // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vertTexCoord"));
-    glVertexAttribPointer(asset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE, floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(asset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_FALSE, floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
     // connect the normal to the "vertNormal" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vertNormal"));
@@ -222,7 +227,7 @@ static void LoadAsset(ModelAsset &asset, const int &floatsPerVertex) {
     
     // connect the normal to the "vertNormal" attribute of the vertex shader
     glEnableVertexAttribArray(asset.shaders->attrib("vertColor"));
-    glVertexAttribPointer(asset.shaders->attrib("vertColor"), 4, GL_FLOAT, GL_TRUE,  floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(8 * sizeof(GLfloat)));
+    glVertexAttribPointer(asset.shaders->attrib("vertColor"), 4, GL_FLOAT, GL_FALSE,  floatsPerVertex*sizeof(GLfloat), (const GLvoid*)(8 * sizeof(GLfloat)));
 
     // unbind the VAO
     glBindVertexArray(0);
@@ -314,7 +319,9 @@ static void Render() {
         }
     }
     
-    //DisplayText(); // render text 
+    //DisplayText(); // render text
+    
+    TwDraw();
     
 
     // swap the display buffers (displays what was just drawn)
@@ -343,6 +350,32 @@ static void Update(const float &dt) {
     }
     
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT BELOW ************
+    
+    if(glfwGetKey('Y'))
+        gRangeDrawer.LiftMarked(1*dt);
+    if(glfwGetKey('I'))
+        gRangeDrawer.LiftMarked(-1*dt);
+    
+    if(glfwGetKey('U'))
+        gRangeDrawer.TiltMarked(0, 45*dt);
+    if(glfwGetKey('J'))
+        gRangeDrawer.TiltMarked(0, -45*dt);
+    
+    if(glfwGetKey('H'))
+        gRangeDrawer.TiltMarked(-45*dt, 0);
+    if(glfwGetKey('K'))
+        gRangeDrawer.TiltMarked(45*dt, 0);
+    
+    if (glfwGetKey('R')) {
+        gTerrain.Reset();
+        gRangeDrawer.UnmarkAll();
+    }
+    
+    if (glfwGetKey(GLFW_KEY_SPACE)) {
+        float h = gRangeDrawer.GetAverageHeightOfMarked();
+        gRangeDrawer.FlattenMarked(h);
+    }
+    
     if (gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
         gRangeDrawer.MarkTerrain();
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
@@ -356,22 +389,6 @@ static void Update(const float &dt) {
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
     }
-    
-    if(glfwGetKey('Y'))
-        gRangeDrawer.LiftMarked(1*dt);
-    if(glfwGetKey('I'))
-        gRangeDrawer.LiftMarked(-1*dt);
-    
-    if(glfwGetKey('U'))
-        gRangeDrawer.TiltMarked(0, 45*dt);
-    if(glfwGetKey('J'))
-        gRangeDrawer.TiltMarked(0, -45*dt);
-    
-    if(glfwGetKey('H'))
-        gRangeDrawer.TiltMarked(45*dt, 0);
-    if(glfwGetKey('K'))
-        gRangeDrawer.TiltMarked(-45*dt, 0);
-    
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
     // rotate the camera based on arrow keys
@@ -411,7 +428,7 @@ static void Update(const float &dt) {
             
             assert(SCREEN_SIZE.x / 2 == SCREEN_SIZE.y);
             
-            float x = xpos - SCREEN_SIZE.x / 2, y = ypos;
+            float x = xpos - SCREEN_SIZE.x / 2, y = SCREEN_SIZE.y - ypos;
             float screen_side_px = SCREEN_SIZE.x / 2;
             float terrain_side_px = (screen_side_px / (1 + 2*ORTHO_RELATIVE_MARGIN));
             float margin_px = (screen_side_px - terrain_side_px) / 2;
@@ -543,13 +560,13 @@ void AppMain() {
     gInstances.push_back(instance);
 
     // setup gCamera1 (left camera)
-    gCamera1.setPosition(glm::vec3(0, 10, 0));
+    gCamera1.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 10, 0));
     gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? SCREEN_SIZE.x / SCREEN_SIZE.y : (SCREEN_SIZE.x / 2) / SCREEN_SIZE.y);
     gCamera1.setNearAndFarPlanes(0.5f, 100.0f);
-    gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, TERRAIN_DEPTH / 2));
+    gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, -TERRAIN_DEPTH / 2));
     
     // setup gCamera2 (right camera)
-    gCamera2.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 20, TERRAIN_DEPTH / 2));
+    gCamera2.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 20, -TERRAIN_DEPTH / 2));
     gCamera2.setOrtho(-TERRAIN_WIDTH / 2 - TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
                       TERRAIN_WIDTH / 2 + TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
                       -TERRAIN_DEPTH / 2 - TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
@@ -563,13 +580,7 @@ void AppMain() {
     gLight.intensities = glm::vec3(1,1,1); //white
     gLight.attenuation = 0.001f;
     gLight.ambientCoefficient = 0.080f;
-    
-    // setup AntTweakBar
-//    TwInit(TW_OPENGL, NULL);
-//    TwWindowSize(100, 100);
-//    TwBar *tweakBar;
-//    tweakBar = TwNewBar("Controls");
-    
+
     // setup skybox
     //initSkybox();
     
@@ -578,7 +589,14 @@ void AppMain() {
     
     //glfwEnable(GL_TEXTURE_CUBE_MAP);
 
-    
+    // setup AntTweakBar
+    TwInit(TW_OPENGL, NULL);
+    TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
+    TwBar *tweakBar;
+    tweakBar = TwNewBar("Controls");
+//    TwDefine(" TweakBar size='200 300' ");
+//    TwDefine(" TweakBar resizable=false ");
+//    TwDefine(" TweakBar position='0 0' ");
     
     // run while the window is open
     double lastTime = glfwGetTime();

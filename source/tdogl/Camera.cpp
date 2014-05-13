@@ -151,7 +151,7 @@ glm::vec3 Camera::right() const {
 
 glm::vec3 Camera::up() const {
     if (_aboveMode)
-        return glm::vec3(0, 0, -1);
+        return glm::vec3(0, 0, 1);
     
     glm::vec4 up = glm::inverse(orientation()) * glm::vec4(0,1,0,1);
     return glm::vec3(up);

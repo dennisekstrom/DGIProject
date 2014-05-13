@@ -82,6 +82,14 @@ void RangeTerrain::SetControlPoint(int x, int y, float h, float spread, ControlP
     changedControlPoints->SetChanged(x, y);
 }
 
+void RangeTerrain::Reset() {
+    memset(controlPoints, NULL, Y_INTERVAL*X_INTERVAL*sizeof(ControlPoint*));
+    controlPointChangeRequiresHMapRegeneration = false;
+
+    FlattenHMap();
+    GenerateAll();
+}
+
 void RangeTerrain::FlattenHMap() {
     
     for ( int y=0; y<Y_INTERVAL; y++ )
@@ -324,7 +332,7 @@ void RangeTerrain::UpdateVertexData(const int &x, const int &y/*, const vec4* co
      */
     
     int idx;
-    vec3 v = vec3(x * GRID_RES, hmap[y][x], y * GRID_RES);
+    vec3 v = vec3(x * GRID_RES, hmap[y][x], -y * GRID_RES);
 //    vec2 t = vec2(x / float(X_INTERVAL), y / float(Y_INTERVAL)); // For texture covering entire ground
     vec3 n = normals[y][x];
     vec4 c = /*color ? *color : */ColorFromHeight(hmap[y][x]);

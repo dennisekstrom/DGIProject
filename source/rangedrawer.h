@@ -10,6 +10,7 @@
 #define DGIProject_rangedrawer_h
 
 #include <set>
+#include <map>
 #include <iostream>
 #include "rangeterrain.h"
 
@@ -78,10 +79,11 @@ class RangeDrawer {
 private:
     
     // Marking
-    bool                            marked[Y_INTERVAL-1][X_INTERVAL-1];
-    bool                            markChanged;
-    set<xy, xy_comparator>          currentlyMarked;
-//    vector<set<xy, xy_comparator>>  savedMarkings; TODO DU ÄRHÄR
+    bool                        marked[Y_INTERVAL-1][X_INTERVAL-1];
+    bool                        markChanged;
+    set<xy, xy_comparator>      currentlyMarked;
+
+    map<string, set<xy, xy_comparator>> savedMarkings;
     
     // Drawing
     AreaMarkingManager*     markedWithShift;
@@ -104,7 +106,10 @@ public:
 
     float GetAverageHeightOfMarked();
     glm::vec2 GetCenterOfMarked();
-
+    
+    bool SaveMarked(string name);
+    bool LoadMarking(string name);
+    bool DeleteSavedMarking(string name);
     
     void Mark(const int &x, const int &y);
     void Unmark(const int &x, const int &y);

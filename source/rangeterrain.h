@@ -330,6 +330,7 @@ public:
     RangeTerrain();
     ~RangeTerrain();
     
+    void Reset();           // Delete control points and flatten hmap
     void UpdateAll();       // Update everything from changed control points
     void GenerateAll();     // Generate everything from control points
     
