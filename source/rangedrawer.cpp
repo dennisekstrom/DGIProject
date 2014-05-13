@@ -8,6 +8,10 @@
 
 #include "rangedrawer.h"
 
+#define PI              3.14159265359
+#define RAD2DEG(X)      X*180.0f/PI
+#define DEG2RAD(X)      X*PI/180.0f
+
 RangeDrawer gRangeDrawer;
 
 vec4 white(1,1,1,1);
@@ -60,42 +64,106 @@ void RangeDrawer::MarkTerrain() {
     }
 }
 
-const int spread = 8;// [TODO: THIS IS TEMP]
+float RangeDrawer::GetAverageHeightOfMarked() {
+    
+    if (currentlyMarked.empty())
+        return 0;
+
+    float sum = 0;
+    for (auto xy : currentlyMarked)
+        sum += gTerrain.hmap[xy.y][xy.x];
+    return sum / currentlyMarked.size();
+}
+
+glm::vec2 RangeDrawer::GetCenterOfMarked() {
+    if (currentlyMarked.empty())
+        return glm::vec2(0, 0);
+    
+    float sumx = 0, sumy = 0;
+    for (auto xy : currentlyMarked) {
+        sumx += 4*xy.x + 2;
+        sumy += 4*xy.y + 2;
+    }
+    return glm::vec2(sumx / (4*currentlyMarked.size()), sumy / (4*currentlyMarked.size()));
+}
+
+inline void RangeDrawer::Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
+    ControlPoint* cp = gTerrain.GetControlPoint(x, y);
+    float h = cp ? cp->h : gTerrain.hmap[y][x  ];
+    gTerrain.SetControlPoint(x, y, h + lift, spread, functype);
+}
+
+const int spread = 4;// [TODO: THIS IS TEMP]
 const ControlPointFuncType functype = FUNC_SIN;// [TODO: THIS IS TEMP]
-void RangeDrawer::LiftMarkedTerrain(const float &lift) {
+void RangeDrawer::LiftMarked(const float &lift) {
+    
     int x, y;
-    float h;
-    ControlPoint* cp;
+    for ( auto xy : currentlyMarked ) {
+        x = xy.x;
+        y = xy.y;
+        
+        Lift(x  , y  , lift, spread, functype);     // v1
+
+        // For vertices 2-4, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
+        if (!marked[y+1][x  ])
+            Lift(x  , y+1, lift, spread, functype); // v2
+        
+        if (!marked[y  ][x+1])
+            Lift(x+1, y  , lift, spread, functype); // v3
+
+        if (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1])
+            Lift(x+1, y+1, lift, spread, functype); // v4
+    }
+}
+
+void RangeDrawer::FlattenMarked(const float &h) {
+    
+    int x, y;
+    for ( auto xy : currentlyMarked ) {
+        x = xy.x;
+        y = xy.y;
+        
+        gTerrain.SetControlPoint(x  , y  , h, spread, functype);
+        gTerrain.SetControlPoint(x  , y+1, h, spread, functype);
+        gTerrain.SetControlPoint(x+1, y  , h, spread, functype);
+        gTerrain.SetControlPoint(x+1, y+1, h, spread, functype);
+    }
+}
+
+void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt) {
+    
+    glm::vec2 center = GetCenterOfMarked();
+    const float &cx = center.x, &cy = center.y;
+    const float tanx = tan(DEG2RAD(xtilt)), tany = tan(DEG2RAD(ytilt));
+    
+    float lift;
+    int x, y;
     for ( auto xy : currentlyMarked ) {
         x = xy.x;
         y = xy.y;
         
         // v1
-        cp = gTerrain.GetControlPoint(x  , y  );
-        h = cp ? cp->h : gTerrain.hmap[y  ][x  ];
-        gTerrain.SetControlPoint(x  , y  , h + lift, spread, functype);
+        lift = (cx - float(x  )) * float(GRID_RES) * tanx + (cy - float(y  )) * float(GRID_RES) * tany;
+        Lift(x  , y  , lift, spread, functype);
         
-        // For the other vertices, we need to for other coordinates being marked to avoid multiple adjustments of same controlpoint
+        // For the other vertices, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
         
         // v2
         if (!marked[y+1][x  ]) {
-            cp = gTerrain.GetControlPoint(x  , y+1);
-            h = cp ? cp->h : gTerrain.hmap[y+1][x  ];
-            gTerrain.SetControlPoint(x  , y+1, h + lift, spread, functype);
+            lift = (cx - (x  )) * float(GRID_RES) * tanx + (cy - (y+1)) * float(GRID_RES) * tany;
+            Lift(x  , y+1, lift, spread, functype);
         }
         
         // v3
         if (!marked[y  ][x+1]) {
-            cp = gTerrain.GetControlPoint(x+1, y  );
-            h = cp ? cp->h : gTerrain.hmap[y  ][x+1];
-            gTerrain.SetControlPoint(x+1, y  , h + lift, spread, functype);
+            lift = (cx - (x+1)) * float(GRID_RES) * tanx + (cy - (y  )) * float(GRID_RES) * tany;
+            Lift(x+1, y  , lift, spread, functype);
         }
         
         // v4
         if (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1]) {
-            cp = gTerrain.GetControlPoint(x+1, y+1);
-            h = cp ? cp->h : gTerrain.hmap[y+1][x+1];
-            gTerrain.SetControlPoint(x+1, y+1, h + lift, spread, functype);
+            lift = (cx - (x+1)) * float(GRID_RES) * tanx + (cy - (y+1)) * float(GRID_RES) * tany;
+            Lift(x+1, y+1, lift, spread, functype);
         }
     }
 }

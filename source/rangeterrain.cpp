@@ -20,6 +20,7 @@ RangeTerrain::RangeTerrain() {
     assert(X_INTERVAL == Y_INTERVAL);
     assert(TERRAIN_WIDTH == TERRAIN_DEPTH);
     
+    memset(controlPoints, NULL, Y_INTERVAL*X_INTERVAL*sizeof(ControlPoint*));
     controlPointChangeRequiresHMapRegeneration = false;
     
     changedControlPoints    = new ChangeManager(X_INTERVAL, Y_INTERVAL);
@@ -30,12 +31,12 @@ RangeTerrain::RangeTerrain() {
     
     FlattenHMap();
     
-    SetControlPoint(0, 0, 4, 4, FUNC_COS);
-    SetControlPoint(8, 8, 3, 7, FUNC_LINEAR);
-    SetControlPoint(10, 12, 6, 2, FUNC_SIN);
-    SetControlPoint(11, 12, 6, 2, FUNC_SIN);
-    SetControlPoint(10, 13, 6, 2, FUNC_SIN);
-    SetControlPoint(11, 13, 6, 2, FUNC_SIN);
+//    SetControlPoint(0, 0, 4, 4, FUNC_COS);
+//    SetControlPoint(8, 8, 3, 7, FUNC_LINEAR);
+//    SetControlPoint(10, 12, 6, 2, FUNC_SIN);
+//    SetControlPoint(11, 12, 6, 2, FUNC_SIN);
+//    SetControlPoint(10, 13, 6, 2, FUNC_SIN);
+//    SetControlPoint(11, 13, 6, 2, FUNC_SIN);
     
     GenerateAll();
     
@@ -72,7 +73,6 @@ void RangeTerrain::SetControlPoint(int x, int y, float h, float spread, ControlP
         
         // delete old pointer
         delete controlPoints[y][x];
-        
     }
     
     // perform change
@@ -128,19 +128,10 @@ void RangeTerrain::UpdateHMap() { // Changes only upwards
         x = xy.x;
         y = xy.y;
         cp = controlPoints[y][x];
-    
-        if (cp->h == 0) {
-            delete controlPoints[y][x];
-            continue;
-        }
         
         // Height of control point itself
-        if (abs(cp->h) > abs(hmap[y][x])) {
-            hmap[y][x] = cp->h;
-            changedHMapCoords->SetChanged(x, y);
-        } else {
-            cout << "WARNING: Control point height (" << cp->h << ") ignored at (" << x << ", " << y << ")" << endl;
-        }
+        hmap[y][x] = cp->h;
+        changedHMapCoords->SetChanged(x, y);
         
         // Height of surrounding points
         int min_x = ceil(std::max(x - cp->spread / GRID_RES, 0.0f));
@@ -150,10 +141,7 @@ void RangeTerrain::UpdateHMap() { // Changes only upwards
         for (int yy=min_y; yy<=max_y; yy++) {
             for (int xx=min_x; xx<=max_x; xx++) {
                 float h = cp->lift(xx, yy);
-                if (h == 0)
-                    continue;
-                
-                if (abs(h) > abs(hmap[yy][xx])) {
+                if (!controlPoints[yy][xx] && abs(h) > abs(hmap[yy][xx])) {
                     hmap[yy][xx] = h;
                     changedHMapCoords->SetChanged(xx, yy);
                 }
@@ -173,21 +161,9 @@ void RangeTerrain::GenerateHMap() {
                 
                 cp = controlPoints[y][x];
                 
-                if (cp->h == 0) {
-                    delete controlPoints[y][x];
-                    continue;
-                }
-                
                 // Height of control point itself
-                if (!changedHMapCoords->DidChange(x, y)) {  // Change if not previously changed...
-                    hmap[y][x] = cp->h;
-                    changedHMapCoords->SetChanged(x, y);
-                } else  if (abs(cp->h) > abs(hmap[y][x])) {           // ... or if higher
-                    hmap[y][x] = cp->h;
-                    // No need to register change since we know it's already been registered
-                } else {
-                    cout << "WARNING: Control point height (" << cp->h << ") ignored at (" << x << ", " << y << ")" << endl;
-                }
+                hmap[y][x] = cp->h;
+                changedHMapCoords->SetChanged(x, y);
                 
                 // Height of surrounding points
                 int min_x = ceil(std::max(x - cp->spread / GRID_RES, 0.0f));
@@ -197,13 +173,11 @@ void RangeTerrain::GenerateHMap() {
                 for (int yy=min_y; yy<=max_y; yy++) {
                     for (int xx=min_x; xx<=max_x; xx++) {
                         float h = cp->lift(xx, yy);
-                        if (h == 0)
-                            continue;
                         
                         if (!changedHMapCoords->DidChange(xx, yy)) {    // Change if not previously changed...
                             hmap[yy][xx] = h;
                             changedHMapCoords->SetChanged(xx, yy);
-                        } else if (abs(h) > abs(hmap[yy][xx])) {                  // ... or if higher
+                        } else if (!controlPoints[yy][xx] && abs(h) > abs(hmap[yy][xx])) {                  // ... or if higher
                             hmap[yy][xx] = h;
                             // No need to register change since we know it's already been registered
                         }

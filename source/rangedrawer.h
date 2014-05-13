@@ -78,9 +78,10 @@ class RangeDrawer {
 private:
     
     // Marking
-    bool                    marked[Y_INTERVAL-1][X_INTERVAL-1];
-    bool                    markChanged;
-    set<xy, xy_comparator>  currentlyMarked;
+    bool                            marked[Y_INTERVAL-1][X_INTERVAL-1];
+    bool                            markChanged;
+    set<xy, xy_comparator>          currentlyMarked;
+//    vector<set<xy, xy_comparator>>  savedMarkings; TODO DU ÄRHÄR
     
     // Drawing
     AreaMarkingManager*     markedWithShift;
@@ -89,13 +90,21 @@ private:
     bool                    mouseIsDown;
     bool                    mouseDownIsMarking;     // true means mouse down for marking, false means unmarking
 
+    
 public:
     
     RangeDrawer();
     ~RangeDrawer();
     
     void MarkTerrain();
-    void LiftMarkedTerrain(const float &lift);
+    void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
+    void LiftMarked(const float &lift);
+    void FlattenMarked(const float &h);
+    void TiltMarked(const float &xtilt, const float &ytilt);
+
+    float GetAverageHeightOfMarked();
+    glm::vec2 GetCenterOfMarked();
+
     
     void Mark(const int &x, const int &y);
     void Unmark(const int &x, const int &y);

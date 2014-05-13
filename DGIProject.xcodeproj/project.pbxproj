@@ -62,7 +62,6 @@
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
 		95916814191B92D6001A0A44 /* rangeterrain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangeterrain.cpp; sourceTree = "<group>"; };
-		95EA8DDC191BC73100A76FD1 /* model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
 		95EE55AE192025FA002E0789 /* grass_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass_big.jpg; sourceTree = "<group>"; };
 		95F5FB11191C30C70084FA41 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		95F5FB13191D54B00084FA41 /* temp.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = temp.txt; sourceTree = "<group>"; };
@@ -154,7 +153,6 @@
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
 				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
-				95EA8DDC191BC73100A76FD1 /* model.h */,
 				95F5FB15191FF8540084FA41 /* rangedrawer.cpp */,
 				95F5FB14191FF5B90084FA41 /* rangedrawer.h */,
 				95916814191B92D6001A0A44 /* rangeterrain.cpp */,

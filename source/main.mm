@@ -357,11 +357,21 @@ static void Update(const float &dt) {
         gTerrain.changedVertexIndices.clear();
     }
     
-    if(glfwGetKey('O')) {
-        gRangeDrawer.LiftMarkedTerrain(1*dt);
-    } else if(glfwGetKey('P')) {
-        gRangeDrawer.LiftMarkedTerrain(-1*dt);
-    }
+    if(glfwGetKey('Y'))
+        gRangeDrawer.LiftMarked(1*dt);
+    if(glfwGetKey('I'))
+        gRangeDrawer.LiftMarked(-1*dt);
+    
+    if(glfwGetKey('U'))
+        gRangeDrawer.TiltMarked(0, 45*dt);
+    if(glfwGetKey('J'))
+        gRangeDrawer.TiltMarked(0, -45*dt);
+    
+    if(glfwGetKey('H'))
+        gRangeDrawer.TiltMarked(45*dt, 0);
+    if(glfwGetKey('K'))
+        gRangeDrawer.TiltMarked(-45*dt, 0);
+    
     // ************ TEMP FOR DYNAMIC TERRAIN ADJUSTMENT ABOVE ************
     
     // rotate the camera based on arrow keys
@@ -416,8 +426,6 @@ static void Update(const float &dt) {
             
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
-            
-//            cout << "tx: "<< terrain_x << " ty:" << terrain_y << endl;
             
             gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, glfwGetKey(GLFW_KEY_LSHIFT) != 0);
             
@@ -580,7 +588,7 @@ void AppMain() {
         float dt = thisTime - lastTime;
         Update(dt);
         lastTime = thisTime;
-//        cout << "render time: " << round(dt * 1000) << " ms" << endl;
+        cout << "render time: " << round(dt * 1000) << " ms" << endl;
 
         
         //setup two viewports and draw one frame
