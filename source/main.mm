@@ -43,7 +43,7 @@
 
 #define _MACOSX
 
-//#include <AntTweakBar.h>
+#include <AntTweakBar.h>
 
 #define ORTHO_RELATIVE_MARGIN   0.1
 #define SKYBOX_SCALE 1
@@ -507,14 +507,14 @@ static void Render() {
             }
             if (i == 0 || gLeftCameraFullscreen) {
                 RenderInstance(*it, gCamera1, false);
-                //drawText("DGI Project Alpha", 0, 0, 30);
+//                drawText("DGI Project Alpha", 0, 0, 30);
             } else {
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
             }
         }
     }
     
-//    TwDraw();
+    TwDraw();
     
 
     // swap the display buffers (displays what was just drawn)
@@ -894,14 +894,14 @@ void AppMain(int argc, char *argv[]) {
 
 
     // setup AntTweakBar
-//    TwInit(TW_OPENGL_CORE, NULL);
-//    TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
-//    TwBar *tweakBar;
-//    tweakBar = TwNewBar("Controls");
-//    TwDefine(" Controls label='~ String variable examples ~' fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
-//    TwDefine(" TweakBar size='200 300' ");
-//    TwDefine(" TweakBar resizable=false ");
-//    TwDefine(" TweakBar position='0 0' ");
+    TwInit(TW_OPENGL_CORE, NULL);
+    TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
+    TwBar *tweakBar;
+    tweakBar = TwNewBar("Controls");
+    TwDefine(" Controls label='~ String variable examples ~' fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
+    TwDefine(" TweakBar size='200 300' ");
+    TwDefine(" TweakBar resizable=false ");
+    TwDefine(" TweakBar position='0 0' ");
     
     // setup skybox
     initSkyBox();
@@ -918,7 +918,7 @@ void AppMain(int argc, char *argv[]) {
     glutMouseFunc(MouseFunc);
     glutMotionFunc(MotionFunc);
     
-//    TwGLUTModifiersFunc(glutGetModifiers);
+    TwGLUTModifiersFunc(glutGetModifiers);
     
     // start main loop
     glutMainLoop();

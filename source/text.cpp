@@ -73,10 +73,10 @@ void drawText(const std::string in_text, int x, int y, int size) {
     glUniform1i(textureID, texture);
     
     
-    char text[1024];
+    char text[512];
     strcpy(text, in_text.c_str());
     
-    printText2D(text, x, y, size);
+//    printText2D(text, x, y, size);
     
 }
 

@@ -162,7 +162,6 @@
 		95F74DD2191B784700384CFF /* source */ = {
 			isa = PBXGroup;
 			children = (
-				5DB82944192421DF002BB053 /* text_utils */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
 				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
@@ -170,6 +169,7 @@
 				95F5FB14191FF5B90084FA41 /* rangedrawer.h */,
 				95916814191B92D6001A0A44 /* rangeterrain.cpp */,
 				95916813191B89D9001A0A44 /* rangeterrain.h */,
+				5DB82944192421DF002BB053 /* text_utils */,
 				95F74DD4191B784700384CFF /* tdogl */,
 			);
 			path = source;
