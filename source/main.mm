@@ -39,14 +39,15 @@
 
 #include "rangeterrain.h"
 #include "rangedrawer.h"
-#include "skybox.h"
 #include "text.h"
 
 #define _MACOSX
 
-#include <AntTweakBar.h>
+//#include <AntTweakBar.h>
 
 #define ORTHO_RELATIVE_MARGIN   0.1
+#define SKYBOX_SCALE 1
+
 
 /*
  Represents a textured geometry asset
@@ -62,6 +63,7 @@
 struct ModelAsset {
     tdogl::Program* shaders;
     tdogl::Texture* texture;
+    tdogl::Texture* skyboxTextures[6];
     GLuint vbo;
     GLuint vao;
     GLenum drawType;
@@ -109,6 +111,16 @@ struct Light {
     float ambientCoefficient;
 };
 
+/*
+ Defines intersection with triangle
+ */
+struct Intersection
+{
+    vec3 position;
+    float distance;
+    ModelAsset* asset;
+};
+
 // constants
 const glm::vec2 SCREEN_SIZE(1024, 512);
 
@@ -119,14 +131,21 @@ tdogl::Camera gCamera2; //Right camera, overview
 bool gLeftCameraUseColor = false;
 bool gRightCameraUseColor = true;
 bool gLeftCameraFullscreen = false;
+bool gLockCameraOnHole = false;
 
 
 //RangeTerrain gTerrain;
 //RangeDrawer gRangeDrawer;
 ModelAsset gTerrainModelAsset;
+ModelAsset gSkyboxAsset;
+ModelInstance gSkyBoxInstance;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
 Light gLight;
+vec3 gCurrentHolePos;
+vec3 gCurrentMatPos;
+bool gHolePositionSet = false;
+bool gMatPositionSet = false;
 
 bool gMouseButtonDown = false;
 int gPrevCursorPosX, gPrevCursorPosY;
@@ -153,6 +172,137 @@ static tdogl::Texture* LoadTexture(const char* filename) {
     tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath(filename));
     bmp.flipVertically();
     return new tdogl::Texture(bmp);
+}
+
+static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestIntersection) {
+    
+    float closest_t = std::numeric_limits<float>::max();
+    float closest_index = -1;
+    
+    // iterate through all terrain vertices and check for intersection
+    for (int i = 0; i <  X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36; i++) {
+        vec3 v0 = vec3(gTerrain.vertexData[i], gTerrain.vertexData[i+1], gTerrain.vertexData[i+2]);
+        vec3 v1 = vec3(gTerrain.vertexData[i+12],gTerrain.vertexData[i+13],gTerrain.vertexData[i+14]);
+        vec3 v2 = vec3(gTerrain.vertexData[i+24],gTerrain.vertexData[i+25],gTerrain.vertexData[i+26]);
+        i = i+36;
+        //cout << sizeof(gTerrain.vertexData) << endl;
+        //cout << i << endl;
+        vec3 e1 = v1 - v0;
+        vec3 e2 = v2 - v0;
+        vec3 b = start - v0;
+        mat3 A( -dir, e1, e2 );
+        vec3 x = glm::inverse( A ) * b; // x = (t, u, v)
+        
+        if (x.x < closest_t && x.x > 0 && x.y >= 0 && x.z >= 0 && x.y + x.z <= 1) {
+            closest_t = x.x;
+            closest_index = i;
+        }
+    }
+    
+    if (closest_index >= 0) {
+        closestIntersection.position = start + closest_t * dir;
+        closestIntersection.distance = closest_t;
+        //closestIntersection.triangleIndex = closest_index;
+        return true;
+    }
+    return false;
+}
+
+// initializes the skybox
+static void initSkyBox() {
+    
+    gSkyboxAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    gSkyboxAsset.drawType = GL_TRIANGLES;
+    gSkyboxAsset.drawStart = 0;
+    gSkyboxAsset.drawCount = 6*2*3;
+    gSkyboxAsset.skyboxTextures[0] = LoadTexture("Up.jpg");
+    gSkyboxAsset.skyboxTextures[1] = LoadTexture("Up.jpg");
+    gSkyboxAsset.skyboxTextures[2] = LoadTexture("Back.jpg");
+    gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
+    gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
+    gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
+    glGenBuffers(1, &gSkyboxAsset.vbo);
+    glGenVertexArrays(1, &gSkyboxAsset.vao);
+    
+    // bind the VAO
+    glBindVertexArray(gSkyboxAsset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, gSkyboxAsset.vbo);
+    
+    // Make a cube out of triangles (two triangles per side)
+    GLfloat vertexData[] = {
+        //  X     Y     Z       U     V
+        // bottom
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        
+        // top
+        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // front
+        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // back
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        
+        // left
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        
+        // right
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+    };
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    
+    // connect the xyz to the "vert" attribute of the vertex shader
+    glEnableVertexAttribArray(gSkyboxAsset.shaders->attrib("vert"));
+    glVertexAttribPointer(gSkyboxAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    
+    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+    glEnableVertexAttribArray(gSkyboxAsset.shaders->attrib("vertTexCoord"));
+    glVertexAttribPointer(gSkyboxAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+    
+    // setup model instance of skybox
+    ModelInstance instance;
+    instance.asset = &gSkyboxAsset;
+    // translate and scale skybox
+    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
+    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    gSkyBoxInstance = instance;
 }
 
 /*static void SendDataToBuffer(GLfloat* vdata, ModelAsset &asset, int floatsPerVertex) {
@@ -240,6 +390,50 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
     return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
 
+static void RenderSkyBox() {
+    
+    gSkyBoxInstance.transform = glm::translate(glm::mat4(), gCamera1.position()) *
+    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    //glDisable(GL_DEPTH_TEST);
+    ModelAsset* asset = &gSkyboxAsset;
+    tdogl::Program* shaders = asset->shaders;
+    
+    //bind the shaders
+    shaders->use();
+    
+    //set the shader uniforms
+    
+    shaders->setUniform("camera", gCamera1.matrix());
+    shaders->setUniform("useColor", gLeftCameraUseColor);
+    shaders->setUniform("monotoneLight", false);
+    
+    shaders->setUniform("model", gSkyBoxInstance.transform);
+    shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
+    shaders->setUniform("light.position", gLight.position);
+    shaders->setUniform("light.intensities", gLight.intensities);
+    //    shaders->setUniform("light.attenuation", gLight.attenuation);
+    shaders->setUniform("light.ambientCoefficient", gLight.ambientCoefficient*15);
+    shaders->setUniform("cameraPosition", gCamera1.position());
+    
+    for (int i = 1; i < 6; i++) { //TODO set i=0 to also render the bottom skybox texture
+        //bind the texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, asset->skyboxTextures[i]->object());
+        //
+        //    //bind VAO and draw
+        glBindVertexArray(asset->vao);
+        glDrawArrays(asset->drawType, i*6, 6);
+        //
+        //    //unbind everything
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+    }
+    
+    shaders->stopUsing();
+}
+
 
 //renders a single `ModelInstance`
 static void RenderInstance(const ModelInstance& inst, tdogl::Camera& camera, bool ortho) {
@@ -304,16 +498,23 @@ static void Render() {
         
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
-            if (i==0 || gLeftCameraFullscreen) {
+            if (i == 0) {
+                // render skybox, should always be rendered behind everything else
+                glDisable(GL_DEPTH_TEST);
+                RenderSkyBox();
+                glEnable(GL_DEPTH_TEST);
+                
+            }
+            if (i == 0 || gLeftCameraFullscreen) {
                 RenderInstance(*it, gCamera1, false);
-            } else
+                //drawText("DGI Project Alpha", 0, 0, 30);
+            } else {
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
+            }
         }
     }
     
-    //DisplayText(); // render text
-    
-    TwDraw();
+//    TwDraw();
     
 
     // swap the display buffers (displays what was just drawn)
@@ -470,7 +671,7 @@ static void Update(const float &dt) {
     }
     
     if (gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
-        gRangeDrawer.MarkTerrain();
+        gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
         gRangeDrawer.ResetMarkChanged();
@@ -478,11 +679,10 @@ static void Update(const float &dt) {
     
     if (gTerrain.ControlPointChanged()) {
         gTerrain.UpdateAll();
-        gRangeDrawer.MarkTerrain();
+        gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
     }
-    
     // toggle texture/color
     if(KeyOnce('1'))
         gLeftCameraUseColor = !gLeftCameraUseColor;
@@ -517,44 +717,99 @@ static void Update(const float &dt) {
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
             
-            gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
+            // set hole position
+            if (keys['N']) {
+                
+                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
+                gCurrentHolePos = vec3(terrain_x, h, terrain_y);
+                gCamera1.lookAt(gCurrentHolePos);
+                gHolePositionSet = true;
+                gRangeDrawer.MarkHole(terrain_x, terrain_y);
+                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+                
+                //set driving mat position
+            } else if (keys['M']) {
+                
+                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
+                gCurrentMatPos = vec3(terrain_x, h, terrain_y);
+                gCamera1.setPosition(gCurrentMatPos);
+                gCamera1.lookAt(gCurrentHolePos);
+                gMatPositionSet = true;
+                gRangeDrawer.MarkMat(terrain_x, terrain_y);
+                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+                
+                //normal control point
+            } else
+                gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
             
             
-        } /*else { // left viewport
+        }
+        /*else { // left viewport
             
-            glfwDisable(GLFW_MOUSE_CURSOR);
+            glutSetCursor(GLUT_CURSOR_NONE);
             
             //rotate camera based on mouse movement
             const float mouseSensitivity = 0.1f;
-            int mouseX, mouseY;
-            glfwGetMousePos(&mouseX, &mouseY);
+            int mouseX = gMouseX;
+            int mouseY = gMouseY;
             
             if (!gMouseButtonDown) {
                 gPrevCursorPosX = mouseX;
                 gPrevCursorPosY = mouseY;
-                glfwSetMousePos(0, 0);
+                glutWarpPointer(0, 0);
                 mouseX = 0; mouseY = 0;
             }
             gMouseButtonDown = true;
             
             gCamera1.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
-            glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
-           */
+            glutWarpPointer(0, 0);
+         
         }
         
-    /*
-    } else if (gMouseButtonDown) {
+    
+    }
+    else if (gMouseButtonDown) {
         // Remember mouse position before mouse orientation
-        glfwEnable(GLFW_MOUSE_CURSOR);
-        glfwSetMousePos(gPrevCursorPosX, gPrevCursorPosY);
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+        glutWarpPointer(gPrevCursorPosX, gPrevCursorPosY);
         gMouseButtonDown = false;
     }
-    */
+         */
+    } //bracket ska bort när kommentarerna försvinner
+    
     
     if(!gMouseBtnDown) {
         // For marking in camera 2
         gRangeDrawer.MouseReleased();
     }
+    
+    // lock camera on hole from mat, if both points are set
+    if (gLockCameraOnHole && gMatPositionSet && gHolePositionSet) {
+        float h_hole = gRangeDrawer.GetHeight(gCurrentHolePos.x, gCurrentHolePos.z);
+        float h_mat = gRangeDrawer.GetHeight(gCurrentMatPos.x, gCurrentMatPos.z);
+        gCurrentHolePos.y = h_hole;
+        gCurrentMatPos.y = h_mat;
+        
+        gCamera1.setPosition(gCurrentMatPos);
+        gCamera1.lookAt(gCurrentHolePos);
+        
+        //        Intersection inter;
+        //        bool intersected = ClosestIntersection(gCurrentMatPos, gCurrentHolePos, inter);
+        //        cout << "Intersected: " << intersected << endl;
+        //        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+        //        cout << "Distance: " << inter.distance << endl;
+        
+    }
+    if (gHolePositionSet) {
+        Intersection inter;
+        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
+        //cout << "Intersected: " << intersected << endl;
+        //cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+        //cout << "Distance: " << inter.distance << endl;
+        
+    }
+    
+    
 }
 
 double lastTime = 0;
@@ -563,7 +818,7 @@ static void Display() {
     double thisTime = double(glutGet(GLUT_ELAPSED_TIME)) / 1000;
     float dt = thisTime - lastTime;
     lastTime = thisTime;
-    cout << "render time: " << round(dt * 1000) << " ms" << endl;
+//    cout << "render time: " << round(dt * 1000) << " ms" << endl;
 
     // update the scene based on the time elapsed since last update
     Update(dt);
@@ -618,7 +873,7 @@ void AppMain(int argc, char *argv[]) {
     // setup gCamera1 (left camera)
     gCamera1.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 10, 0));
     gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? SCREEN_SIZE.x / SCREEN_SIZE.y : (SCREEN_SIZE.x / 2) / SCREEN_SIZE.y);
-    gCamera1.setNearAndFarPlanes(0.5f, 100.0f);
+    gCamera1.setNearAndFarPlanes(0.5f, 1000.0f);
     gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, -TERRAIN_DEPTH / 2));
     
     // setup gCamera2 (right camera)
@@ -639,14 +894,17 @@ void AppMain(int argc, char *argv[]) {
 
 
     // setup AntTweakBar
-    TwInit(TW_OPENGL_CORE, NULL);
-    TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
-    TwBar *tweakBar;
-    tweakBar = TwNewBar("Controls");
-    TwDefine(" Controls label='~ String variable examples ~' fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
+//    TwInit(TW_OPENGL_CORE, NULL);
+//    TwWindowSize(SCREEN_SIZE.x, SCREEN_SIZE.y);
+//    TwBar *tweakBar;
+//    tweakBar = TwNewBar("Controls");
+//    TwDefine(" Controls label='~ String variable examples ~' fontSize=3 position='180 16' size='270 440' valuesWidth=100 ");
 //    TwDefine(" TweakBar size='200 300' ");
 //    TwDefine(" TweakBar resizable=false ");
 //    TwDefine(" TweakBar position='0 0' ");
+    
+    // setup skybox
+    initSkyBox();
     
     // glut settings
     glutIgnoreKeyRepeat(1);
@@ -660,7 +918,7 @@ void AppMain(int argc, char *argv[]) {
     glutMouseFunc(MouseFunc);
     glutMotionFunc(MotionFunc);
     
-    TwGLUTModifiersFunc(glutGetModifiers);
+//    TwGLUTModifiersFunc(glutGetModifiers);
     
     // start main loop
     glutMainLoop();

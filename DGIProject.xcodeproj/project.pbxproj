@@ -7,8 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5DDBEA261920DA690027232F /* shader_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DDBEA241920DA690027232F /* shader_utils.cpp */; };
-		5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6A1920242A00EB8587 /* skybox.cpp */; };
+		5DB8293319240D1E002BB053 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8292819240D1E002BB053 /* shader.cpp */; };
+		5DB8293419240D1E002BB053 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8292C19240D1E002BB053 /* text2D.cpp */; };
+		5DB8293519240D1E002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8292E19240D1E002BB053 /* texture.cpp */; };
+		5DB8293D19240D47002BB053 /* Back.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293619240D47002BB053 /* Back.jpg */; };
+		5DB8293E19240D47002BB053 /* blue-sky-texture.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293719240D47002BB053 /* blue-sky-texture.jpg */; };
+		5DB8293F19240D47002BB053 /* Down.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293819240D47002BB053 /* Down.jpg */; };
+		5DB8294019240D47002BB053 /* Front.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293919240D47002BB053 /* Front.jpg */; };
+		5DB8294119240D47002BB053 /* Left.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293A19240D47002BB053 /* Left.jpg */; };
+		5DB8294219240D47002BB053 /* Right.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293B19240D47002BB053 /* Right.jpg */; };
+		5DB8294319240D47002BB053 /* Up.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 5DB8293C19240D47002BB053 /* Up.jpg */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
 		957E27C5192298BE0014E7B8 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 957E27C4192298BE0014E7B8 /* libAntTweakBar.dylib */; };
@@ -37,6 +45,13 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				5DB8293D19240D47002BB053 /* Back.jpg in Copy Files (4 items) (6 items) */,
+				5DB8293E19240D47002BB053 /* blue-sky-texture.jpg in Copy Files (4 items) (6 items) */,
+				5DB8293F19240D47002BB053 /* Down.jpg in Copy Files (4 items) (6 items) */,
+				5DB8294019240D47002BB053 /* Front.jpg in Copy Files (4 items) (6 items) */,
+				5DB8294119240D47002BB053 /* Left.jpg in Copy Files (4 items) (6 items) */,
+				5DB8294219240D47002BB053 /* Right.jpg in Copy Files (4 items) (6 items) */,
+				5DB8294319240D47002BB053 /* Up.jpg in Copy Files (4 items) (6 items) */,
 				957E27C5192298BE0014E7B8 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */,
 				95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) (6 items) */,
 				95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) (6 items) */,
@@ -48,11 +63,25 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5DDBEA231920DA690027232F /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		5DDBEA241920DA690027232F /* shader_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader_utils.cpp; sourceTree = "<group>"; };
-		5DDBEA251920DA690027232F /* shader_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shader_utils.h; sourceTree = "<group>"; };
-		5DFACF6A1920242A00EB8587 /* skybox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skybox.cpp; sourceTree = "<group>"; };
-		5DFACF6B1920242A00EB8587 /* skybox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skybox.h; sourceTree = "<group>"; };
+		5DB8292719240D1E002BB053 /* Holstein.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = Holstein.DDS; sourceTree = "<group>"; };
+		5DB8292819240D1E002BB053 /* shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader.cpp; sourceTree = "<group>"; };
+		5DB8292919240D1E002BB053 /* shader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = shader.hpp; sourceTree = "<group>"; };
+		5DB8292A19240D1E002BB053 /* StandardShading.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = StandardShading.fragmentshader; sourceTree = "<group>"; };
+		5DB8292B19240D1E002BB053 /* StandardShading.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = StandardShading.vertexshader; sourceTree = "<group>"; };
+		5DB8292C19240D1E002BB053 /* text2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text2D.cpp; sourceTree = "<group>"; };
+		5DB8292D19240D1E002BB053 /* text2D.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = text2D.hpp; sourceTree = "<group>"; };
+		5DB8292E19240D1E002BB053 /* texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texture.cpp; sourceTree = "<group>"; };
+		5DB8292F19240D1E002BB053 /* texture.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = texture.hpp; sourceTree = "<group>"; };
+		5DB8293019240D1E002BB053 /* TextVertexShader.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.fragmentshader; sourceTree = "<group>"; };
+		5DB8293119240D1E002BB053 /* TextVertexShader.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.vertexshader; sourceTree = "<group>"; };
+		5DB8293219240D1E002BB053 /* uvmap.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = uvmap.DDS; sourceTree = "<group>"; };
+		5DB8293619240D47002BB053 /* Back.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Back.jpg; sourceTree = "<group>"; };
+		5DB8293719240D47002BB053 /* blue-sky-texture.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "blue-sky-texture.jpg"; sourceTree = "<group>"; };
+		5DB8293819240D47002BB053 /* Down.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Down.jpg; sourceTree = "<group>"; };
+		5DB8293919240D47002BB053 /* Front.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Front.jpg; sourceTree = "<group>"; };
+		5DB8293A19240D47002BB053 /* Left.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Left.jpg; sourceTree = "<group>"; };
+		5DB8293B19240D47002BB053 /* Right.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Right.jpg; sourceTree = "<group>"; };
+		5DB8293C19240D47002BB053 /* Up.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Up.jpg; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -102,14 +131,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5DDBEA221920DA690027232F /* common */ = {
+		5DB8292619240D1E002BB053 /* text_utils */ = {
 			isa = PBXGroup;
 			children = (
-				5DDBEA231920DA690027232F /* README */,
-				5DDBEA241920DA690027232F /* shader_utils.cpp */,
-				5DDBEA251920DA690027232F /* shader_utils.h */,
+				5DB8292719240D1E002BB053 /* Holstein.DDS */,
+				5DB8292819240D1E002BB053 /* shader.cpp */,
+				5DB8292919240D1E002BB053 /* shader.hpp */,
+				5DB8292A19240D1E002BB053 /* StandardShading.fragmentshader */,
+				5DB8292B19240D1E002BB053 /* StandardShading.vertexshader */,
+				5DB8292C19240D1E002BB053 /* text2D.cpp */,
+				5DB8292D19240D1E002BB053 /* text2D.hpp */,
+				5DB8292E19240D1E002BB053 /* texture.cpp */,
+				5DB8292F19240D1E002BB053 /* texture.hpp */,
+				5DB8293019240D1E002BB053 /* TextVertexShader.fragmentshader */,
+				5DB8293119240D1E002BB053 /* TextVertexShader.vertexshader */,
+				5DB8293219240D1E002BB053 /* uvmap.DDS */,
 			);
-			path = common;
+			path = text_utils;
 			sourceTree = "<group>";
 		};
 		95F74DB6191B780000384CFF = {
@@ -134,6 +172,13 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				5DB8293619240D47002BB053 /* Back.jpg */,
+				5DB8293719240D47002BB053 /* blue-sky-texture.jpg */,
+				5DB8293819240D47002BB053 /* Down.jpg */,
+				5DB8293919240D47002BB053 /* Front.jpg */,
+				5DB8293A19240D47002BB053 /* Left.jpg */,
+				5DB8293B19240D47002BB053 /* Right.jpg */,
+				5DB8293C19240D47002BB053 /* Up.jpg */,
 				957E27C4192298BE0014E7B8 /* libAntTweakBar.dylib */,
 				95EE55AE192025FA002E0789 /* grass_big.jpg */,
 				95F5FB11191C30C70084FA41 /* grass.png */,
@@ -147,9 +192,7 @@
 		95F74DD2191B784700384CFF /* source */ = {
 			isa = PBXGroup;
 			children = (
-				5DDBEA221920DA690027232F /* common */,
-				5DFACF6B1920242A00EB8587 /* skybox.h */,
-				5DFACF6A1920242A00EB8587 /* skybox.cpp */,
+				5DB8292619240D1E002BB053 /* text_utils */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
 				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
@@ -244,13 +287,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */,
+				5DB8293319240D1E002BB053 /* shader.cpp in Sources */,
+				5DB8293419240D1E002BB053 /* text2D.cpp in Sources */,
+				5DB8293519240D1E002BB053 /* texture.cpp in Sources */,
 				95F7507F191B784900384CFF /* Program.cpp in Sources */,
 				95F7507D191B784900384CFF /* Bitmap.cpp in Sources */,
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
-				5DDBEA261920DA690027232F /* shader_utils.cpp in Sources */,
 				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
-				5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,
 				5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */,
@@ -350,7 +394,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/thirdparty/freetype-2.5.3/libs",
 					"$(PROJECT_DIR)/thirdparty/anttweakbar/lib",
 					"$(PROJECT_DIR)/thirdparty/AntTweakBar/lib",
 				);
@@ -368,7 +411,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/thirdparty/freetype-2.5.3/libs",
 					"$(PROJECT_DIR)/thirdparty/anttweakbar/lib",
 					"$(PROJECT_DIR)/thirdparty/AntTweakBar/lib",
 				);
