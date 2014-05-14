@@ -98,7 +98,7 @@ public:
     RangeDrawer();
     ~RangeDrawer();
     
-    void MarkTerrain();
+    void MarkTerrain(bool holePositionSet, bool matPositionSet);
     void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
     void LiftMarked(const float &lift);
     void FlattenMarked(const float &h);
@@ -106,6 +106,7 @@ public:
 
     float GetAverageHeightOfMarked();
     glm::vec2 GetCenterOfMarked();
+    float GetHeight(float tx, float ty);
     
     bool SaveMarked(string name);
     bool LoadMarking(string name);
@@ -115,6 +116,8 @@ public:
     void Unmark(const int &x, const int &y);
     void ToggleMarked(const int &x, const int &y);
     void UnmarkAll();
+    void MarkHole(const float &tx, const float &ty);
+    void MarkMat(const float &tx, const float &ty);
     
     void MarkTerrainCoord(const float &tx, const float &ty);
     void UnmarkTerrainCoord(const float &tx, const float &ty);

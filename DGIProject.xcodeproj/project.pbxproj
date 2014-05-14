@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5DDBEA261920DA690027232F /* shader_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DDBEA241920DA690027232F /* shader_utils.cpp */; };
-		5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6A1920242A00EB8587 /* skybox.cpp */; };
+		5DB82951192421DF002BB053 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB82946192421DF002BB053 /* shader.cpp */; };
+		5DB82952192421DF002BB053 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294A192421DF002BB053 /* text2D.cpp */; };
+		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
 		9591680F191B817C001A0A44 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 9591680E191B817C001A0A44 /* glew.c */; };
@@ -48,11 +49,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5DDBEA231920DA690027232F /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		5DDBEA241920DA690027232F /* shader_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader_utils.cpp; sourceTree = "<group>"; };
-		5DDBEA251920DA690027232F /* shader_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shader_utils.h; sourceTree = "<group>"; };
-		5DFACF6A1920242A00EB8587 /* skybox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skybox.cpp; sourceTree = "<group>"; };
-		5DFACF6B1920242A00EB8587 /* skybox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skybox.h; sourceTree = "<group>"; };
+		5DB82945192421DF002BB053 /* Holstein.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = Holstein.DDS; sourceTree = "<group>"; };
+		5DB82946192421DF002BB053 /* shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader.cpp; sourceTree = "<group>"; };
+		5DB82947192421DF002BB053 /* shader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = shader.hpp; sourceTree = "<group>"; };
+		5DB82948192421DF002BB053 /* StandardShading.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = StandardShading.fragmentshader; sourceTree = "<group>"; };
+		5DB82949192421DF002BB053 /* StandardShading.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = StandardShading.vertexshader; sourceTree = "<group>"; };
+		5DB8294A192421DF002BB053 /* text2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text2D.cpp; sourceTree = "<group>"; };
+		5DB8294B192421DF002BB053 /* text2D.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = text2D.hpp; sourceTree = "<group>"; };
+		5DB8294C192421DF002BB053 /* texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texture.cpp; sourceTree = "<group>"; };
+		5DB8294D192421DF002BB053 /* texture.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = texture.hpp; sourceTree = "<group>"; };
+		5DB8294E192421DF002BB053 /* TextVertexShader.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.fragmentshader; sourceTree = "<group>"; };
+		5DB8294F192421DF002BB053 /* TextVertexShader.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.vertexshader; sourceTree = "<group>"; };
+		5DB82950192421DF002BB053 /* uvmap.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = uvmap.DDS; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -101,14 +109,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5DDBEA221920DA690027232F /* common */ = {
+		5DB82944192421DF002BB053 /* text_utils */ = {
 			isa = PBXGroup;
 			children = (
-				5DDBEA231920DA690027232F /* README */,
-				5DDBEA241920DA690027232F /* shader_utils.cpp */,
-				5DDBEA251920DA690027232F /* shader_utils.h */,
+				5DB82945192421DF002BB053 /* Holstein.DDS */,
+				5DB82946192421DF002BB053 /* shader.cpp */,
+				5DB82947192421DF002BB053 /* shader.hpp */,
+				5DB82948192421DF002BB053 /* StandardShading.fragmentshader */,
+				5DB82949192421DF002BB053 /* StandardShading.vertexshader */,
+				5DB8294A192421DF002BB053 /* text2D.cpp */,
+				5DB8294B192421DF002BB053 /* text2D.hpp */,
+				5DB8294C192421DF002BB053 /* texture.cpp */,
+				5DB8294D192421DF002BB053 /* texture.hpp */,
+				5DB8294E192421DF002BB053 /* TextVertexShader.fragmentshader */,
+				5DB8294F192421DF002BB053 /* TextVertexShader.vertexshader */,
+				5DB82950192421DF002BB053 /* uvmap.DDS */,
 			);
-			path = common;
+			path = text_utils;
 			sourceTree = "<group>";
 		};
 		95F74DB6191B780000384CFF = {
@@ -145,9 +162,7 @@
 		95F74DD2191B784700384CFF /* source */ = {
 			isa = PBXGroup;
 			children = (
-				5DDBEA221920DA690027232F /* common */,
-				5DFACF6B1920242A00EB8587 /* skybox.h */,
-				5DFACF6A1920242A00EB8587 /* skybox.cpp */,
+				5DB82944192421DF002BB053 /* text_utils */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
 				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
@@ -242,13 +257,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */,
+				5DB82951192421DF002BB053 /* shader.cpp in Sources */,
+				5DB82952192421DF002BB053 /* text2D.cpp in Sources */,
+				5DB82953192421DF002BB053 /* texture.cpp in Sources */,
 				95F7507F191B784900384CFF /* Program.cpp in Sources */,
 				95F7507D191B784900384CFF /* Bitmap.cpp in Sources */,
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
-				5DDBEA261920DA690027232F /* shader_utils.cpp in Sources */,
 				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
-				5DFACF6C1920242A00EB8587 /* skybox.cpp in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,
 				5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */,
