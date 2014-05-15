@@ -502,13 +502,13 @@ static void Render() {
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
             }
         }
-        
-        // draw the tweakbar
-        gTweakBar.Draw();
-        
-        // swap the display buffers (displays what was just drawn)
-        glutSwapBuffers();
     }
+        
+    // draw the tweakbar
+    gTweakBar.Draw();
+    
+    // swap the display buffers (displays what was just drawn)
+    glutSwapBuffers();
 }
 
 static void Quit() {
