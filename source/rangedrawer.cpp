@@ -342,7 +342,7 @@ void RangeDrawer::MarkMat(const float &tx, const float &ty) {
 // TODO this is incorrect (only one corner taken into account)
 float RangeDrawer::GetHeight(float tx, float ty) {
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(abs(ty));
-    ControlPoint* cp = gTerrain.GetControlPoint(x, y);
-    return cp ? cp->h : 1.0f;
+    
+    return gTerrain.hmap[(int)y][(int)x];
     
 }

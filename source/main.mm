@@ -663,7 +663,7 @@ static void Update(const float &dt) {
         gCamera1.lookAt(gCurrentHolePos);
         
         Intersection inter;
-        vec3 flagPosition = vec3(gCurrentHolePos.x, gCurrentHolePos.y+1, gCurrentHolePos.z);
+        vec3 flagPosition = vec3(gCurrentHolePos.x, gCurrentHolePos.y+2, gCurrentHolePos.z);
         vec3 matPosition = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
         bool intersected = ClosestIntersection(matPosition, flagPosition, inter);
         cout << "Intersected: " << intersected << endl;
@@ -672,6 +672,7 @@ static void Update(const float &dt) {
         
     }
     //FOR TESTING camera raytracing toward the hole
+    
 //    if (gHolePositionSet) {
 //        Intersection inter;
 //        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
