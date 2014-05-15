@@ -114,7 +114,7 @@ struct Intersection
 bool gLeftCameraUseColor = false;
 bool gRightCameraUseColor = true;
 bool gLeftCameraFullscreen = false;
-bool gLockCameraOnHole = false;
+bool gLockCameraOnHole = true;
 
 bool gMouseButtonDown = false;
 int gPrevCursorPosX, gPrevCursorPosY;
@@ -129,10 +129,20 @@ ModelAsset gSkyboxAsset;
 ModelInstance gSkyBoxInstance;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
+<<<<<<< HEAD
 //vec3 gCurrentHolePos;
 //vec3 gCurrentMatPos;
 //bool gHolePositionSet = false;
 //bool gMatPositionSet = false;
+=======
+vec3 gCurrentHolePos;
+vec3 gCurrentMatPos;
+bool gHolePositionSet = false;
+bool gMatPositionSet = false;
+bool gAdjustingHole = false;
+bool gAdjustingMat = false;
+
+>>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
 
 glm::vec3 gLightPosition;
 glm::vec3 gLightIntensities; //a.k.a. the color of the light
@@ -169,7 +179,8 @@ static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestInters
     float closest_index = -1;
     
     // iterate through all terrain vertices and check for intersection
-    for (int i = 0; i <  X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36; i++) {
+    // X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36
+    for (int i = 0; i < X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36 ; i++) {
         vec3 v0 = vec3(gTerrain.vertexData[i], gTerrain.vertexData[i+1], gTerrain.vertexData[i+2]);
         vec3 v1 = vec3(gTerrain.vertexData[i+12],gTerrain.vertexData[i+13],gTerrain.vertexData[i+14]);
         vec3 v2 = vec3(gTerrain.vertexData[i+24],gTerrain.vertexData[i+25],gTerrain.vertexData[i+26]);
@@ -210,6 +221,15 @@ static void initSkyBox() {
     gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
     gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
     gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
+<<<<<<< HEAD
+=======
+//    gSkyboxAsset.skyboxTextures[0] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[1] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[2] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[3] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[4] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[5] = LoadTexture("grass.png");
+>>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
     glGenBuffers(1, &gSkyboxAsset.vbo);
     glGenVertexArrays(1, &gSkyboxAsset.vao);
     
@@ -581,6 +601,7 @@ static void Update(const float &dt) {
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
             
+<<<<<<< HEAD
 //            // set hole position
 //            if (keys['N']) {
 //                
@@ -605,6 +626,30 @@ static void Update(const float &dt) {
 //                //normal control point
 //            } else
             gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
+=======
+            // set hole position
+            if (keys['N'] || gAdjustingHole) {
+                
+                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
+                gCurrentHolePos = vec3(terrain_x, h, -terrain_y);
+                gHolePositionSet = true;
+                gRangeDrawer.MarkHole(terrain_x, terrain_y);
+                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+                
+                //set driving mat position
+            } else if (keys['M']|| gAdjustingMat) {
+                
+                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
+                gCurrentMatPos = vec3(terrain_x, h, -terrain_y);
+
+                gMatPositionSet = true;
+                gRangeDrawer.MarkMat(terrain_x, terrain_y);
+                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+                
+                //normal control point
+            } else
+                gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
+>>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
             
             
         } /*else { // left viewport
@@ -643,6 +688,7 @@ static void Update(const float &dt) {
         gRangeDrawer.MouseReleased();
     }
     
+<<<<<<< HEAD
 //    // lock camera on hole from mat, if both points are set
 //    if (gLockCameraOnHole && gMatPositionSet && gHolePositionSet) {
 //        float h_hole = gRangeDrawer.GetHeight(gCurrentHolePos.x, gCurrentHolePos.z);
@@ -661,13 +707,44 @@ static void Update(const float &dt) {
 //        
 //    }
     /*if (gHolePositionSet) {
-        Intersection inter;
-        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
-        //cout << "Intersected: " << intersected << endl;
-        //cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
-        //cout << "Distance: " << inter.distance << endl;
+=======
+    // lock camera on hole from mat, if both points are set
+    if (gLockCameraOnHole && gMatPositionSet && gHolePositionSet) {
+        float h_hole = gRangeDrawer.GetHeight(gCurrentHolePos.x, gCurrentHolePos.z);
+        float h_mat = gRangeDrawer.GetHeight(gCurrentMatPos.x, gCurrentMatPos.z);
+        gCurrentHolePos.y = h_hole;
+        gCurrentMatPos.y = h_mat;
         
+        vec3 newCameraPos = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
+        gCamera1.setPosition(newCameraPos);
+        gCamera1.lookAt(gCurrentHolePos);
+        
+>>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
+        Intersection inter;
+        vec3 flagPosition = vec3(gCurrentHolePos.x, gCurrentHolePos.y+2, gCurrentHolePos.z);
+        vec3 matPosition = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
+        bool intersected = ClosestIntersection(matPosition, flagPosition, inter);
+        cout << "Intersected: " << intersected << endl;
+        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+        cout << "Distance: " << inter.distance << endl;
+        
+<<<<<<< HEAD
     }*/
+=======
+    }
+    //FOR TESTING camera raytracing toward the hole
+    
+//    if (gHolePositionSet) {
+//        Intersection inter;
+//        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
+//        if (intersected) {
+//            cout << "Intersected! " << intersected << endl;
+//            cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+//            cout << "Distance: " << inter.distance << endl;
+//            cout << gMouseX << " " << gMouseY << endl;
+//        }
+//    }
+>>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
     
     
 }
@@ -738,7 +815,7 @@ void AppMain(int argc, char *argv[]) {
     // setup gCamera1 (left camera)
     gCamera1.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 10, 0));
     gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? 2 : 1);
-    gCamera1.setNearAndFarPlanes(0.5f, 100.0f);
+    gCamera1.setNearAndFarPlanes(0.5f, 1000.0f);
     gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, -TERRAIN_DEPTH / 2));
     
     // setup gCamera2 (right camera)

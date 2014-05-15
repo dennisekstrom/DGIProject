@@ -53,7 +53,7 @@ int initText( void )
     file = file + "/text_utils/Holstein.DDS";
     
 	initText2D(file.c_str());
-    // For speed computation
+    // For speed computation 
     nbFrames = 0;
     
     
