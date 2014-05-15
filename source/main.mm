@@ -172,7 +172,8 @@ static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestInters
     float closest_index = -1;
     
     // iterate through all terrain vertices and check for intersection
-    for (int i = 0; i <  X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36; i++) {
+    // X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36
+    for (int i = 0; i < X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36 ; i++) {
         vec3 v0 = vec3(gTerrain.vertexData[i], gTerrain.vertexData[i+1], gTerrain.vertexData[i+2]);
         vec3 v1 = vec3(gTerrain.vertexData[i+12],gTerrain.vertexData[i+13],gTerrain.vertexData[i+14]);
         vec3 v2 = vec3(gTerrain.vertexData[i+24],gTerrain.vertexData[i+25],gTerrain.vertexData[i+26]);
@@ -595,7 +596,6 @@ static void Update(const float &dt) {
                 
                 float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
                 gCurrentHolePos = vec3(terrain_x, h, -terrain_y);
-                gCamera1.lookAt(gCurrentHolePos);
                 gHolePositionSet = true;
                 gRangeDrawer.MarkHole(terrain_x, terrain_y);
                 gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
@@ -605,9 +605,7 @@ static void Update(const float &dt) {
                 
                 float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
                 gCurrentMatPos = vec3(terrain_x, h, -terrain_y);
-                
-                gCamera1.setPosition(gCurrentMatPos);
-                gCamera1.lookAt(gCurrentHolePos);
+
                 gMatPositionSet = true;
                 gRangeDrawer.MarkMat(terrain_x, terrain_y);
                 gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
@@ -660,24 +658,30 @@ static void Update(const float &dt) {
         gCurrentHolePos.y = h_hole;
         gCurrentMatPos.y = h_mat;
         
-        gCamera1.setPosition(gCurrentMatPos);
+        vec3 newCameraPos = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
+        gCamera1.setPosition(newCameraPos);
         gCamera1.lookAt(gCurrentHolePos);
         
-        //        Intersection inter;
-        //        bool intersected = ClosestIntersection(gCurrentMatPos, gCurrentHolePos, inter);
-        //        cout << "Intersected: " << intersected << endl;
-        //        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
-        //        cout << "Distance: " << inter.distance << endl;
-        
-    }
-    if (gHolePositionSet) {
         Intersection inter;
-        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
-        //cout << "Intersected: " << intersected << endl;
-        //cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
-        //cout << "Distance: " << inter.distance << endl;
+        vec3 flagPosition = vec3(gCurrentHolePos.x, gCurrentHolePos.y+1, gCurrentHolePos.z);
+        vec3 matPosition = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
+        bool intersected = ClosestIntersection(matPosition, flagPosition, inter);
+        cout << "Intersected: " << intersected << endl;
+        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+        cout << "Distance: " << inter.distance << endl;
         
     }
+    //FOR TESTING camera raytracing toward the hole
+//    if (gHolePositionSet) {
+//        Intersection inter;
+//        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
+//        if (intersected) {
+//            cout << "Intersected! " << intersected << endl;
+//            cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+//            cout << "Distance: " << inter.distance << endl;
+//            cout << gMouseX << " " << gMouseY << endl;
+//        }
+//    }
     
     
 }

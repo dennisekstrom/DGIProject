@@ -10,6 +10,7 @@
 		5DB82951192421DF002BB053 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB82946192421DF002BB053 /* shader.cpp */; };
 		5DB82952192421DF002BB053 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294A192421DF002BB053 /* text2D.cpp */; };
 		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
+		5DBAA24A1924FE830084477D /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DBAA2491924FE830084477D /* libAntTweakBar.a */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
 		958917341924315A0097726F /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 958917331924315A0097726F /* libAntTweakBar.dylib */; };
@@ -67,6 +68,7 @@
 		5DB8295D192442B3002BB053 /* Left.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Left.jpg; sourceTree = "<group>"; };
 		5DB8295E192442B3002BB053 /* Right.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Right.jpg; sourceTree = "<group>"; };
 		5DB8295F192442B3002BB053 /* Up.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Up.jpg; sourceTree = "<group>"; };
+		5DBAA2491924FE830084477D /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -109,6 +111,7 @@
 				953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */,
 				95F7508F191B7BB000384CFF /* Cocoa.framework in Frameworks */,
 				95F7508D191B7BA800384CFF /* IOKit.framework in Frameworks */,
+				5DBAA24A1924FE830084477D /* libAntTweakBar.a in Frameworks */,
 				95F7508B191B7B9700384CFF /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -211,6 +214,7 @@
 		95F74DDF191B784700384CFF /* thirdparty */ = {
 			isa = PBXGroup;
 			children = (
+				5DBAA2491924FE830084477D /* libAntTweakBar.a */,
 				9591680E191B817C001A0A44 /* glew.c */,
 				953E9F3A19225C10006410F0 /* GLUT.framework */,
 				95F7508E191B7BB000384CFF /* Cocoa.framework */,
