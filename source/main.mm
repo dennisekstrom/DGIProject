@@ -129,10 +129,10 @@ ModelAsset gSkyboxAsset;
 ModelInstance gSkyBoxInstance;
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
-vec3 gCurrentHolePos;
-vec3 gCurrentMatPos;
-bool gHolePositionSet = false;
-bool gMatPositionSet = false;
+//vec3 gCurrentHolePos;
+//vec3 gCurrentMatPos;
+//bool gHolePositionSet = false;
+//bool gMatPositionSet = false;
 
 glm::vec3 gLightPosition;
 glm::vec3 gLightIntensities; //a.k.a. the color of the light
@@ -204,18 +204,12 @@ static void initSkyBox() {
     gSkyboxAsset.drawType = GL_TRIANGLES;
     gSkyboxAsset.drawStart = 0;
     gSkyboxAsset.drawCount = 6*2*3;
-//    gSkyboxAsset.skyboxTextures[0] = LoadTexture("Up.jpg");
-//    gSkyboxAsset.skyboxTextures[1] = LoadTexture("Up.jpg");
-//    gSkyboxAsset.skyboxTextures[2] = LoadTexture("Back.jpg");
-//    gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
-//    gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
-//    gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
-    gSkyboxAsset.skyboxTextures[0] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[1] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[2] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[3] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[4] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[5] = LoadTexture("grass.png");
+    gSkyboxAsset.skyboxTextures[0] = LoadTexture("Up.jpg");
+    gSkyboxAsset.skyboxTextures[1] = LoadTexture("Up.jpg");
+    gSkyboxAsset.skyboxTextures[2] = LoadTexture("Back.jpg");
+    gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
+    gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
+    gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
     glGenBuffers(1, &gSkyboxAsset.vbo);
     glGenVertexArrays(1, &gSkyboxAsset.vao);
     
@@ -560,7 +554,7 @@ static void Update(const float &dt) {
     
     // Adjust to terrain and marking changes
     if (gTerrain.ControlPointChanged() || gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
-        gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+        gRangeDrawer.MarkTerrain();
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
         gRangeDrawer.ResetMarkChanged();
@@ -587,30 +581,30 @@ static void Update(const float &dt) {
             float terrain_x = TERRAIN_WIDTH * x / terrain_side_px;
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
             
-            // set hole position
-            if (keys['N']) {
-                
-                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
-                gCurrentHolePos = vec3(terrain_x, h, terrain_y);
-                gCamera1.lookAt(gCurrentHolePos);
-                gHolePositionSet = true;
-                gRangeDrawer.MarkHole(terrain_x, terrain_y);
-                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
-                
-                //set driving mat position
-            } else if (keys['M']) {
-                
-                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
-                gCurrentMatPos = vec3(terrain_x, h, terrain_y);
-                gCamera1.setPosition(gCurrentMatPos);
-                gCamera1.lookAt(gCurrentHolePos);
-                gMatPositionSet = true;
-                gRangeDrawer.MarkMat(terrain_x, terrain_y);
-                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
-                
-                //normal control point
-            } else
-                gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
+//            // set hole position
+//            if (keys['N']) {
+//                
+//                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
+//                gCurrentHolePos = vec3(terrain_x, h, terrain_y);
+//                gCamera1.lookAt(gCurrentHolePos);
+//                gHolePositionSet = true;
+//                gRangeDrawer.MarkHole(terrain_x, terrain_y);
+//                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+//                
+//                //set driving mat position
+//            } else if (keys['M']) {
+//                
+//                float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
+//                gCurrentMatPos = vec3(terrain_x, h, terrain_y);
+//                gCamera1.setPosition(gCurrentMatPos);
+//                gCamera1.lookAt(gCurrentHolePos);
+//                gMatPositionSet = true;
+//                gRangeDrawer.MarkMat(terrain_x, terrain_y);
+//                gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
+//                
+//                //normal control point
+//            } else
+            gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
             
             
         } /*else { // left viewport
@@ -649,31 +643,31 @@ static void Update(const float &dt) {
         gRangeDrawer.MouseReleased();
     }
     
-    // lock camera on hole from mat, if both points are set
-    if (gLockCameraOnHole && gMatPositionSet && gHolePositionSet) {
-        float h_hole = gRangeDrawer.GetHeight(gCurrentHolePos.x, gCurrentHolePos.z);
-        float h_mat = gRangeDrawer.GetHeight(gCurrentMatPos.x, gCurrentMatPos.z);
-        gCurrentHolePos.y = h_hole;
-        gCurrentMatPos.y = h_mat;
-        
-        gCamera1.setPosition(gCurrentMatPos);
-        gCamera1.lookAt(gCurrentHolePos);
-        
-        //        Intersection inter;
-        //        bool intersected = ClosestIntersection(gCurrentMatPos, gCurrentHolePos, inter);
-        //        cout << "Intersected: " << intersected << endl;
-        //        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
-        //        cout << "Distance: " << inter.distance << endl;
-        
-    }
-    if (gHolePositionSet) {
+//    // lock camera on hole from mat, if both points are set
+//    if (gLockCameraOnHole && gMatPositionSet && gHolePositionSet) {
+//        float h_hole = gRangeDrawer.GetHeight(gCurrentHolePos.x, gCurrentHolePos.z);
+//        float h_mat = gRangeDrawer.GetHeight(gCurrentMatPos.x, gCurrentMatPos.z);
+//        gCurrentHolePos.y = h_hole;
+//        gCurrentMatPos.y = h_mat;
+//        
+//        gCamera1.setPosition(gCurrentMatPos);
+//        gCamera1.lookAt(gCurrentHolePos);
+//        
+//        //        Intersection inter;
+//        //        bool intersected = ClosestIntersection(gCurrentMatPos, gCurrentHolePos, inter);
+//        //        cout << "Intersected: " << intersected << endl;
+//        //        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
+//        //        cout << "Distance: " << inter.distance << endl;
+//        
+//    }
+    /*if (gHolePositionSet) {
         Intersection inter;
         bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
         //cout << "Intersected: " << intersected << endl;
         //cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
         //cout << "Distance: " << inter.distance << endl;
         
-    }
+    }*/
     
     
 }
@@ -687,7 +681,7 @@ static void Display() {
     //cout << "render time: " << round(dt * 1000) << " ms" << endl;
     
     // take tweakbar action
-    gTweakBar.TakeAction(dt);
+    gTweakBar.Update(dt);
     
     // update the scene based on the time elapsed since last update
     Update(dt);

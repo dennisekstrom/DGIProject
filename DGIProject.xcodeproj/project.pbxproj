@@ -11,6 +11,12 @@
 		5DB82952192421DF002BB053 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294A192421DF002BB053 /* text2D.cpp */; };
 		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
+		950D57881924BE5700635F65 /* Back.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57821924BE5700635F65 /* Back.jpg */; };
+		950D57891924BE5800635F65 /* Down.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57831924BE5700635F65 /* Down.jpg */; };
+		950D578A1924BE5800635F65 /* Front.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57841924BE5700635F65 /* Front.jpg */; };
+		950D578B1924BE5800635F65 /* Left.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57851924BE5700635F65 /* Left.jpg */; };
+		950D578C1924BE5800635F65 /* Right.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57861924BE5700635F65 /* Right.jpg */; };
+		950D578D1924BE5800635F65 /* Up.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57871924BE5700635F65 /* Up.jpg */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
 		95891732192431430097726F /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95891731192431430097726F /* libAntTweakBar.a */; };
 		958917341924315A0097726F /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 958917331924315A0097726F /* libAntTweakBar.dylib */; };
@@ -39,6 +45,12 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				950D57881924BE5700635F65 /* Back.jpg in Copy Files (4 items) (6 items) */,
+				950D57891924BE5800635F65 /* Down.jpg in Copy Files (4 items) (6 items) */,
+				950D578A1924BE5800635F65 /* Front.jpg in Copy Files (4 items) (6 items) */,
+				950D578B1924BE5800635F65 /* Left.jpg in Copy Files (4 items) (6 items) */,
+				950D578C1924BE5800635F65 /* Right.jpg in Copy Files (4 items) (6 items) */,
+				950D578D1924BE5800635F65 /* Up.jpg in Copy Files (4 items) (6 items) */,
 				958917341924315A0097726F /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */,
 				95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) (6 items) */,
 				95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) (6 items) */,
@@ -64,6 +76,12 @@
 		5DB82950192421DF002BB053 /* uvmap.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = uvmap.DDS; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
+		950D57821924BE5700635F65 /* Back.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Back.jpg; sourceTree = "<group>"; };
+		950D57831924BE5700635F65 /* Down.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Down.jpg; sourceTree = "<group>"; };
+		950D57841924BE5700635F65 /* Front.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Front.jpg; sourceTree = "<group>"; };
+		950D57851924BE5700635F65 /* Left.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Left.jpg; sourceTree = "<group>"; };
+		950D57861924BE5700635F65 /* Right.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Right.jpg; sourceTree = "<group>"; };
+		950D57871924BE5700635F65 /* Up.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Up.jpg; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		95891731192431430097726F /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
 		958917331924315A0097726F /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libAntTweakBar.dylib; path = ../thirdparty/AntTweakBar/lib/libAntTweakBar.dylib; sourceTree = "<group>"; };
@@ -73,6 +91,7 @@
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
 		95916814191B92D6001A0A44 /* rangeterrain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangeterrain.cpp; sourceTree = "<group>"; };
+		95DE90C619257CCC00767FBB /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		95EE55AE192025FA002E0789 /* grass_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass_big.jpg; sourceTree = "<group>"; };
 		95F5FB11191C30C70084FA41 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		95F5FB14191FF5B90084FA41 /* rangedrawer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangedrawer.h; sourceTree = "<group>"; };
@@ -135,6 +154,7 @@
 		95F74DB6191B780000384CFF = {
 			isa = PBXGroup;
 			children = (
+				95DE90C619257CCC00767FBB /* TODO.txt */,
 				95F74DCE191B784700384CFF /* resources */,
 				95F74DD2191B784700384CFF /* source */,
 				95F74DDF191B784700384CFF /* thirdparty */,
@@ -153,6 +173,12 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				950D57821924BE5700635F65 /* Back.jpg */,
+				950D57831924BE5700635F65 /* Down.jpg */,
+				950D57841924BE5700635F65 /* Front.jpg */,
+				950D57851924BE5700635F65 /* Left.jpg */,
+				950D57861924BE5700635F65 /* Right.jpg */,
+				950D57871924BE5700635F65 /* Up.jpg */,
 				958917331924315A0097726F /* libAntTweakBar.dylib */,
 				95EE55AE192025FA002E0789 /* grass_big.jpg */,
 				95F5FB11191C30C70084FA41 /* grass.png */,

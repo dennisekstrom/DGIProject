@@ -16,6 +16,10 @@
 
 using namespace std;
 
+enum MarkMode {
+    MARK_CONTROL_POINT, MARK_TEE, MARK_TARGET, NONE
+};
+
 struct xy_comparator {
     bool operator() (const xy &a, const xy &b) const {
         return a.y * (X_INTERVAL-1) + a.x < b.y * (X_INTERVAL-1) + b.x;
@@ -85,7 +89,15 @@ private:
     // Marking
     bool marked[Y_INTERVAL-1][X_INTERVAL-1];
     bool markChanged;
-    set<xy, xy_comparator>      currentlyMarked;
+    set<xy, xy_comparator>  currentlyMarked;
+    
+    // Tee and target
+    xy          teeMarkPos;
+    xy          targetMarkPos;
+    glm::vec2   teeTerrainPos;
+    glm::vec2   targetTerrainPos;
+    bool        teeMarked;
+    bool        targetMarked;
     
     // Drawing
     AreaMarkingManager*     markedWithShift;
@@ -96,13 +108,14 @@ private:
     
     
     inline void SetMarkChanged() { markChanged = true; }
+    void ColorVertex(const int &x, const int &y, const vec4& c);
     
 public:
     
     RangeDrawer();
     ~RangeDrawer();
     
-    void MarkTerrain(bool holePositionSet, bool matPositionSet);
+    void MarkTerrain();
     void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
     void LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype);
     void FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype);
@@ -131,6 +144,11 @@ public:
     inline bool IsMarked(const int &x, const int &y)    { return marked[y][x]; }
     
     inline void MouseReleased() { mouseIsDown = false; }
+
+//    void SetTee(const xy &teePos)        { this->teePos = teePos; teeMarked = true; }
+//    void SetTarget(const xy &targetPos)  { this->targetPos = targetPos; targetMarked = true;}
+//    void RemoveTee()                     { teeMarked = false; }
+//    void RemoveTarget()                  { targetMarked = false; }
     
     inline static int TerrainX2QuadX(const float &tx) {
         assert(tx >= 0 && tx <= TERRAIN_WIDTH);
@@ -144,5 +162,6 @@ public:
 };
 
 extern RangeDrawer gRangeDrawer;
+extern MarkMode gMarkMode;
 
 #endif

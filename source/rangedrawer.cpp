@@ -13,12 +13,12 @@
 #define DEG2RAD(X)      X*PI/180.0f
 
 RangeDrawer gRangeDrawer;
+MarkMode gMarkMode = NONE;
 vec4 white(1,1,1,1);
 vec4 red(1,0,0,1);
 vec4 blue(0,0,1,1);
-vec2 gHolePosition;
-vec2 gMatPosition;
-//RangeTerrain gTerrain;
+//vec2 gHolePosition;
+//vec2 gMatPosition;
 
 RangeDrawer::RangeDrawer() {
     
@@ -37,57 +37,38 @@ RangeDrawer::~RangeDrawer() {
     delete markedWithShift;
 }
 
-void RangeDrawer::MarkTerrain(bool holePositionSet, bool matPositionSet) {
+void RangeDrawer::ColorVertex(const int&x, const int &y, const vec4 &c) {
+    // Using same methods as in RangeTerrain::UpdateVertexData() and RangeTerrain::SetVertexData()
+    int idx = (y  )*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR;
+    
+    for ( int i=0; i<6; i++ ) {
+        gTerrain.changedVertexIndices.push_back( idx );
+        idx += 8; // Skip v, n, and t
+        gTerrain.vertexData[idx++] = c.r;
+        gTerrain.vertexData[idx++] = c.g;
+        gTerrain.vertexData[idx++] = c.b;
+        gTerrain.vertexData[idx++] = c.a;
+    }
+}
+
+void RangeDrawer::MarkTerrain() {
     
     gTerrain.UpdateVertexData();
     gTerrain.changedVertices->Reset();
     
-    vec4 &c = white;
-    GLfloat* vertexData = gTerrain.vertexData;
-    int x, y, idx;
-    
     for ( auto xy : currentlyMarked ) {
         
         // x, y are coordinates of the quad
-        x = xy.x;
-        y = xy.y;
-        
-        
-        // Using same methods as in RangeTerrain::UpdateVertexData() and RangeTerrain::SetVertexData()
-        idx = (y  )*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR;
-        
-        for ( int i=0; i<6; i++ ) {
-            gTerrain.changedVertexIndices.push_back( idx );
-            idx += 8; // Skip v, n, and t
-            vertexData[idx++] = c.r;
-            vertexData[idx++] = c.g;
-            vertexData[idx++] = c.b;
-            vertexData[idx++] = c.a;
-        }
+        ColorVertex(xy.x, xy.y, white);
     }
     
-    // Color the hole and mat positions
-    if (holePositionSet) {
-        idx = (gHolePosition.y  )*FLOATS_PER_ROW + (gHolePosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
-        c = red;
-        for ( int i=0; i<6; i++ ) {
-            gTerrain.changedVertexIndices.push_back( idx );
-            idx += 8; // Skip v, n, and t
-            vertexData[idx++] = c.r; vertexData[idx++] = c.g;
-            vertexData[idx++] = c.b; vertexData[idx++] = c.a;
-        }
-    }
-    if (matPositionSet) {
-        idx = (gMatPosition.y  )*FLOATS_PER_ROW + (gMatPosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
-        c = blue;
-        for ( int i=0; i<6; i++ ) {
-            gTerrain.changedVertexIndices.push_back( idx );
-            idx += 8; // Skip v, n, and t
-            vertexData[idx++] = c.r; vertexData[idx++] = c.g;
-            vertexData[idx++] = c.b; vertexData[idx++] = c.a;
-        }
-    }
+    // Color the target position
+    if (targetMarked)
+        ColorVertex(targetMarkPos.x, targetMarkPos.y, red);
     
+    // Color the tee position
+    if (teeMarked)
+        ColorVertex(teeMarkPos.x, teeMarkPos.y, blue);
 }
 
 inline void RangeDrawer::Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
@@ -274,70 +255,113 @@ void RangeDrawer::TerrainCoordClicked(const float &tx, const float &ty, const bo
     
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
     
-    if (!mouseIsDown) { // Mouse was recently pressed
-        mouseDownIsMarking = !marked[y][x]; // if (x,y) was marked, only mark until mouse release
-        markedWithShift->Reset();
-    }
-    mouseIsDown = true;
+    switch (gMarkMode) {
     
-    if (!shift_down) {
-        
-        markedWithShift->Reset();
-        mouseDownIsMarking ? Mark(x, y) : Unmark(x, y);
-        
-    } else {
-        
-        markedWithShift->Mark(x, y);
-        for ( int y=markedWithShift->y_min; y<=markedWithShift->y_max; y++) {
-            for ( int x=markedWithShift->x_min; x<=markedWithShift->x_max; x++) {
-                mouseDownIsMarking ? Mark(x, y) : Unmark(x, y);
+        case MARK_CONTROL_POINT:
+            if (!mouseIsDown) { // Mouse was recently pressed
+                mouseDownIsMarking = !marked[y][x]; // if (x,y) was marked, only mark until mouse release
+                markedWithShift->Reset();
             }
-        }
+            mouseIsDown = true;
+            
+            if (!shift_down) {
+                
+                markedWithShift->Reset();
+                mouseDownIsMarking ? Mark(x, y) : Unmark(x, y);
+                
+            } else {
+                
+                markedWithShift->Mark(x, y);
+                for ( int y=markedWithShift->y_min; y<=markedWithShift->y_max; y++) {
+                    for ( int x=markedWithShift->x_min; x<=markedWithShift->x_max; x++) {
+                        mouseDownIsMarking ? Mark(x, y) : Unmark(x, y);
+                    }
+                }
+            }
+            break;
+            
+        case MARK_TEE:
+            UnmarkAll();
+            if (teeMarked) {
+                // Mark and unmark previous tee position for change to be registered and vertex to be reset
+                Mark(teeMarkPos.x, teeMarkPos.y);
+                Unmark(teeMarkPos.x, teeMarkPos.y);
+            }
+            teeMarked = true;
+            teeMarkPos = { x, y };
+            teeTerrainPos = glm::vec2(tx, ty);
+            SetMarkChanged();
+            break;
+        
+        case MARK_TARGET:
+            UnmarkAll();
+            if (targetMarked) {
+                // Mark and unmark previous tee position for change to be registered and vertex to be reset
+                Mark(targetMarkPos.x, targetMarkPos.y);
+                Unmark(targetMarkPos.x, targetMarkPos.y);
+            }
+            targetMarked = true;
+            targetMarkPos = { x, y };
+            targetTerrainPos = glm::vec2(tx, ty);
+            SetMarkChanged();
+            break;
+        
+        case NONE:
+            // do nothing
+            break;
     }
 }
 
-void RangeDrawer::MarkHole(const float &tx, const float &ty) {
-    //TODO, color needs to be reset on previous, should exist a better way
-    
-    vec4 c = gTerrain.ColorFromHeight(gTerrain.hmap[(int)gHolePosition.y][(int)gHolePosition.x]);
-    
-    int idx = (gHolePosition.y  )*FLOATS_PER_ROW + (gHolePosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
-    for ( int i=0; i<6; i++ ) {
-        gTerrain.changedVertexIndices.push_back( idx );
-        idx += 8; // Skip v, n, and t
-        gTerrain.vertexData[idx++] = c.r; gTerrain.vertexData[idx++] = c.g;
-        gTerrain.vertexData[idx++] = c.b; gTerrain.vertexData[idx++] = c.a;
-    }
-    
-    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
-    gHolePosition.x = x;
-    gHolePosition.y = y;
-    
-}
+//void RangeDrawer::MarkHole(const float &tx, const float &ty) {
+//    //TODO, color needs to be reset on previous, should exist a better way
+//    
+//    vec4 c = gTerrain.ColorFromHeight(gTerrain.hmap[(int)gHolePosition.y][(int)gHolePosition.x]);
+//    
+//    int idx = (gHolePosition.y  )*FLOATS_PER_ROW + (gHolePosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
+//    for ( int i=0; i<6; i++ ) {
+//        gTerrain.changedVertexIndices.push_back( idx );
+//        idx += 8; // Skip v, n, and t
+//        gTerrain.vertexData[idx++] = c.r; gTerrain.vertexData[idx++] = c.g;
+//        gTerrain.vertexData[idx++] = c.b; gTerrain.vertexData[idx++] = c.a;
+//    }
+//    
+//    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
+//    gHolePosition.x = x;
+//    gHolePosition.y = y;
+//    
+//}
+//
+//void RangeDrawer::MarkMat(const float &tx, const float &ty) {
+//    //TODO, color needs to be reset on previous, should exist a better way
+//    
+//    vec4 c = gTerrain.ColorFromHeight(gTerrain.hmap[(int)gMatPosition.y][(int)gMatPosition.x]);
+//    
+//    int idx = (gMatPosition.y  )*FLOATS_PER_ROW + (gMatPosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
+//    for ( int i=0; i<6; i++ ) {
+//        gTerrain.changedVertexIndices.push_back( idx );
+//        idx += 8; // Skip v, n, and t
+//        gTerrain.vertexData[idx++] = c.r; gTerrain.vertexData[idx++] = c.g;
+//        gTerrain.vertexData[idx++] = c.b; gTerrain.vertexData[idx++] = c.a;
+//    }
+//    
+//    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
+//    gMatPosition.x = x;
+//    gMatPosition.y = y;
+//    
+//}
 
-void RangeDrawer::MarkMat(const float &tx, const float &ty) {
-    //TODO, color needs to be reset on previous, should exist a better way
-    
-    vec4 c = gTerrain.ColorFromHeight(gTerrain.hmap[(int)gMatPosition.y][(int)gMatPosition.x]);
-    
-    int idx = (gMatPosition.y  )*FLOATS_PER_ROW + (gMatPosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
-    for ( int i=0; i<6; i++ ) {
-        gTerrain.changedVertexIndices.push_back( idx );
-        idx += 8; // Skip v, n, and t
-        gTerrain.vertexData[idx++] = c.r; gTerrain.vertexData[idx++] = c.g;
-        gTerrain.vertexData[idx++] = c.b; gTerrain.vertexData[idx++] = c.a;
-    }
-    
-    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
-    gMatPosition.x = x;
-    gMatPosition.y = y;
-    
-}
-
-// TODO this is incorrect (only one corner taken into account)
 float RangeDrawer::GetHeight(float tx, float ty) {
+
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
-    ControlPoint* cp = gTerrain.GetControlPoint(x, y);
-    return cp ? cp->h : 1.0f;
     
+    int _x = x, _y = y;
+    if (_x == X_INTERVAL - 1) { _x--; };
+    if (_y == X_INTERVAL - 1) { _y--; };
+    assert( 0 <= _x && _x < X_INTERVAL-1 && 0 <= _y && _y < Y_INTERVAL-1 );
+    
+    float hsum = gTerrain.hmap[y  ][x  ]
+               + gTerrain.hmap[y  ][x+1]
+               + gTerrain.hmap[y+1][x  ]
+               + gTerrain.hmap[y+1][x+1];
+    return hsum / 4.0f;
 }
