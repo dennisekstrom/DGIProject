@@ -12,7 +12,6 @@
 		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
-		95891732192431430097726F /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95891731192431430097726F /* libAntTweakBar.a */; };
 		958917341924315A0097726F /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 958917331924315A0097726F /* libAntTweakBar.dylib */; };
 		958917391924321B0097726F /* rangetweakbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958917371924321B0097726F /* rangetweakbar.cpp */; };
 		9591680F191B817C001A0A44 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 9591680E191B817C001A0A44 /* glew.c */; };
@@ -71,7 +70,6 @@
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
-		95891731192431430097726F /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
 		958917331924315A0097726F /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libAntTweakBar.dylib; path = ../thirdparty/AntTweakBar/lib/libAntTweakBar.dylib; sourceTree = "<group>"; };
 		95891736192431F90097726F /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
 		958917371924321B0097726F /* rangetweakbar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangetweakbar.cpp; sourceTree = "<group>"; };
@@ -108,7 +106,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95891732192431430097726F /* libAntTweakBar.a in Frameworks */,
 				953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */,
 				95F7508F191B7BB000384CFF /* Cocoa.framework in Frameworks */,
 				95F7508D191B7BA800384CFF /* IOKit.framework in Frameworks */,
@@ -214,7 +211,6 @@
 		95F74DDF191B784700384CFF /* thirdparty */ = {
 			isa = PBXGroup;
 			children = (
-				95891731192431430097726F /* libAntTweakBar.a */,
 				9591680E191B817C001A0A44 /* glew.c */,
 				953E9F3A19225C10006410F0 /* GLUT.framework */,
 				95F7508E191B7BB000384CFF /* Cocoa.framework */,
