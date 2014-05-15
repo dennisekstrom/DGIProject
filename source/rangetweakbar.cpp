@@ -158,43 +158,6 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 NULL,
                 "key=SPACE help='Flatten the current selection.' ");
     
-<<<<<<< HEAD
-=======
-    extern bool gLeftCameraFullscreen;
-    extern bool gLeftCameraUseColor;
-    extern bool gRightCameraUseColor;
-    extern bool gLockCameraOnHole;
-    extern tdogl::Camera gCamera1;
-    extern glm::vec3 gLightPosition;
-    
-    TwAddSeparator(controlBar, NULL, NULL);
-    
-    TwAddButton(controlBar,
-                "Toggle fullscreen",
-                (TwButtonCallback) [] (void* clientData) {
-                    gLeftCameraFullscreen = !gLeftCameraFullscreen;
-                    gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? 2 : 1);
-                },
-                NULL,
-                "key=F help='Turn left view fullscreen on/off.' ");
-    
-    TwAddButton(controlBar,
-                "Toggle lock camera on golfer view",
-                (TwButtonCallback) [] (void* clientData) {
-                    gLockCameraOnHole = !gLockCameraOnHole;
-                },
-                NULL,
-                "key=TODO help='Turn lock camera on/off.' ");
-    
-    TwAddButton(controlBar,
-                "Toggle left color mode",
-                (TwButtonCallback) [] (void* clientData) {
-                    gLeftCameraUseColor = !gLeftCameraUseColor;
-                },
-                NULL,
-                "key=1 help='Toggle the color mode of the left view.' ");
-    
->>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
     TwAddButton(controlBar,
                 "Flatten terrain",
                 (TwButtonCallback) [] (void* clientData) {
@@ -212,9 +175,6 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Greens fontresizable=false");
     TwDefine("Greens color='255 255 255' alpha=63 ");
     TwDefine("Greens text=light");
-    
-    extern bool gAdjustingHole;
-    extern bool gAdjustingMat;
     
     TwAddButton(objectBar,
                 "Mark tee position",
@@ -279,30 +239,6 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 (TwButtonCallback) [] (void* clientData) { gTweakBar.NewTerrainObject(); },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
-    TwAddButton(objectBar,
-                "   Set control points",
-                (TwButtonCallback) [] (void* clientData) {
-                    gAdjustingMat = false;
-                    gAdjustingHole = false;
-                },
-                NULL,
-                "key= help='Set control point positions' ");
-    TwAddButton(objectBar,
-                "Adjust mat",
-                (TwButtonCallback) [] (void* clientData) {
-                    gAdjustingMat = true;
-                    gAdjustingHole = false;
-                },
-                NULL,
-                "key=M help='Adjust the mat position' ");
-    TwAddButton(objectBar,
-                "Adjust hole",
-                (TwButtonCallback) [] (void* clientData) {
-                    gAdjustingHole = true;
-                    gAdjustingMat = false;
-                },
-                NULL,
-                "key=N help='Adjust the hole position.' ");
     
     TwAddButton(objectBar,
                 "Delete green",
@@ -333,6 +269,8 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
+    
+    TwAddSeparator(objectBar, NULL, NULL);
     
     difficultyBar = TwNewBar("Difficulty");
     TwDefine("Difficulty label=DIFFICULTY");

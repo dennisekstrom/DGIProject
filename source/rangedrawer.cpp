@@ -56,13 +56,6 @@ void RangeDrawer::MarkTerrain() {
     gTerrain.UpdateVertexData();
     gTerrain.changedVertices->Reset();
     
-<<<<<<< HEAD
-=======
-    vec4 c = white;
-    GLfloat* vertexData = gTerrain.vertexData;
-    int x, y, idx;
-    
->>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
     for ( auto xy : currentlyMarked ) {
         
         // x, y are coordinates of the quad
@@ -226,11 +219,6 @@ void RangeDrawer::ToggleMarked(const int &x, const int &y) {
 }
 
 void RangeDrawer::UnmarkAll() {
-    Mark(gHolePosition.x, gHolePosition.y);
-    Mark(gMatPosition.x, gMatPosition.y);
-
-    Unmark(gHolePosition.x, gHolePosition.y);
-    Unmark(gMatPosition.x, gMatPosition.y);
     
     if (currentlyMarked.empty())
         return; // Nothing is marked
@@ -363,14 +351,8 @@ void RangeDrawer::TerrainCoordClicked(const float &tx, const float &ty, const bo
 //}
 
 float RangeDrawer::GetHeight(float tx, float ty) {
-<<<<<<< HEAD
 
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
-=======
-    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(abs(ty));
-    
-    return gTerrain.hmap[(int)y][(int)x];
->>>>>>> 8026a9488b8cb0874ac87522edeb05229d235157
     
     int _x = x, _y = y;
     if (_x == X_INTERVAL - 1) { _x--; };
