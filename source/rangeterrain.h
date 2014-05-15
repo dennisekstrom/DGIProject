@@ -74,7 +74,7 @@ public:
                 break;
         }
     }
-        
+    
     inline static float lift_linear(float h, float spread, float dist) {
         return dist <= spread ? h * (1 - dist / spread) : 0;
     }
@@ -96,11 +96,11 @@ public:
 };
 
 /*struct Triangle {
-    vec3 v0, v1, v2;
-    vec3 n0, n1, n2;
-    vec3 c0, c1, c2;
-    vec2 t0, t1, t2;
-};*/
+ vec3 v0, v1, v2;
+ vec3 n0, n1, n2;
+ vec3 c0, c1, c2;
+ vec2 t0, t1, t2;
+ };*/
 
 /**
  Two triangles making up a square with side GRID_RES.
@@ -115,20 +115,20 @@ public:
  
  The vertex/normal/color ordering:
  
-  1         3
-    +-----+
-    |     |
-    |     |
-    +-----+
-  2         4
+ 1         3
+ +-----+
+ |     |
+ |     |
+ +-----+
+ 2         4
  
  The texture mapping:
  
  0,0       1,0
-    +-----+
-    |     |
-    |     |
-    +-----+
+ +-----+
+ |     |
+ |     |
+ +-----+
  0,1       1,1
  
  The diagonalUp parameter works like this:
@@ -140,67 +140,67 @@ public:
  +-----+            +-----+
  */
 /*struct TrianglePair {
-    bool diagonalUp;
-    Triangle t1, t2;
-    
-    void SetVertices(vec3 &v1, vec3 &v2, vec3 & v3, vec3 &v4) {
-        diagonalUp = true; // [TODO: Set appropriate condition on this]
-        vec2 t00(0,0), t01(0,1), t10(1,0), t11(1,1);
-        if (diagonalUp) {
-            t1.v0 = v1;     t1.v1 = v2;     t1.v2 = v3;     // vertices
-            t2.v0 = v4;     t2.v1 = v3;     t2.v2 = v2;
-            
-            t1.t0 = t00;    t1.t1 = t01;    t1.t2 = t10;    // texture coordinates
-            t2.t0 = t11;    t2.t1 = t10;    t2.t2 = t01;
-        } else {
-            t1.v0 = v1;     t1.v1 = v4;     t1.v2 = v3;
-            t2.v0 = v4;     t2.v1 = v1;     t2.v2 = v2;
-            
-            t1.t0 = t00;    t1.t1 = t11;    t1.t2 = t10;
-            t2.t0 = t11;    t2.t1 = t00;    t2.t2 = t01;
-
-        }
-    }
-    
-    
-    void SetNormals(vec3 &n1, vec3 &n2, vec3 & n3, vec3 &n4) {
-        if (diagonalUp) {
-            t1.n0 = n1;     t1.n1 = n2;     t1.n2 = n3;     // normals
-            t2.n0 = n4;     t2.n1 = n3;     t2.n2 = n2;
-        } else {
-            t1.n0 = n1;     t1.n1 = n4;     t1.n2 = n3;
-            t2.n0 = n4;     t2.n1 = n1;     t2.n2 = n2;
-        }
-    }
-    
-    void SetColors(vec3 &c1, vec3 &c2, vec3 & c3, vec3 &c4) {
-        if (diagonalUp) {
-            t1.c0 = c1;     t1.c1 = c2;     t1.c2 = c3;     // colors
-            t2.c0 = c4;     t2.c1 = c3;     t2.c2 = c2;
-        } else {
-            t1.c0 = c1;     t1.c1 = c4;     t1.c2 = c3;
-            t2.c0 = c4;     t2.c1 = c1;     t2.c2 = c2;
-        }
-    }
-
-    // [TODO: The following functions assumes diagonalUp]
-    void SetV1(vec3 v1, vec3 n1, vec3 c1) { t1.v0 = v1;     t1.n0 = n1;     t1.c0 = c1; }
-    
-    void SetV2(vec3 v2, vec3 n2, vec3 c2) { t1.v1 = v2;     t1.n1 = n2;     t1.c1 = c2;
-                                            t2.v2 = v2;     t2.n2 = n2;     t2.c2 = c2; }
-    
-    void SetV3(vec3 v3, vec3 n3, vec3 c3) { t1.v2 = v3;     t1.n2 = n3;     t1.c2 = c3;
-                                            t2.v1 = v3;     t2.n1 = n3;     t2.c1 = c3; }
-    
-    void SetV4(vec3 v4, vec3 n4, vec3 c4) { t2.v0 = v4;     t2.n0 = n4;     t2.c0 = c4; }
-};*/
+ bool diagonalUp;
+ Triangle t1, t2;
+ 
+ void SetVertices(vec3 &v1, vec3 &v2, vec3 & v3, vec3 &v4) {
+ diagonalUp = true; // [TODO: Set appropriate condition on this]
+ vec2 t00(0,0), t01(0,1), t10(1,0), t11(1,1);
+ if (diagonalUp) {
+ t1.v0 = v1;     t1.v1 = v2;     t1.v2 = v3;     // vertices
+ t2.v0 = v4;     t2.v1 = v3;     t2.v2 = v2;
+ 
+ t1.t0 = t00;    t1.t1 = t01;    t1.t2 = t10;    // texture coordinates
+ t2.t0 = t11;    t2.t1 = t10;    t2.t2 = t01;
+ } else {
+ t1.v0 = v1;     t1.v1 = v4;     t1.v2 = v3;
+ t2.v0 = v4;     t2.v1 = v1;     t2.v2 = v2;
+ 
+ t1.t0 = t00;    t1.t1 = t11;    t1.t2 = t10;
+ t2.t0 = t11;    t2.t1 = t00;    t2.t2 = t01;
+ 
+ }
+ }
+ 
+ 
+ void SetNormals(vec3 &n1, vec3 &n2, vec3 & n3, vec3 &n4) {
+ if (diagonalUp) {
+ t1.n0 = n1;     t1.n1 = n2;     t1.n2 = n3;     // normals
+ t2.n0 = n4;     t2.n1 = n3;     t2.n2 = n2;
+ } else {
+ t1.n0 = n1;     t1.n1 = n4;     t1.n2 = n3;
+ t2.n0 = n4;     t2.n1 = n1;     t2.n2 = n2;
+ }
+ }
+ 
+ void SetColors(vec3 &c1, vec3 &c2, vec3 & c3, vec3 &c4) {
+ if (diagonalUp) {
+ t1.c0 = c1;     t1.c1 = c2;     t1.c2 = c3;     // colors
+ t2.c0 = c4;     t2.c1 = c3;     t2.c2 = c2;
+ } else {
+ t1.c0 = c1;     t1.c1 = c4;     t1.c2 = c3;
+ t2.c0 = c4;     t2.c1 = c1;     t2.c2 = c2;
+ }
+ }
+ 
+ // [TODO: The following functions assumes diagonalUp]
+ void SetV1(vec3 v1, vec3 n1, vec3 c1) { t1.v0 = v1;     t1.n0 = n1;     t1.c0 = c1; }
+ 
+ void SetV2(vec3 v2, vec3 n2, vec3 c2) { t1.v1 = v2;     t1.n1 = n2;     t1.c1 = c2;
+ t2.v2 = v2;     t2.n2 = n2;     t2.c2 = c2; }
+ 
+ void SetV3(vec3 v3, vec3 n3, vec3 c3) { t1.v2 = v3;     t1.n2 = n3;     t1.c2 = c3;
+ t2.v1 = v3;     t2.n1 = n3;     t2.c1 = c3; }
+ 
+ void SetV4(vec3 v4, vec3 n4, vec3 c4) { t2.v0 = v4;     t2.n0 = n4;     t2.c0 = c4; }
+ };*/
 
 struct ChangeManager {
 private:
     const int size;
     const int x_interval;
     bool* identifierInVector;
-
+    
 public:
     vector<xy> identifiers;
     
@@ -256,11 +256,11 @@ public:
     float hmap[Y_INTERVAL][X_INTERVAL];
     vec3 normals[X_INTERVAL][Y_INTERVAL];
     
-//    TrianglePair trianglePairs[(Y_INTERVAL - 1)][(X_INTERVAL - 1)];
+    //    TrianglePair trianglePairs[(Y_INTERVAL - 1)][(X_INTERVAL - 1)];
     
     GLfloat vertexData[(X_INTERVAL - 1) * (Y_INTERVAL - 1) * 2 * 3 * FLOATS_PER_VERTEX];
     vector<int> changedVertexIndices;
-
+    
 private:
     
     void FlattenHMap();
@@ -268,19 +268,19 @@ private:
     void UpdateHMap();                          // Update from changed control points
     void UpdateNormals();                       // Requires hmap
     void UpdateChangedVertices();               // Requires hmap (and should be ran after UpdateNormals() too)
-//    void UpdateTrianglePairs();                 // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
+    //    void UpdateTrianglePairs();                 // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void UpdateVertexData();                    // Requires hmap and normals (and for the moment that changedVertices is updated by running UpdateTrianglePairs)
-
+    
     void GenerateHMap();                        // Generate from control points
     void GenerateNormals();                     // Requires hmap
-//    void GenerateTrianglePairs();               // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
+    //    void GenerateTrianglePairs();               // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void GenerateVertexData();                  // Requires hmap and normals
-
+    
     void UpdateHMap(ControlPoint &cp);                                          // Updates hmap from the given control point
     void UpdateNormal(const int &x, const int &y);                              // Requires hmap
     void UpdateTrianglePair(const int &x, const int &y);                        // Requires hmap and normal
     void UpdateVertexData(const int &x, const int &y/*, const vec4* color=NULL*/);  // Requires hmap and normal
-
+    
     inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n, const vec4 &c) {
         vertexData[idx++] = v.x;
         vertexData[idx++] = v.y;
@@ -318,7 +318,7 @@ private:
         float idx = (levels.size() - 1) * (h - h_min) / (h_max - h_min);
         float idx_low = floor( idx );
         float idx_high = ceil( idx );
-
+        
         vec4 level_low = levels[idx_low];
         vec4 level_high = levels[idx_high];
         
@@ -338,9 +338,7 @@ public:
     
     inline ControlPoint* GetControlPoint(const int &x, const int &y) const { return controlPoints[y][x]; }
     inline bool ControlPointChanged() { return !changedControlPoints->identifiers.empty(); }
-
     inline bool VertexChanged() { return !changedVertexIndices.empty(); }
-    
 };
 
 extern RangeTerrain gTerrain;

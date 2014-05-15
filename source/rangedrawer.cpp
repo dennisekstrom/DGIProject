@@ -13,7 +13,6 @@
 #define DEG2RAD(X)      X*PI/180.0f
 
 RangeDrawer gRangeDrawer;
-
 vec4 white(1,1,1,1);
 vec4 red(1,0,0,1);
 vec4 blue(0,0,1,1);
@@ -43,16 +42,16 @@ void RangeDrawer::MarkTerrain(bool holePositionSet, bool matPositionSet) {
     gTerrain.UpdateVertexData();
     gTerrain.changedVertices->Reset();
     
-    //    vec4 &c = white;
+    vec4 &c = white;
     GLfloat* vertexData = gTerrain.vertexData;
     int x, y, idx;
     
-    vec4 c = white;
     for ( auto xy : currentlyMarked ) {
         
         // x, y are coordinates of the quad
         x = xy.x;
         y = xy.y;
+        
         
         // Using same methods as in RangeTerrain::UpdateVertexData() and RangeTerrain::SetVertexData()
         idx = (y  )*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR;
@@ -91,6 +90,12 @@ void RangeDrawer::MarkTerrain(bool holePositionSet, bool matPositionSet) {
     
 }
 
+inline void RangeDrawer::Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
+    ControlPoint* cp = gTerrain.GetControlPoint(x, y);
+    float h = cp ? cp->h : gTerrain.hmap[y][x];
+    gTerrain.SetControlPoint(x, y, h + lift, spread, functype);
+}
+
 float RangeDrawer::GetAverageHeightOfMarked() {
     
     if (currentlyMarked.empty())
@@ -114,15 +119,9 @@ glm::vec2 RangeDrawer::GetCenterOfMarked() {
     return glm::vec2(sumx / (4*currentlyMarked.size()), sumy / (4*currentlyMarked.size()));
 }
 
-inline void RangeDrawer::Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
-    ControlPoint* cp = gTerrain.GetControlPoint(x, y);
-    float h = cp ? cp->h : gTerrain.hmap[y][x  ];
-    gTerrain.SetControlPoint(x, y, h + lift, spread, functype);
-}
-
-const int spread = 4;// [TODO: THIS IS TEMP]
-const ControlPointFuncType functype = FUNC_SIN;// [TODO: THIS IS TEMP]
-void RangeDrawer::LiftMarked(const float &lift) {
+//const int spread = 4;// [TODO: THIS IS TEMP]
+//const ControlPointFuncType functype = FUNC_SIN;// [TODO: THIS IS TEMP]
+void RangeDrawer::LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype) {
     
     int x, y;
     for ( auto xy : currentlyMarked ) {
@@ -132,18 +131,18 @@ void RangeDrawer::LiftMarked(const float &lift) {
         Lift(x  , y  , lift, spread, functype);     // v1
         
         // For vertices 2-4, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
-        if (!marked[y+1][x  ])
+        if (y == Y_INTERVAL - 2 || !marked[y+1][x  ])
             Lift(x  , y+1, lift, spread, functype); // v2
         
-        if (!marked[y  ][x+1])
+        if (x == X_INTERVAL - 2 || (!marked[y  ][x+1] && (y == 0 || !marked[y-1][x+1])))
             Lift(x+1, y  , lift, spread, functype); // v3
         
-        if (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1])
+        if ((y == Y_INTERVAL - 2 && x == X_INTERVAL - 2) || (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1]))
             Lift(x+1, y+1, lift, spread, functype); // v4
     }
 }
 
-void RangeDrawer::FlattenMarked(const float &h) {
+void RangeDrawer::FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype) {
     
     int x, y;
     for ( auto xy : currentlyMarked ) {
@@ -157,7 +156,7 @@ void RangeDrawer::FlattenMarked(const float &h) {
     }
 }
 
-void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt) {
+void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype) {
     
     glm::vec2 center = GetCenterOfMarked();
     const float &cx = center.x, &cy = center.y;
@@ -173,24 +172,23 @@ void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt) {
         lift = (cx - float(x  )) * float(GRID_RES) * tanx + (cy - float(y  )) * float(GRID_RES) * tany;
         Lift(x  , y  , lift, spread, functype);
         
-        // For the other vertices, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
         
-        // v2
-        if (!marked[y+1][x  ]) {
+        // For vertices 2-4, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
+        if (y == Y_INTERVAL - 2 || !marked[y+1][x  ]) {
             lift = (cx - (x  )) * float(GRID_RES) * tanx + (cy - (y+1)) * float(GRID_RES) * tany;
             Lift(x  , y+1, lift, spread, functype);
         }
         
-        // v3
-        if (!marked[y  ][x+1]) {
+        if (x == X_INTERVAL - 2 || (!marked[y  ][x+1] && (y == 0 || !marked[y-1][x+1]))) {
             lift = (cx - (x+1)) * float(GRID_RES) * tanx + (cy - (y  )) * float(GRID_RES) * tany;
             Lift(x+1, y  , lift, spread, functype);
+            
         }
         
-        // v4
-        if (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1]) {
+        if ((y == Y_INTERVAL - 2 && x == X_INTERVAL - 2) || (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1])) {
             lift = (cx - (x+1)) * float(GRID_RES) * tanx + (cy - (y+1)) * float(GRID_RES) * tany;
             Lift(x+1, y+1, lift, spread, functype);
+            
         }
     }
 }
@@ -207,7 +205,7 @@ void RangeDrawer::Mark(const int &x, const int &y) {
     
     marked[y][x] = true;
     currentlyMarked.insert( { x, y } );
-    markChanged = true;
+    SetMarkChanged();
     
     gTerrain.changedVertices->SetChanged( x  , y   );
     gTerrain.changedVertices->SetChanged( x  , y+1 );
@@ -227,7 +225,7 @@ void RangeDrawer::Unmark(const int &x, const int &y) {
     
     marked[y][x] = false;
     currentlyMarked.erase( { x, y } );
-    markChanged = true;
+    SetMarkChanged();
     
     gTerrain.changedVertices->SetChanged( x  , y   );
     gTerrain.changedVertices->SetChanged( x  , y+1 );
@@ -257,7 +255,7 @@ void RangeDrawer::UnmarkAll() {
         gTerrain.changedVertices->SetChanged( x+1, y+1 );
     }
     currentlyMarked.clear();
-    markChanged = true;
+    SetMarkChanged();
 }
 
 void RangeDrawer::MarkTerrainCoord(const float &tx, const float &ty) {
@@ -283,6 +281,7 @@ void RangeDrawer::TerrainCoordClicked(const float &tx, const float &ty, const bo
     mouseIsDown = true;
     
     if (!shift_down) {
+        
         markedWithShift->Reset();
         mouseDownIsMarking ? Mark(x, y) : Unmark(x, y);
         
@@ -334,6 +333,8 @@ void RangeDrawer::MarkMat(const float &tx, const float &ty) {
     gMatPosition.y = y;
     
 }
+
+// TODO this is incorrect (only one corner taken into account)
 float RangeDrawer::GetHeight(float tx, float ty) {
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
     ControlPoint* cp = gTerrain.GetControlPoint(x, y);

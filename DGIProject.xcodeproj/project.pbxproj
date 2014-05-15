@@ -12,12 +12,13 @@
 		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
+		95891732192431430097726F /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95891731192431430097726F /* libAntTweakBar.a */; };
+		958917341924315A0097726F /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 958917331924315A0097726F /* libAntTweakBar.dylib */; };
+		958917391924321B0097726F /* rangetweakbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958917371924321B0097726F /* rangetweakbar.cpp */; };
 		9591680F191B817C001A0A44 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 9591680E191B817C001A0A44 /* glew.c */; };
 		95916810191B83D1001A0A44 /* fragment-shader.txt in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F74DCF191B784700384CFF /* fragment-shader.txt */; };
 		95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F74DD0191B784700384CFF /* vertex-shader.txt */; };
 		95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95916814191B92D6001A0A44 /* rangeterrain.cpp */; };
-		95CFB0871922B56C0037E731 /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CFB0861922B56C0037E731 /* libAntTweakBar.a */; };
-		95CFB0891922B57A0037E731 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95CFB0881922B57A0037E731 /* libAntTweakBar.dylib */; };
 		95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F5FB11191C30C70084FA41 /* grass.png */; };
 		95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F5FB15191FF8540084FA41 /* rangedrawer.cpp */; };
 		95F7507C191B784900384CFF /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD3191B784700384CFF /* main.mm */; };
@@ -38,7 +39,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				95CFB0891922B57A0037E731 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */,
+				958917341924315A0097726F /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */,
 				95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) (6 items) */,
 				95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) (6 items) */,
 				95916810191B83D1001A0A44 /* fragment-shader.txt in Copy Files (4 items) (6 items) */,
@@ -64,11 +65,14 @@
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		95891731192431430097726F /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
+		958917331924315A0097726F /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libAntTweakBar.dylib; path = ../thirdparty/AntTweakBar/lib/libAntTweakBar.dylib; sourceTree = "<group>"; };
+		95891736192431F90097726F /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
+		958917371924321B0097726F /* rangetweakbar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangetweakbar.cpp; sourceTree = "<group>"; };
+		958917381924321B0097726F /* rangetweakbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rangetweakbar.h; sourceTree = "<group>"; };
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
 		95916814191B92D6001A0A44 /* rangeterrain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangeterrain.cpp; sourceTree = "<group>"; };
-		95CFB0861922B56C0037E731 /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
-		95CFB0881922B57A0037E731 /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libAntTweakBar.dylib; path = ../thirdparty/AntTweakBar/lib/libAntTweakBar.dylib; sourceTree = "<group>"; };
 		95EE55AE192025FA002E0789 /* grass_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass_big.jpg; sourceTree = "<group>"; };
 		95F5FB11191C30C70084FA41 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		95F5FB14191FF5B90084FA41 /* rangedrawer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangedrawer.h; sourceTree = "<group>"; };
@@ -98,7 +102,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95CFB0871922B56C0037E731 /* libAntTweakBar.a in Frameworks */,
+				95891732192431430097726F /* libAntTweakBar.a in Frameworks */,
 				953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */,
 				95F7508F191B7BB000384CFF /* Cocoa.framework in Frameworks */,
 				95F7508D191B7BA800384CFF /* IOKit.framework in Frameworks */,
@@ -149,7 +153,7 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				95CFB0881922B57A0037E731 /* libAntTweakBar.dylib */,
+				958917331924315A0097726F /* libAntTweakBar.dylib */,
 				95EE55AE192025FA002E0789 /* grass_big.jpg */,
 				95F5FB11191C30C70084FA41 /* grass.png */,
 				95F74DCF191B784700384CFF /* fragment-shader.txt */,
@@ -162,6 +166,9 @@
 		95F74DD2191B784700384CFF /* source */ = {
 			isa = PBXGroup;
 			children = (
+				958917371924321B0097726F /* rangetweakbar.cpp */,
+				958917381924321B0097726F /* rangetweakbar.h */,
+				95891736192431F90097726F /* callbacks.h */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
 				5DFACF6E1920AA5600EB8587 /* text.h */,
 				95F74DD3191B784700384CFF /* main.mm */,
@@ -195,7 +202,7 @@
 		95F74DDF191B784700384CFF /* thirdparty */ = {
 			isa = PBXGroup;
 			children = (
-				95CFB0861922B56C0037E731 /* libAntTweakBar.a */,
+				95891731192431430097726F /* libAntTweakBar.a */,
 				9591680E191B817C001A0A44 /* glew.c */,
 				953E9F3A19225C10006410F0 /* GLUT.framework */,
 				95F7508E191B7BB000384CFF /* Cocoa.framework */,
@@ -264,6 +271,7 @@
 				95F7507D191B784900384CFF /* Bitmap.cpp in Sources */,
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
 				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
+				958917391924321B0097726F /* rangetweakbar.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,

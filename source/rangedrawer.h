@@ -76,14 +76,16 @@ public:
 };
 
 class RangeDrawer {
+    
+    //    friend class TerrainObjectManager;
+    friend class RangeTweakBar;
+    
 private:
     
     // Marking
-    bool                        marked[Y_INTERVAL-1][X_INTERVAL-1];
-    bool                        markChanged;
+    bool marked[Y_INTERVAL-1][X_INTERVAL-1];
+    bool markChanged;
     set<xy, xy_comparator>      currentlyMarked;
-
-    map<string, set<xy, xy_comparator>> savedMarkings;
     
     // Drawing
     AreaMarkingManager*     markedWithShift;
@@ -91,7 +93,9 @@ private:
     // Mouse
     bool                    mouseIsDown;
     bool                    mouseDownIsMarking;     // true means mouse down for marking, false means unmarking
-
+    
+    
+    inline void SetMarkChanged() { markChanged = true; }
     
 public:
     
@@ -100,17 +104,14 @@ public:
     
     void MarkTerrain(bool holePositionSet, bool matPositionSet);
     void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
-    void LiftMarked(const float &lift);
-    void FlattenMarked(const float &h);
-    void TiltMarked(const float &xtilt, const float &ytilt);
-
+    void LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype);
+    void FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype);
+    void TiltMarked(const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype);
+    
     float GetAverageHeightOfMarked();
     glm::vec2 GetCenterOfMarked();
     float GetHeight(float tx, float ty);
     
-    bool SaveMarked(string name);
-    bool LoadMarking(string name);
-    bool DeleteSavedMarking(string name);
     
     void Mark(const int &x, const int &y);
     void Unmark(const int &x, const int &y);
