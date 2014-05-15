@@ -114,7 +114,7 @@ struct Intersection
 bool gLeftCameraUseColor = false;
 bool gRightCameraUseColor = true;
 bool gLeftCameraFullscreen = false;
-bool gLockCameraOnHole = false;
+bool gLockCameraOnHole = true;
 
 bool gMouseButtonDown = false;
 int gPrevCursorPosX, gPrevCursorPosY;
@@ -133,6 +133,9 @@ vec3 gCurrentHolePos;
 vec3 gCurrentMatPos;
 bool gHolePositionSet = false;
 bool gMatPositionSet = false;
+bool gAdjustingHole = false;
+bool gAdjustingMat = false;
+
 
 glm::vec3 gLightPosition;
 glm::vec3 gLightIntensities; //a.k.a. the color of the light
@@ -204,18 +207,18 @@ static void initSkyBox() {
     gSkyboxAsset.drawType = GL_TRIANGLES;
     gSkyboxAsset.drawStart = 0;
     gSkyboxAsset.drawCount = 6*2*3;
-//    gSkyboxAsset.skyboxTextures[0] = LoadTexture("Up.jpg");
-//    gSkyboxAsset.skyboxTextures[1] = LoadTexture("Up.jpg");
-//    gSkyboxAsset.skyboxTextures[2] = LoadTexture("Back.jpg");
-//    gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
-//    gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
-//    gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
-    gSkyboxAsset.skyboxTextures[0] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[1] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[2] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[3] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[4] = LoadTexture("grass.png");
-    gSkyboxAsset.skyboxTextures[5] = LoadTexture("grass.png");
+    gSkyboxAsset.skyboxTextures[0] = LoadTexture("Up.jpg");
+    gSkyboxAsset.skyboxTextures[1] = LoadTexture("Up.jpg");
+    gSkyboxAsset.skyboxTextures[2] = LoadTexture("Back.jpg");
+    gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
+    gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
+    gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
+//    gSkyboxAsset.skyboxTextures[0] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[1] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[2] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[3] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[4] = LoadTexture("grass.png");
+//    gSkyboxAsset.skyboxTextures[5] = LoadTexture("grass.png");
     glGenBuffers(1, &gSkyboxAsset.vbo);
     glGenVertexArrays(1, &gSkyboxAsset.vao);
     
@@ -588,20 +591,21 @@ static void Update(const float &dt) {
             float terrain_y = TERRAIN_DEPTH * y / terrain_side_px;
             
             // set hole position
-            if (keys['N']) {
+            if (keys['N'] || gAdjustingHole) {
                 
                 float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
-                gCurrentHolePos = vec3(terrain_x, h, terrain_y);
+                gCurrentHolePos = vec3(terrain_x, h, -terrain_y);
                 gCamera1.lookAt(gCurrentHolePos);
                 gHolePositionSet = true;
                 gRangeDrawer.MarkHole(terrain_x, terrain_y);
                 gRangeDrawer.MarkTerrain(gHolePositionSet, gMatPositionSet);
                 
                 //set driving mat position
-            } else if (keys['M']) {
+            } else if (keys['M']|| gAdjustingMat) {
                 
                 float h = gRangeDrawer.GetHeight(terrain_x, terrain_y);
-                gCurrentMatPos = vec3(terrain_x, h, terrain_y);
+                gCurrentMatPos = vec3(terrain_x, h, -terrain_y);
+                
                 gCamera1.setPosition(gCurrentMatPos);
                 gCamera1.lookAt(gCurrentHolePos);
                 gMatPositionSet = true;
@@ -744,7 +748,7 @@ void AppMain(int argc, char *argv[]) {
     // setup gCamera1 (left camera)
     gCamera1.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 10, 0));
     gCamera1.setViewportAspectRatio(gLeftCameraFullscreen ? 2 : 1);
-    gCamera1.setNearAndFarPlanes(0.5f, 100.0f);
+    gCamera1.setNearAndFarPlanes(0.5f, 1000.0f);
     gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, -TERRAIN_DEPTH / 2));
     
     // setup gCamera2 (right camera)

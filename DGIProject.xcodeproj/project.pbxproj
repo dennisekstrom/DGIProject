@@ -62,6 +62,12 @@
 		5DB8294E192421DF002BB053 /* TextVertexShader.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.fragmentshader; sourceTree = "<group>"; };
 		5DB8294F192421DF002BB053 /* TextVertexShader.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.vertexshader; sourceTree = "<group>"; };
 		5DB82950192421DF002BB053 /* uvmap.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = uvmap.DDS; sourceTree = "<group>"; };
+		5DB8295A192442B3002BB053 /* Back.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Back.jpg; sourceTree = "<group>"; };
+		5DB8295B192442B3002BB053 /* Down.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Down.jpg; sourceTree = "<group>"; };
+		5DB8295C192442B3002BB053 /* Front.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Front.jpg; sourceTree = "<group>"; };
+		5DB8295D192442B3002BB053 /* Left.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Left.jpg; sourceTree = "<group>"; };
+		5DB8295E192442B3002BB053 /* Right.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Right.jpg; sourceTree = "<group>"; };
+		5DB8295F192442B3002BB053 /* Up.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Up.jpg; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -153,6 +159,12 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				5DB8295A192442B3002BB053 /* Back.jpg */,
+				5DB8295B192442B3002BB053 /* Down.jpg */,
+				5DB8295C192442B3002BB053 /* Front.jpg */,
+				5DB8295D192442B3002BB053 /* Left.jpg */,
+				5DB8295E192442B3002BB053 /* Right.jpg */,
+				5DB8295F192442B3002BB053 /* Up.jpg */,
 				958917331924315A0097726F /* libAntTweakBar.dylib */,
 				95EE55AE192025FA002E0789 /* grass_big.jpg */,
 				95F5FB11191C30C70084FA41 /* grass.png */,

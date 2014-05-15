@@ -95,6 +95,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     extern bool gLeftCameraFullscreen;
     extern bool gLeftCameraUseColor;
     extern bool gRightCameraUseColor;
+    extern bool gLockCameraOnHole;
     extern tdogl::Camera gCamera1;
     extern glm::vec3 gLightPosition;
     
@@ -108,6 +109,14 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "key=F help='Turn left view fullscreen on/off.' ");
+    
+    TwAddButton(controlBar,
+                "Toggle lock camera on golfer view",
+                (TwButtonCallback) [] (void* clientData) {
+                    gLockCameraOnHole = !gLockCameraOnHole;
+                },
+                NULL,
+                "key=TODO help='Turn lock camera on/off.' ");
     
     TwAddButton(controlBar,
                 "Toggle left color mode",
@@ -143,11 +152,38 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Greens color='255 255 255' alpha=63 ");
     TwDefine("Greens text=light");
     
+    extern bool gAdjustingHole;
+    extern bool gAdjustingMat;
+    
     TwAddButton(objectBar,
                 "New green",
                 (TwButtonCallback) [] (void* clientData) { gTweakBar.NewTerrainObject(); },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
+    TwAddButton(objectBar,
+                "   Set control points",
+                (TwButtonCallback) [] (void* clientData) {
+                    gAdjustingMat = false;
+                    gAdjustingHole = false;
+                },
+                NULL,
+                "key= help='Set control point positions' ");
+    TwAddButton(objectBar,
+                "Adjust mat",
+                (TwButtonCallback) [] (void* clientData) {
+                    gAdjustingMat = true;
+                    gAdjustingHole = false;
+                },
+                NULL,
+                "key=M help='Adjust the mat position' ");
+    TwAddButton(objectBar,
+                "Adjust hole",
+                (TwButtonCallback) [] (void* clientData) {
+                    gAdjustingHole = true;
+                    gAdjustingMat = false;
+                },
+                NULL,
+                "key=N help='Adjust the hole position.' ");
     
     TwAddSeparator(objectBar, NULL, NULL);
     
@@ -245,6 +281,7 @@ void RangeTweakBar::NewTerrainObject() {
     }
     
     // reset the current marking
+    
     gRangeDrawer.UnmarkAll();
     
     // create new object

@@ -42,7 +42,7 @@ void RangeDrawer::MarkTerrain(bool holePositionSet, bool matPositionSet) {
     gTerrain.UpdateVertexData();
     gTerrain.changedVertices->Reset();
     
-    vec4 &c = white;
+    vec4 c = white;
     GLfloat* vertexData = gTerrain.vertexData;
     int x, y, idx;
     
@@ -238,6 +238,11 @@ void RangeDrawer::ToggleMarked(const int &x, const int &y) {
 }
 
 void RangeDrawer::UnmarkAll() {
+    Mark(gHolePosition.x, gHolePosition.y);
+    Mark(gMatPosition.x, gMatPosition.y);
+
+    Unmark(gHolePosition.x, gHolePosition.y);
+    Unmark(gMatPosition.x, gMatPosition.y);
     
     if (currentlyMarked.empty())
         return; // Nothing is marked
@@ -336,7 +341,7 @@ void RangeDrawer::MarkMat(const float &tx, const float &ty) {
 
 // TODO this is incorrect (only one corner taken into account)
 float RangeDrawer::GetHeight(float tx, float ty) {
-    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
+    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(abs(ty));
     ControlPoint* cp = gTerrain.GetControlPoint(x, y);
     return cp ? cp->h : 1.0f;
     
