@@ -63,7 +63,7 @@
 struct ModelAsset {
     tdogl::Program* shaders;
     tdogl::Texture* texture;
-    tdogl::Texture* skyboxTextures[6];
+    tdogl::Texture* cubeTextures[6];
     GLuint vbo;
     GLuint vao;
     GLenum drawType;
@@ -126,7 +126,12 @@ tdogl::Camera gCamera2; //Right camera, overview
 
 ModelAsset gTerrainModelAsset;
 ModelAsset gSkyboxAsset;
+ModelAsset gTeeAsset;
+ModelAsset gTargetAsset;
 ModelInstance gSkyBoxInstance;
+ModelInstance gTeeInstance;
+ModelInstance gTargetInstance;
+
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
 //vec3 gCurrentHolePos;
@@ -197,6 +202,99 @@ static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestInters
     }
     return false;
 }
+//TODO set up in seperate class instead
+static void initTeeModel() {
+    
+    gTeeAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    gTeeAsset.drawType = GL_TRIANGLES;
+    gTeeAsset.drawStart = 0;
+    gTeeAsset.drawCount = 6*2*3;
+    gTeeAsset.texture = LoadTexture("grass.png");
+    
+    glGenBuffers(1, &gTeeAsset.vbo);
+    glGenVertexArrays(1, &gTeeAsset.vao);
+    
+    // bind the VAO
+    glBindVertexArray(gTeeAsset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, gTeeAsset.vbo);
+    
+    // Make a cube out of triangles (two triangles per side)
+    GLfloat vertexData[] = {
+        //  X     Y     Z       U     V
+        // bottom
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        
+        // top
+        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // front
+        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // back
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        
+        // left
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        
+        // right
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+    };
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    
+    // connect the xyz to the "vert" attribute of the vertex shader
+    glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vert"));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    
+    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+    glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vertTexCoord"));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+    
+    // setup model instance of skybox
+    ModelInstance instance;
+    instance.asset = &gTeeAsset;
+    // translate and scale skybox
+    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
+    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    gTeeInstance = instance;
+    
+}
 
 // initializes the skybox
 static void initSkyBox() {
@@ -205,12 +303,12 @@ static void initSkyBox() {
     gSkyboxAsset.drawType = GL_TRIANGLES;
     gSkyboxAsset.drawStart = 0;
     gSkyboxAsset.drawCount = 6*2*3;
-    gSkyboxAsset.skyboxTextures[0] = LoadTexture("Up.jpg");
-    gSkyboxAsset.skyboxTextures[1] = LoadTexture("Up.jpg");
-    gSkyboxAsset.skyboxTextures[2] = LoadTexture("Back.jpg");
-    gSkyboxAsset.skyboxTextures[3] = LoadTexture("Front.jpg");
-    gSkyboxAsset.skyboxTextures[4] = LoadTexture("Left.jpg");
-    gSkyboxAsset.skyboxTextures[5] = LoadTexture("Right.jpg");
+    gSkyboxAsset.cubeTextures[0] = LoadTexture("Up.jpg");
+    gSkyboxAsset.cubeTextures[1] = LoadTexture("Up.jpg");
+    gSkyboxAsset.cubeTextures[2] = LoadTexture("Back.jpg");
+    gSkyboxAsset.cubeTextures[3] = LoadTexture("Front.jpg");
+    gSkyboxAsset.cubeTextures[4] = LoadTexture("Left.jpg");
+    gSkyboxAsset.cubeTextures[5] = LoadTexture("Right.jpg");
     
     glGenBuffers(1, &gSkyboxAsset.vbo);
     glGenVertexArrays(1, &gSkyboxAsset.vao);
@@ -378,6 +476,51 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
     return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
 
+static void RenderTee() {
+    
+//    gSkyBoxInstance.transform = glm::translate(glm::mat4(), gCamera1.position()) *
+//    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    //glDisable(GL_DEPTH_TEST);
+    ModelAsset* asset = &gSkyboxAsset;
+    tdogl::Program* shaders = asset->shaders;
+    
+    //bind the shaders
+    shaders->use();
+    
+    //set the shader uniforms
+    
+    shaders->setUniform("camera", gCamera1.matrix());
+    shaders->setUniform("useColor", gLeftCameraUseColor);
+    shaders->setUniform("monotoneLight", false);
+    
+    shaders->setUniform("model", gTeeInstance.transform);
+    shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
+    shaders->setUniform("light.position", gLightPosition);
+    shaders->setUniform("light.intensities", gLightIntensities);
+    //    shaders->setUniform("light.attenuation", gLightAttenuation);
+    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient*15);
+    shaders->setUniform("cameraPosition", gCamera1.position());
+    
+    for (int i = 0; i < 6; i++) {
+        //bind the texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, asset->cubeTextures[i]->object());
+        //
+        //    //bind VAO and draw
+        glBindVertexArray(asset->vao);
+        glDrawArrays(asset->drawType, i*6, 6);
+        //
+        //    //unbind everything
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+    }
+    
+    shaders->stopUsing();
+}
+
+
 static void RenderSkyBox() {
     
     gSkyBoxInstance.transform = glm::translate(glm::mat4(), gCamera1.position()) *
@@ -404,10 +547,10 @@ static void RenderSkyBox() {
     shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient*15);
     shaders->setUniform("cameraPosition", gCamera1.position());
     
-    for (int i = 1; i < 6; i++) { //TODO set i=0 to also render the bottom skybox texture
+    for (int i = 0; i < 6; i++) { //TODO set i=0 to also render the bottom skybox texture
         //bind the texture
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, asset->skyboxTextures[i]->object());
+        glBindTexture(GL_TEXTURE_2D, asset->cubeTextures[i]->object());
         //
         //    //bind VAO and draw
         glBindVertexArray(asset->vao);
@@ -493,6 +636,7 @@ static void Render() {
             }
             if (i == 0 || gLeftCameraFullscreen) {
                 RenderInstance(*it, gCamera1, false);
+                RenderTee();
                 //                drawText("DGI Project Alpha", 0, 0, 30);
             } else {
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
@@ -745,8 +889,9 @@ void AppMain(int argc, char *argv[]) {
     gLightAttenuation = 0.0001f;
     gLightAmbientCoefficient = 0.080f;
     
-    // setup skybox
+    // setup assets
     initSkyBox();
+    initTeeModel();
     
     // glut settings
     //    glutIgnoreKeyRepeat(1);
