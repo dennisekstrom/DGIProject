@@ -142,8 +142,18 @@ public:
     inline bool MarkChanged()                           { return markChanged; }
     inline void ResetMarkChanged()                      { markChanged = false; }
     inline bool IsMarked(const int &x, const int &y)    { return marked[y][x]; }
+    inline bool TeeMarked()                             { return teeMarked; };
+    inline bool TargetMarked()                          { return targetMarked; }
     
-    inline void MouseReleased() { mouseIsDown = false; }
+    inline vec3 TeeTerrainPos() {
+        return vec3(teeTerrainPos.x, GetHeight(teeTerrainPos.x, teeTerrainPos.y), -teeTerrainPos.y);
+    }
+    
+    inline vec3 TargetTerrainPos() {
+        return vec3(targetTerrainPos.x, GetHeight(targetTerrainPos.x, targetTerrainPos.y), -targetTerrainPos.y);
+    }
+        
+    inline void NotifyMouseReleased() { mouseIsDown = false; }
 
 //    void SetTee(const xy &teePos)        { this->teePos = teePos; teeMarked = true; }
 //    void SetTarget(const xy &targetPos)  { this->targetPos = targetPos; targetMarked = true;}
