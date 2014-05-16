@@ -175,7 +175,7 @@ static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestInters
     
     // iterate through all terrain vertices and check for intersection
     // X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36
-    for (int i = 0; i < X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36 ; i++) {
+    for (int i = 0; i < (X_INTERVAL-1) * (Y_INTERVAL-1) * FLOATS_PER_TRIANGLE * 2 - 36 ; i++) {
         vec3 v0 = vec3(gTerrain.vertexData[i], gTerrain.vertexData[i+1], gTerrain.vertexData[i+2]);
         vec3 v1 = vec3(gTerrain.vertexData[i+12],gTerrain.vertexData[i+13],gTerrain.vertexData[i+14]);
         vec3 v2 = vec3(gTerrain.vertexData[i+24],gTerrain.vertexData[i+25],gTerrain.vertexData[i+26]);
@@ -691,6 +691,14 @@ static void TakeKeyAction(const float &dt) {
 // update the scene based on the time elapsed since last update
 static void Update(const float &dt) {
     
+    // ***** TEMP BELOW *****
+    if (gRangeDrawer.TeeMarked() && gRangeDrawer.TargetMarked()) {
+        vec3 start = gRangeDrawer.TeeTerrainPos();
+        vec3 dir = gRangeDrawer.TargetTerrainPos();
+        
+    }
+    // ***** TEMP ABOVE *****
+    
     // Act on key events
     TakeKeyAction(dt);
     
@@ -762,7 +770,7 @@ static void Update(const float &dt) {
     
     if(!gMouseBtnDown) {
         // For marking in camera 2
-        gRangeDrawer.MouseReleased();
+        gRangeDrawer.NotifyMouseReleased();
     }
     
     /*if (gHolePositionSet) {

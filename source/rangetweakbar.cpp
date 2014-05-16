@@ -100,13 +100,9 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 (TwButtonCallback) [] (void* clientData) {
                     if (gRangeDrawer.teeMarked && gRangeDrawer.targetMarked) {
                         
-                        const float cam_above_ground = 1;
-                        
-                        float h_tee = gRangeDrawer.GetHeight(gRangeDrawer.teeTerrainPos.x, gRangeDrawer.teeTerrainPos.y);
-                        float h_target = gRangeDrawer.GetHeight(gRangeDrawer.targetTerrainPos.x, gRangeDrawer.targetTerrainPos.y);
-                        
-                        gCamera1.setPosition(vec3(gRangeDrawer.teeTerrainPos.x, h_tee + cam_above_ground, -gRangeDrawer.teeTerrainPos.y));
-                        gCamera1.lookAt(vec3(gRangeDrawer.targetTerrainPos.x, h_target, -gRangeDrawer.targetTerrainPos.y));
+                        const vec3 cam_offset(0,1,0);
+                        gCamera1.setPosition(gRangeDrawer.TeeTerrainPos() + cam_offset);
+                        gCamera1.lookAt(gRangeDrawer.TargetTerrainPos());
                     }
                 },
                 NULL,
