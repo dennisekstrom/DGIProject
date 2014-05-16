@@ -10,6 +10,7 @@
 		5DB82951192421DF002BB053 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB82946192421DF002BB053 /* shader.cpp */; };
 		5DB82952192421DF002BB053 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294A192421DF002BB053 /* text2D.cpp */; };
 		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
+		5DBAA24B192615DC0084477D /* wooden-crate.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F74DD1191B784700384CFF /* wooden-crate.jpg */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		950D57881924BE5700635F65 /* Back.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57821924BE5700635F65 /* Back.jpg */; };
 		950D57891924BE5800635F65 /* Down.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57831924BE5700635F65 /* Down.jpg */; };
@@ -45,6 +46,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				5DBAA24B192615DC0084477D /* wooden-crate.jpg in Copy Files (4 items) (6 items) */,
 				956AA6E9192606CA008C6703 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */,
 				950D57881924BE5700635F65 /* Back.jpg in Copy Files (4 items) (6 items) */,
 				950D57891924BE5800635F65 /* Down.jpg in Copy Files (4 items) (6 items) */,

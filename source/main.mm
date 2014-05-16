@@ -48,6 +48,8 @@
 
 #define ORTHO_RELATIVE_MARGIN   0.1
 #define SKYBOX_SCALE 1
+#define TEE_MODEL_SCALE 0.3
+#define TARGET_MODEL_SCALE 0.3
 
 /*
  Represents a textured geometry asset
@@ -209,7 +211,12 @@ static void initTeeModel() {
     gTeeAsset.drawType = GL_TRIANGLES;
     gTeeAsset.drawStart = 0;
     gTeeAsset.drawCount = 6*2*3;
-    gTeeAsset.texture = LoadTexture("grass.png");
+    gTeeAsset.cubeTextures[0] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[1] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[2] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[3] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[4] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[5] = LoadTexture("wooden-crate.jpg");
     
     glGenBuffers(1, &gTeeAsset.vbo);
     glGenVertexArrays(1, &gTeeAsset.vao);
@@ -293,6 +300,104 @@ static void initTeeModel() {
     glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
     
     gTeeInstance = instance;
+    
+}
+
+static void initTargetModel() {
+    
+    gTargetAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    gTargetAsset.drawType = GL_TRIANGLES;
+    gTargetAsset.drawStart = 0;
+    gTargetAsset.drawCount = 6*2*3;
+    gTargetAsset.cubeTextures[0] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[1] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[2] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[3] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[4] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[5] = LoadTexture("wooden-crate.jpg");
+    
+    glGenBuffers(1, &gTargetAsset.vbo);
+    glGenVertexArrays(1, &gTargetAsset.vao);
+    
+    // bind the VAO
+    glBindVertexArray(gTargetAsset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, gTargetAsset.vbo);
+    
+    // Make a cube out of triangles (two triangles per side)
+    GLfloat vertexData[] = {
+        //  X     Y     Z       U     V
+        // bottom
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        
+        // top
+        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // front
+        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // back
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        
+        // left
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        
+        // right
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+    };
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    
+    // connect the xyz to the "vert" attribute of the vertex shader
+    glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vert"));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    
+    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+    glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vertTexCoord"));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+    
+    // setup model instance of skybox
+    ModelInstance instance;
+    instance.asset = &gTargetAsset;
+    // translate and scale skybox
+    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
+    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    gTargetInstance = instance;
     
 }
 
@@ -421,9 +526,7 @@ static void UpdateUsingMapBuffer(const ModelAsset &asset, GLfloat* data, vector<
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-// initialises the gWoodenCrate global [TODO: WRONG COMMENT]
 static void LoadAsset(ModelAsset &asset, const int &floatsPerVertex) {
-    // set all the elements of gWoodenCrate [TODO: WRONG COMMENT]
     asset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
     asset.drawType = GL_TRIANGLES;
     asset.drawStart = 0;
@@ -477,12 +580,11 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
 }
 
 static void RenderTee() {
-    
-//    gSkyBoxInstance.transform = glm::translate(glm::mat4(), gCamera1.position()) *
-//    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
-    
+    gTeeInstance.transform = glm::translate(glm::mat4(), gRangeDrawer.TeeTerrainPos()) *
+    glm::scale(glm::mat4(), vec3(1,1,1) * float(TEE_MODEL_SCALE));
+
     //glDisable(GL_DEPTH_TEST);
-    ModelAsset* asset = &gSkyboxAsset;
+    ModelAsset* asset = &gTeeAsset;
     tdogl::Program* shaders = asset->shaders;
     
     //bind the shaders
@@ -520,6 +622,50 @@ static void RenderTee() {
     shaders->stopUsing();
 }
 
+static void RenderTarget() {
+    gTargetInstance.transform = glm::translate(glm::mat4(), gRangeDrawer.TargetTerrainPos()) *
+    glm::scale(glm::mat4(), vec3(1,1,1) * float(TARGET_MODEL_SCALE));
+    
+    //glDisable(GL_DEPTH_TEST);
+    ModelAsset* asset = &gTargetAsset;
+    tdogl::Program* shaders = asset->shaders;
+    
+    //bind the shaders
+    shaders->use();
+    
+    //set the shader uniforms
+    
+    shaders->setUniform("camera", gCamera1.matrix());
+    shaders->setUniform("useColor", gLeftCameraUseColor);
+    shaders->setUniform("monotoneLight", false);
+    
+    shaders->setUniform("model", gTargetInstance.transform);
+    shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
+    shaders->setUniform("light.position", gLightPosition);
+    shaders->setUniform("light.intensities", gLightIntensities);
+    //    shaders->setUniform("light.attenuation", gLightAttenuation);
+    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient*15);
+    shaders->setUniform("cameraPosition", gCamera1.position());
+    
+    for (int i = 0; i < 6; i++) {
+        //bind the texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, asset->cubeTextures[i]->object());
+        //
+        //    //bind VAO and draw
+        glBindVertexArray(asset->vao);
+        glDrawArrays(asset->drawType, i*6, 6);
+        //
+        //    //unbind everything
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+    }
+    
+    shaders->stopUsing();
+}
+
+
 
 static void RenderSkyBox() {
     
@@ -547,7 +693,7 @@ static void RenderSkyBox() {
     shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient*15);
     shaders->setUniform("cameraPosition", gCamera1.position());
     
-    for (int i = 0; i < 6; i++) { //TODO set i=0 to also render the bottom skybox texture
+    for (int i = 0; i < 6; i++) {
         //bind the texture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, asset->cubeTextures[i]->object());
@@ -637,6 +783,7 @@ static void Render() {
             if (i == 0 || gLeftCameraFullscreen) {
                 RenderInstance(*it, gCamera1, false);
                 RenderTee();
+                RenderTarget();
                 //                drawText("DGI Project Alpha", 0, 0, 30);
             } else {
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
@@ -900,6 +1047,7 @@ void AppMain(int argc, char *argv[]) {
     // setup assets
     initSkyBox();
     initTeeModel();
+    initTargetModel();
     
     // glut settings
     //    glutIgnoreKeyRepeat(1);
