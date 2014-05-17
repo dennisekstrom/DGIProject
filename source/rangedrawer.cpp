@@ -350,6 +350,15 @@ void RangeDrawer::TerrainCoordClicked(const float &tx, const float &ty, const bo
 //    
 //}
 
+//xy RangeDrawer::GetTeePosition() {
+//    return teeMarkPos;
+//}
+//
+//xy RangeDrawer::GetTargetPosition() {
+//    return targetMarkPos;
+//    
+//}
+
 float RangeDrawer::GetHeight(float tx, float ty) {
 
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
