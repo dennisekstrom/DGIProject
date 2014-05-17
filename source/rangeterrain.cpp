@@ -82,6 +82,52 @@ void RangeTerrain::SetControlPoint(int x, int y, float h, float spread, ControlP
     changedControlPoints->SetChanged(x, y);
 }
 
+void RangeTerrain::SetControlPointSpread(int x, int y, float spread) {
+    if (controlPoints[y][x]) {
+
+        // old value
+        float old_spread = controlPoints[y][x]->spread;
+        
+        // did control point change at all?
+        if (spread == old_spread)
+            return;
+        
+        // is hmap regeneration necessary
+        if(controlPointChangeRequiresHMapRegeneration || spread != old_spread )
+            controlPointChangeRequiresHMapRegeneration = true;
+        
+        // perform the update
+        controlPoints[y][x]->spread = spread;
+        
+        // remember change
+        changedControlPoints->SetChanged(x, y);
+    }
+}
+
+void RangeTerrain::SetControlPointFuncType(int x, int y, ControlPointFuncType functype) {
+    if (controlPoints[y][x]) {
+        
+        // old value
+        ControlPointFuncType old_functype = controlPoints[y][x]->functype;
+        
+        // did control point change at all?
+        if (functype == old_functype)
+            return;
+        
+        // is hmap regeneration necessary
+        if(controlPointChangeRequiresHMapRegeneration || functype != old_functype )
+            controlPointChangeRequiresHMapRegeneration = true;
+        
+        cout << controlPointChangeRequiresHMapRegeneration << endl;
+        
+        // perform the update
+        controlPoints[y][x]->SetFuncType(functype);
+        
+        // remember change
+        changedControlPoints->SetChanged(x, y);
+    }
+}
+
 void RangeTerrain::Reset() {
     memset(controlPoints, NULL, Y_INTERVAL*X_INTERVAL*sizeof(ControlPoint*));
     controlPointChangeRequiresHMapRegeneration = false;
@@ -99,15 +145,18 @@ void RangeTerrain::FlattenHMap() {
 
 void RangeTerrain::UpdateAll() {
     
-    if (controlPointChangeRequiresHMapRegeneration)
+    if (controlPointChangeRequiresHMapRegeneration) {
         GenerateHMap();
-    else
+        GenerateNormals();
+        GenerateVertexData();
+    } else {
         UpdateHMap();
+        UpdateNormals();
+        UpdateChangedVertices();
+        UpdateVertexData();
+    }
 
-    UpdateNormals();
 //    UpdateTrianglePairs();
-    UpdateChangedVertices();
-    UpdateVertexData();
     
     changedControlPoints->Reset();
     controlPointChangeRequiresHMapRegeneration = false;
@@ -281,8 +330,8 @@ void RangeTerrain::GenerateVertexData() {
 
 void RangeTerrain::UpdateNormal(const int &x, const int &y) {
 
-    float hn = (y == 0 ?              2*hmap[y][x]-hmap[y+1][x] : hmap[y-1][x]); // North
-    float hs = (y == Y_INTERVAL - 1 ? 2*hmap[y][x]-hmap[y-1][x] : hmap[y+1][x]); // South
+    float hs = (y == 0 ?              2*hmap[y][x]-hmap[y+1][x] : hmap[y-1][x]); // North
+    float hn = (y == Y_INTERVAL - 1 ? 2*hmap[y][x]-hmap[y-1][x] : hmap[y+1][x]); // South
     float hw = (x == 0 ?              2*hmap[y][x]-hmap[y][x+1] : hmap[y][x-1]); // West
     float he = (x == X_INTERVAL - 1 ? 2*hmap[y][x]-hmap[y][x-1] : hmap[y][x+1]); // East
     

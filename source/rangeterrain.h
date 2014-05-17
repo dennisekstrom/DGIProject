@@ -58,6 +58,10 @@ public:
         this->y = y;
         this->h = h;
         this->spread = spread;
+        SetFuncType(functype);
+    }
+    
+    inline void SetFuncType(ControlPointFuncType functype) {
         this->functype = functype;
         
         switch (functype) {
@@ -335,6 +339,8 @@ public:
     void GenerateAll();     // Generate everything from control points
     
     void SetControlPoint(int x, int y, float h, float spread, ControlPointFuncType func);
+    void SetControlPointSpread(int x, int y, float spread);
+    void SetControlPointFuncType(int x, int y, ControlPointFuncType functype);
     
     inline ControlPoint* GetControlPoint(const int &x, const int &y) const { return controlPoints[y][x]; }
     inline bool ControlPointChanged() { return !changedControlPoints->identifiers.empty(); }

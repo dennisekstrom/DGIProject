@@ -42,6 +42,8 @@
 #include "rangetweakbar.h"
 #include "text.h"
 #include "callbacks.h"
+#include "model.h"
+#include "difficultyanalyzer.h"
 
 #define SCREEN_W                1024
 #define SCREEN_H                768
@@ -50,67 +52,6 @@
 #define SKYBOX_SCALE 1
 #define TEE_MODEL_SCALE 0.3
 #define TARGET_MODEL_SCALE 0.3
-
-/*
- Represents a textured geometry asset
- 
- Contains everything necessary to draw arbitrary geometry with a single texture:
- 
- - shaders
- - a texture
- - a VBO
- - a VAO
- - the parameters to glDrawArrays (drawType, drawStart, drawCount)
- */
-struct ModelAsset {
-    tdogl::Program* shaders;
-    tdogl::Texture* texture;
-    tdogl::Texture* cubeTextures[6];
-    GLuint vbo;
-    GLuint vao;
-    GLenum drawType;
-    GLint drawStart;
-    GLint drawCount;
-    GLfloat shininess;
-    glm::vec3 specularColor;
-    
-    ModelAsset() :
-    shaders(NULL),
-    texture(NULL),
-    vbo(0),
-    vao(0),
-    drawType(GL_TRIANGLES),
-    drawStart(0),
-    drawCount(0),
-    shininess(0.0f),
-    specularColor(1.0f, 1.0f, 1.0f)
-    {}
-};
-
-/*
- Represents an instance of an `ModelAsset`
- 
- Contains a pointer to the asset, and a model transformation matrix to be used when drawing.
- */
-struct ModelInstance {
-    ModelAsset* asset;
-    glm::mat4 transform;
-    
-    ModelInstance() :
-    asset(NULL),
-    transform()
-    {}
-};
-
-/*
- Defines intersection with triangle
- */
-struct Intersection
-{
-    vec3 position;
-    float distance;
-    ModelAsset* asset;
-};
 
 // globals
 bool gLeftCameraUseColor = false;
@@ -136,10 +77,6 @@ ModelInstance gTargetInstance;
 
 std::list<ModelInstance> gInstances;
 GLfloat gDegreesRotated = 0.0f;
-//vec3 gCurrentHolePos;
-//vec3 gCurrentMatPos;
-//bool gHolePositionSet = false;
-//bool gMatPositionSet = false;
 
 glm::vec3 gLightPosition;
 glm::vec3 gLightIntensities; //a.k.a. the color of the light
@@ -170,40 +107,6 @@ static tdogl::Texture* LoadTexture(const char* filename) {
     return new tdogl::Texture(bmp);
 }
 
-static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestIntersection) {
-    
-    float closest_t = std::numeric_limits<float>::max();
-    float closest_index = -1;
-    
-    // iterate through all terrain vertices and check for intersection
-    // X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36
-    for (int i = 0; i < (X_INTERVAL-1) * (Y_INTERVAL-1) * FLOATS_PER_TRIANGLE * 2 - 36 ; i++) {
-        vec3 v0 = vec3(gTerrain.vertexData[i], gTerrain.vertexData[i+1], gTerrain.vertexData[i+2]);
-        vec3 v1 = vec3(gTerrain.vertexData[i+12],gTerrain.vertexData[i+13],gTerrain.vertexData[i+14]);
-        vec3 v2 = vec3(gTerrain.vertexData[i+24],gTerrain.vertexData[i+25],gTerrain.vertexData[i+26]);
-        i = i+36;
-        //cout << sizeof(gTerrain.vertexData) << endl;
-        //cout << i << endl;
-        vec3 e1 = v1 - v0;
-        vec3 e2 = v2 - v0;
-        vec3 b = start - v0;
-        mat3 A( -dir, e1, e2 );
-        vec3 x = glm::inverse( A ) * b; // x = (t, u, v)
-        
-        if (x.x < closest_t && x.x > 0 && x.y >= 0 && x.z >= 0 && x.y + x.z <= 1) {
-            closest_t = x.x;
-            closest_index = i;
-        }
-    }
-    
-    if (closest_index >= 0) {
-        closestIntersection.position = start + closest_t * dir;
-        closestIntersection.distance = closest_t;
-        //closestIntersection.triangleIndex = closest_index;
-        return true;
-    }
-    return false;
-}
 //TODO set up in seperate class instead
 static void initTeeModel() {
     
@@ -839,14 +742,6 @@ static void TakeKeyAction(const float &dt) {
 // update the scene based on the time elapsed since last update
 static void Update(const float &dt) {
     
-    // ***** TEMP BELOW *****
-    if (gRangeDrawer.TeeMarked() && gRangeDrawer.TargetMarked()) {
-        vec3 start = gRangeDrawer.TeeTerrainPos();
-        vec3 dir = gRangeDrawer.TargetTerrainPos();
-        
-    }
-    // ***** TEMP ABOVE *****
-    
     // Act on key events
     TakeKeyAction(dt);
     
@@ -885,79 +780,12 @@ static void Update(const float &dt) {
 
             gRangeDrawer.TerrainCoordClicked(terrain_x, terrain_y, gShiftDown);
             
-        } /*else { // left viewport
-           
-           glfwDisable(GLFW_MOUSE_CURSOR);
-           
-           //rotate camera based on mouse movement
-           const float mouseSensitivity = 0.1f;
-           int mouseX, mouseY;
-           glfwGetMousePos(&mouseX, &mouseY);
-           
-           if (!gMouseButtonDown) {
-           gPrevCursorPosX = mouseX;
-           gPrevCursorPosY = mouseY;
-           glfwSetMousePos(0, 0);
-           mouseX = 0; mouseY = 0;
-           }
-           gMouseButtonDown = true;
-           
-           gCamera1.offsetOrientation(mouseSensitivity * mouseY, mouseSensitivity * mouseX);
-           glfwSetMousePos(0, 0); //reset the mouse, so it doesn't go out of the window
-           */
-    }
-    
-    /*
-     } else if (gMouseButtonDown) {
-     // Remember mouse position before mouse orientation
-     glfwEnable(GLFW_MOUSE_CURSOR);
-     glfwSetMousePos(gPrevCursorPosX, gPrevCursorPosY);
-     gMouseButtonDown = false;
-     }
-     */
-    
-    if(!gMouseBtnDown) {
+        }
+        
+    } else {
         // For marking in camera 2
         gRangeDrawer.NotifyMouseReleased();
     }
-    
-    /*if (gHolePositionSet) {
-    // lock camera on hole from mat, if both points are set
-    if (gLockCameraOnHole && gMatPositionSet && gHolePositionSet) {
-        float h_hole = gRangeDrawer.GetHeight(gCurrentHolePos.x, gCurrentHolePos.z);
-        float h_mat = gRangeDrawer.GetHeight(gCurrentMatPos.x, gCurrentMatPos.z);
-        gCurrentHolePos.y = h_hole;
-        gCurrentMatPos.y = h_mat;
-        
-        vec3 newCameraPos = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
-        gCamera1.setPosition(newCameraPos);
-        gCamera1.lookAt(gCurrentHolePos);
-     
-        Intersection inter;
-        vec3 flagPosition = vec3(gCurrentHolePos.x, gCurrentHolePos.y+2, gCurrentHolePos.z);
-        vec3 matPosition = vec3(gCurrentMatPos.x, gCurrentMatPos.y+1, gCurrentMatPos.z);
-        bool intersected = ClosestIntersection(matPosition, flagPosition, inter);
-        cout << "Intersected: " << intersected << endl;
-        cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
-        cout << "Distance: " << inter.distance << endl;
-        
-    }*/
-
-    //FOR TESTING camera raytracing toward the hole
-    
-//    if (gHolePositionSet) {
-//        Intersection inter;
-//        bool intersected = ClosestIntersection(gCamera1.position(), gCurrentHolePos, inter);
-//        if (intersected) {
-//            cout << "Intersected! " << intersected << endl;
-//            cout << "Position x,y,z: " << inter.position.x << " "  << inter.position.y << " " << inter.position.z << endl;
-//            cout << "Distance: " << inter.distance << endl;
-//            cout << gMouseX << " " << gMouseY << endl;
-//        }
-//    }
-
-    
-    
 }
 
 double lastTime = 0;
@@ -973,6 +801,9 @@ static void Display() {
     
     // update the scene based on the time elapsed since last update
     Update(dt);
+    
+    // calculate difficulty
+    gDifficultyAnalyzer.Update(dt);
     
     // render the scene
     Render();
@@ -1030,13 +861,13 @@ void AppMain(int argc, char *argv[]) {
     gCamera1.lookAt(glm::vec3(TERRAIN_WIDTH / 2, 0, -TERRAIN_DEPTH / 2));
     
     // setup gCamera2 (right camera)
-    gCamera2.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 20, -TERRAIN_DEPTH / 2));
+    gCamera2.setPosition(glm::vec3(TERRAIN_WIDTH / 2, 100, -TERRAIN_DEPTH / 2));
     gCamera2.setOrtho(-TERRAIN_WIDTH / 2 - TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
                       TERRAIN_WIDTH / 2 + TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
                       -TERRAIN_DEPTH / 2 - TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
                       TERRAIN_DEPTH / 2 + TERRAIN_WIDTH * ORTHO_RELATIVE_MARGIN,
                       0.5f,
-                      100.0f);
+                      200.0f);
     gCamera2.SetAboveMode(true);
     
     // setup gLight

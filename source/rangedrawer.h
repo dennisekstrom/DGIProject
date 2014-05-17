@@ -125,7 +125,6 @@ public:
     glm::vec2 GetCenterOfMarked();
     float GetHeight(float tx, float ty);
     
-    
     void Mark(const int &x, const int &y);
     void Unmark(const int &x, const int &y);
     void ToggleMarked(const int &x, const int &y);
