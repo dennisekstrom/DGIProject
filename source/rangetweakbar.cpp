@@ -10,7 +10,6 @@
 #include "tdogl/Camera.h"
 #include <glm/glm.hpp>
 #include <GLUT/glut.h>
-#include "perlinnoise.h"
 
 RangeTweakBar gTweakBar;
 
@@ -20,7 +19,6 @@ TwBar* objectBar;
 TwBar* difficultyBar;
 
 ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
-PerlinNoise perlinNoise = PerlinNoise(0, 0, 0, 0, 0);
 
 float       height      = 0,    heightPrev      = 0;
 float       xtilt       = 0,    xtiltPrev       = 0;
@@ -190,15 +188,8 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 "Generate perlin noise",
                 (TwButtonCallback) [] (void* clientData) {
                     
-                    perlinNoise.SetParams(persistance, frequency, amplitude, octaves, rand() % 1000);
-                    for( int x = 0; x < X_INTERVAL; x++)
-                        for( int y = 0; y < Y_INTERVAL; y++)
-                        {
-                            double height = perlinNoise.GetHeight(x,y);
-                            gTerrain.hmap[y][x] = height;
-                        }
+                    gTerrain.GeneratePerlinNoise(persistance, frequency, amplitude, octaves, rand() % 1000);
                     
-                    gTerrain.GenerateAll();
                 },
                 NULL,
                 "key=V help='Generate perflin noise on all terrain except manipulated terrain' ");

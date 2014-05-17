@@ -13,6 +13,7 @@
 #include <math.h>
 #include <glm/glm.hpp>
 #include <GL/glfw.h>
+#include "perlinnoise.h"
 
 #define PI                  3.14159265359
 #define X_INTERVAL          64
@@ -250,6 +251,7 @@ private:
     
     ControlPoint*   controlPoints[Y_INTERVAL][X_INTERVAL];
     bool            controlPointChangeRequiresHMapRegeneration;
+    PerlinNoise     perlinNoise;
     
     ChangeManager*  changedControlPoints;
     ChangeManager*  changedHMapCoords;
@@ -338,9 +340,12 @@ public:
     void UpdateAll();       // Update everything from changed control points
     void GenerateAll();     // Generate everything from control points
     
+    void GeneratePerlinNoise(double persistance, double frequency, double amplitude, double octaves, double seed);
+    
     void SetControlPoint(int x, int y, float h, float spread, ControlPointFuncType func);
     void SetControlPointSpread(int x, int y, float spread);
     void SetControlPointFuncType(int x, int y, ControlPointFuncType functype);
+    
     
     inline ControlPoint* GetControlPoint(const int &x, const int &y) const { return controlPoints[y][x]; }
     inline bool ControlPointChanged() { return !changedControlPoints->identifiers.empty(); }

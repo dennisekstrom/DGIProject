@@ -10,6 +10,15 @@
 
 #include "perlinnoise.h"
 
+PerlinNoise::PerlinNoise()
+{
+    persistence = 0;
+    frequency = 0;
+    amplitude  = 0;
+    octaves = 0;
+    seed = 0;
+}
+
 PerlinNoise::PerlinNoise(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed)
 {
     persistence = _persistence;

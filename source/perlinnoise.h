@@ -14,6 +14,7 @@ class PerlinNoise
 public:
     
     // Constructor
+    PerlinNoise();
     PerlinNoise(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed);
     
     // Get Height
