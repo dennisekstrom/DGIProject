@@ -341,15 +341,14 @@ void RangeTweakBar::TakeAction(const float &dt) {
     
     // spread
     if (spread != spreadPrev) {
-        ControlPoint* cp;
-        float h;
         int x, y;
         for (auto xy : gRangeDrawer.currentlyMarked) {
             x = xy.x;
             y = xy.y;
-            cp = gTerrain.GetControlPoint(x, y);
-            h = cp ? cp->h : gTerrain.hmap[y][x];
-            gTerrain.SetControlPoint(x, y, h, spread, functype);
+            gTerrain.SetControlPointSpread(x  , y  , spread);
+            gTerrain.SetControlPointSpread(x  , y+1, spread);
+            gTerrain.SetControlPointSpread(x+1, y  , spread);
+            gTerrain.SetControlPointSpread(x+1, y+1, spread);
         }
         
         spreadPrev = spread;
@@ -357,15 +356,14 @@ void RangeTweakBar::TakeAction(const float &dt) {
     
     // functype
     if (functype != functypePrev) {
-        ControlPoint* cp;
-        float h;
         int x, y;
         for (auto xy : gRangeDrawer.currentlyMarked) {
             x = xy.x;
             y = xy.y;
-            cp = gTerrain.GetControlPoint(x, y);
-            h = cp ? cp->h : gTerrain.hmap[y][x];
-            gTerrain.SetControlPoint(x, y, h, spread, functype);
+            gTerrain.SetControlPointFuncType(x  , y  , functype);
+            gTerrain.SetControlPointFuncType(x  , y+1, functype);
+            gTerrain.SetControlPointFuncType(x+1, y  , functype);
+            gTerrain.SetControlPointFuncType(x+1, y+1, functype);
         }
         
         functypePrev = functype;

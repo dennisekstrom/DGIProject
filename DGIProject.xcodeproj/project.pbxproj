@@ -21,6 +21,7 @@
 		956AA6E7192606AF008C6703 /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 956AA6E6192606AF008C6703 /* libAntTweakBar.a */; };
 		956AA6E9192606CA008C6703 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */; };
 		958917391924321B0097726F /* rangetweakbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958917371924321B0097726F /* rangetweakbar.cpp */; };
+		958E9FC1192647170053F188 /* difficultyanalyzer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958E9FBF192647170053F188 /* difficultyanalyzer.cpp */; };
 		9591680F191B817C001A0A44 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 9591680E191B817C001A0A44 /* glew.c */; };
 		95916810191B83D1001A0A44 /* fragment-shader.txt in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F74DCF191B784700384CFF /* fragment-shader.txt */; };
 		95916811191B83D5001A0A44 /* vertex-shader.txt in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F74DD0191B784700384CFF /* vertex-shader.txt */; };
@@ -88,6 +89,9 @@
 		95891736192431F90097726F /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
 		958917371924321B0097726F /* rangetweakbar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangetweakbar.cpp; sourceTree = "<group>"; };
 		958917381924321B0097726F /* rangetweakbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rangetweakbar.h; sourceTree = "<group>"; };
+		958E9FBF192647170053F188 /* difficultyanalyzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = difficultyanalyzer.cpp; sourceTree = "<group>"; };
+		958E9FC0192647170053F188 /* difficultyanalyzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = difficultyanalyzer.h; sourceTree = "<group>"; };
+		958E9FC2192647E60053F188 /* model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
 		9591680E191B817C001A0A44 /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = glew/src/glew.c; sourceTree = "<group>"; };
 		95916813191B89D9001A0A44 /* rangeterrain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangeterrain.h; sourceTree = "<group>"; };
 		95916814191B92D6001A0A44 /* rangeterrain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangeterrain.cpp; sourceTree = "<group>"; };
@@ -203,8 +207,11 @@
 				95F5FB14191FF5B90084FA41 /* rangedrawer.h */,
 				95916814191B92D6001A0A44 /* rangeterrain.cpp */,
 				95916813191B89D9001A0A44 /* rangeterrain.h */,
+				958E9FBF192647170053F188 /* difficultyanalyzer.cpp */,
+				958E9FC0192647170053F188 /* difficultyanalyzer.h */,
 				5DB82944192421DF002BB053 /* text_utils */,
 				95F74DD4191B784700384CFF /* tdogl */,
+				958E9FC2192647E60053F188 /* model.h */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -289,6 +296,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				958E9FC1192647170053F188 /* difficultyanalyzer.cpp in Sources */,
 				95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */,
 				5DB82951192421DF002BB053 /* shader.cpp in Sources */,
 				5DB82952192421DF002BB053 /* text2D.cpp in Sources */,
