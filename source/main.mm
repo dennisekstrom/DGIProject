@@ -107,6 +107,203 @@ static tdogl::Texture* LoadTexture(const char* filename) {
     return new tdogl::Texture(bmp);
 }
 
+//TODO set up in seperate class instead
+static void initTeeModel() {
+    
+    gTeeAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    gTeeAsset.drawType = GL_TRIANGLES;
+    gTeeAsset.drawStart = 0;
+    gTeeAsset.drawCount = 6*2*3;
+    gTeeAsset.cubeTextures[0] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[1] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[2] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[3] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[4] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[5] = LoadTexture("wooden-crate.jpg");
+    
+    glGenBuffers(1, &gTeeAsset.vbo);
+    glGenVertexArrays(1, &gTeeAsset.vao);
+    
+    // bind the VAO
+    glBindVertexArray(gTeeAsset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, gTeeAsset.vbo);
+    
+    // Make a cube out of triangles (two triangles per side)
+    GLfloat vertexData[] = {
+        //  X     Y     Z       U     V
+        // bottom
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        
+        // top
+        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // front
+        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // back
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        
+        // left
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        
+        // right
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+    };
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    
+    // connect the xyz to the "vert" attribute of the vertex shader
+    glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vert"));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    
+    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+    glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vertTexCoord"));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+    
+    // setup model instance of skybox
+    ModelInstance instance;
+    instance.asset = &gTeeAsset;
+    // translate and scale skybox
+    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
+    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    gTeeInstance = instance;
+    
+}
+
+static void initTargetModel() {
+    
+    gTargetAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    gTargetAsset.drawType = GL_TRIANGLES;
+    gTargetAsset.drawStart = 0;
+    gTargetAsset.drawCount = 6*2*3;
+    gTargetAsset.cubeTextures[0] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[1] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[2] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[3] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[4] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[5] = LoadTexture("wooden-crate.jpg");
+    
+    glGenBuffers(1, &gTargetAsset.vbo);
+    glGenVertexArrays(1, &gTargetAsset.vao);
+    
+    // bind the VAO
+    glBindVertexArray(gTargetAsset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, gTargetAsset.vbo);
+    
+    // Make a cube out of triangles (two triangles per side)
+    GLfloat vertexData[] = {
+        //  X     Y     Z       U     V
+        // bottom
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        
+        // top
+        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // front
+        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        
+        // back
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        
+        // left
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        
+        // right
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+    };
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    
+    // connect the xyz to the "vert" attribute of the vertex shader
+    glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vert"));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    
+    // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+    glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vertTexCoord"));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+    
+    // setup model instance of skybox
+    ModelInstance instance;
+    instance.asset = &gTargetAsset;
+    // translate and scale skybox
+    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
+    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
+    
+    gTargetInstance = instance;
+    
+}
+
 // initializes the skybox
 static void initSkyBox() {
     

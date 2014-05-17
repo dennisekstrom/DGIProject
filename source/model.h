@@ -26,6 +26,7 @@
 struct ModelAsset {
     tdogl::Program* shaders;
     tdogl::Texture* texture;
+    tdogl::Texture* cubeTextures[6];
     tdogl::Texture* skyboxTextures[6];
     GLuint vbo;
     GLuint vao;
