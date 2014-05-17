@@ -11,6 +11,7 @@
 		5DB82952192421DF002BB053 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294A192421DF002BB053 /* text2D.cpp */; };
 		5DB82953192421DF002BB053 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DB8294C192421DF002BB053 /* texture.cpp */; };
 		5DBAA24B192615DC0084477D /* wooden-crate.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F74DD1191B784700384CFF /* wooden-crate.jpg */; };
+		5DBAA24E1927A03C0084477D /* perlinnoise.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DBAA24C1927A03C0084477D /* perlinnoise.cpp */; };
 		5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5DFACF6D1920AA5500EB8587 /* text.cpp */; };
 		950D57881924BE5700635F65 /* Back.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57821924BE5700635F65 /* Back.jpg */; };
 		950D57891924BE5800635F65 /* Down.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57831924BE5700635F65 /* Down.jpg */; };
@@ -76,6 +77,8 @@
 		5DB8294E192421DF002BB053 /* TextVertexShader.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.fragmentshader; sourceTree = "<group>"; };
 		5DB8294F192421DF002BB053 /* TextVertexShader.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextVertexShader.vertexshader; sourceTree = "<group>"; };
 		5DB82950192421DF002BB053 /* uvmap.DDS */ = {isa = PBXFileReference; lastKnownFileType = file; path = uvmap.DDS; sourceTree = "<group>"; };
+		5DBAA24C1927A03C0084477D /* perlinnoise.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = perlinnoise.cpp; sourceTree = "<group>"; };
+		5DBAA24D1927A03C0084477D /* perlinnoise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = perlinnoise.h; sourceTree = "<group>"; };
 		5DFACF6D1920AA5500EB8587 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		5DFACF6E1920AA5600EB8587 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		950D57821924BE5700635F65 /* Back.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Back.jpg; sourceTree = "<group>"; };
@@ -196,6 +199,8 @@
 			isa = PBXGroup;
 			children = (
 				958917371924321B0097726F /* rangetweakbar.cpp */,
+				5DBAA24C1927A03C0084477D /* perlinnoise.cpp */,
+				5DBAA24D1927A03C0084477D /* perlinnoise.h */,
 				958917381924321B0097726F /* rangetweakbar.h */,
 				95891736192431F90097726F /* callbacks.h */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
@@ -303,6 +308,7 @@
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,
+				5DBAA24E1927A03C0084477D /* perlinnoise.cpp in Sources */,
 				5DFACF6F1920AA5600EB8587 /* text.cpp in Sources */,
 				95F75080191B784900384CFF /* Shader.cpp in Sources */,
 			);

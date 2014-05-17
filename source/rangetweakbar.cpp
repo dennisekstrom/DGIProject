@@ -10,6 +10,7 @@
 #include "tdogl/Camera.h"
 #include <glm/glm.hpp>
 #include <GLUT/glut.h>
+#include "perlinnoise.h"
 
 RangeTweakBar gTweakBar;
 
@@ -19,11 +20,16 @@ TwBar* objectBar;
 TwBar* difficultyBar;
 
 ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
+PerlinNoise perlinNoise = PerlinNoise(0, 0, 0, 0, 0);
 
 float       height      = 0,    heightPrev      = 0;
 float       xtilt       = 0,    xtiltPrev       = 0;
 float       ytilt       = 0,    ytiltPrev       = 0;
 float       spread      = 5,    spreadPrev      = 5;
+float       persistance = 1;
+float       frequency   = 0.2;
+float       amplitude   = 0.8;
+float       octaves     = 2;
 
 string      difficulty = ""; // [TODO: implement support]
 
@@ -161,6 +167,45 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
+    
+    TwAddSeparator(controlBar, NULL, NULL);
+    
+    
+    TwAddVarRW(controlBar, "Persistance", TW_TYPE_FLOAT, &persistance,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the persistance of perlin noise.' ");
+    
+    TwAddVarRW(controlBar, "Frequency", TW_TYPE_FLOAT, &frequency,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the frequency of perlin noise.' ");
+    
+    TwAddVarRW(controlBar, "Amplitude", TW_TYPE_FLOAT, &amplitude,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the amplitude of perlin noise' ");
+    
+    TwAddVarRW(controlBar, "Octaves", TW_TYPE_FLOAT, &octaves,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the octaves of perlin noise' ");
+    
+    
+    TwAddSeparator(controlBar, NULL, NULL);
+    
+    TwAddButton(controlBar,
+                "Generate perlin noise",
+                (TwButtonCallback) [] (void* clientData) {
+                    
+                    perlinNoise.SetParams(persistance, frequency, amplitude, octaves, rand() % 1000);
+                    for( int x = 0; x < X_INTERVAL; x++)
+                        for( int y = 0; y < Y_INTERVAL; y++)
+                        {
+                            double height = perlinNoise.GetHeight(x,y);
+                            gTerrain.hmap[y][x] = height;
+                        }
+                    
+                    gTerrain.GenerateAll();
+                },
+                NULL,
+                "key=V help='Generate perflin noise on all terrain except manipulated terrain' ");
+    
+    
+    
+    
     
     objectBar = TwNewBar("Greens");
     TwDefine("Greens label=GREENS");
