@@ -37,6 +37,7 @@
 #include "tdogl/Texture.h"
 #include "tdogl/Camera.h"
 
+#include "protracerinputhandler.h"
 #include "rangeterrain.h"
 #include "rangedrawer.h"
 #include "rangetweakbar.h"
@@ -89,7 +90,6 @@ static std::string ResourcePath(std::string fileName) {
     NSString* path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:fname];
     return std::string([path cStringUsingEncoding:NSUTF8StringEncoding]);
 }
-
 
 // returns a new tdogl::Program created from the given vertex and fragment shader filenames
 static tdogl::Program* LoadShaders(const char* vertFilename, const char* fragFilename) {
@@ -817,6 +817,10 @@ static void Display() {
 
 // the program starts here
 void AppMain(int argc, char *argv[]) {
+    
+    
+    // TODO temp
+    gInputHandler.LoadFromFile("input.txt");
     
     // initialise GLUT and create window
     glutInit(&argc, argv);

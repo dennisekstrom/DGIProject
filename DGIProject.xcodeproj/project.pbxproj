@@ -19,6 +19,8 @@
 		950D578C1924BE5800635F65 /* Right.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57861924BE5700635F65 /* Right.jpg */; };
 		950D578D1924BE5800635F65 /* Up.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 950D57871924BE5700635F65 /* Up.jpg */; };
 		953E9F3B19225C10006410F0 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953E9F3A19225C10006410F0 /* GLUT.framework */; };
+		954E87941927C1060058CF7A /* protracerinputhandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 954E87921927C1060058CF7A /* protracerinputhandler.cpp */; };
+		954E87961928AAE30058CF7A /* input.txt in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 954E87951928AAE30058CF7A /* input.txt */; };
 		956AA6E7192606AF008C6703 /* libAntTweakBar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 956AA6E6192606AF008C6703 /* libAntTweakBar.a */; };
 		956AA6E9192606CA008C6703 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */; };
 		958917391924321B0097726F /* rangetweakbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958917371924321B0097726F /* rangetweakbar.cpp */; };
@@ -47,6 +49,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				954E87961928AAE30058CF7A /* input.txt in Copy Files (4 items) (6 items) */,
 				5DBAA24B192615DC0084477D /* wooden-crate.jpg in Copy Files (4 items) (6 items) */,
 				956AA6E9192606CA008C6703 /* libAntTweakBar.dylib in Copy Files (4 items) (6 items) */,
 				950D57881924BE5700635F65 /* Back.jpg in Copy Files (4 items) (6 items) */,
@@ -86,8 +89,11 @@
 		950D57861924BE5700635F65 /* Right.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Right.jpg; sourceTree = "<group>"; };
 		950D57871924BE5700635F65 /* Up.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Up.jpg; sourceTree = "<group>"; };
 		953E9F3A19225C10006410F0 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
-		956AA6E6192606AF008C6703 /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = thirdparty/AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
-		956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libAntTweakBar.dylib; path = thirdparty/AntTweakBar/lib/libAntTweakBar.dylib; sourceTree = "<group>"; };
+		954E87921927C1060058CF7A /* protracerinputhandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = protracerinputhandler.cpp; sourceTree = "<group>"; };
+		954E87931927C1060058CF7A /* protracerinputhandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = protracerinputhandler.h; sourceTree = "<group>"; };
+		954E87951928AAE30058CF7A /* input.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = input.txt; sourceTree = "<group>"; };
+		956AA6E6192606AF008C6703 /* libAntTweakBar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAntTweakBar.a; path = AntTweakBar/lib/libAntTweakBar.a; sourceTree = "<group>"; };
+		956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libAntTweakBar.dylib; path = ../thirdparty/AntTweakBar/lib/libAntTweakBar.dylib; sourceTree = "<group>"; };
 		95891736192431F90097726F /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
 		958917371924321B0097726F /* rangetweakbar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangetweakbar.cpp; sourceTree = "<group>"; };
 		958917381924321B0097726F /* rangetweakbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rangetweakbar.h; sourceTree = "<group>"; };
@@ -160,8 +166,6 @@
 		95F74DB6191B780000384CFF = {
 			isa = PBXGroup;
 			children = (
-				956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */,
-				956AA6E6192606AF008C6703 /* libAntTweakBar.a */,
 				95DE90C619257CCC00767FBB /* TODO.txt */,
 				95F74DCE191B784700384CFF /* resources */,
 				95F74DD2191B784700384CFF /* source */,
@@ -181,6 +185,8 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */,
+				954E87951928AAE30058CF7A /* input.txt */,
 				950D57821924BE5700635F65 /* Back.jpg */,
 				950D57831924BE5700635F65 /* Down.jpg */,
 				950D57841924BE5700635F65 /* Front.jpg */,
@@ -211,6 +217,8 @@
 				95916813191B89D9001A0A44 /* rangeterrain.h */,
 				958E9FBF192647170053F188 /* difficultyanalyzer.cpp */,
 				958E9FC0192647170053F188 /* difficultyanalyzer.h */,
+				954E87921927C1060058CF7A /* protracerinputhandler.cpp */,
+				954E87931927C1060058CF7A /* protracerinputhandler.h */,
 				5DB82944192421DF002BB053 /* text_utils */,
 				95F74DD4191B784700384CFF /* tdogl */,
 				958E9FC2192647E60053F188 /* model.h */,
@@ -238,6 +246,7 @@
 		95F74DDF191B784700384CFF /* thirdparty */ = {
 			isa = PBXGroup;
 			children = (
+				956AA6E6192606AF008C6703 /* libAntTweakBar.a */,
 				9591680E191B817C001A0A44 /* glew.c */,
 				953E9F3A19225C10006410F0 /* GLUT.framework */,
 				95F7508E191B7BB000384CFF /* Cocoa.framework */,
@@ -308,6 +317,7 @@
 				95F7507E191B784900384CFF /* Camera.cpp in Sources */,
 				95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */,
 				958917391924321B0097726F /* rangetweakbar.cpp in Sources */,
+				954E87941927C1060058CF7A /* protracerinputhandler.cpp in Sources */,
 				9591680F191B817C001A0A44 /* glew.c in Sources */,
 				95F75081191B784900384CFF /* Texture.cpp in Sources */,
 				95F7507C191B784900384CFF /* main.mm in Sources */,
