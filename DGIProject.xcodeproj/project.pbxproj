@@ -209,9 +209,9 @@
 			isa = PBXGroup;
 			children = (
 				958917371924321B0097726F /* rangetweakbar.cpp */,
+				958917381924321B0097726F /* rangetweakbar.h */,
 				5DBAA24C1927A03C0084477D /* perlinnoise.cpp */,
 				5DBAA24D1927A03C0084477D /* perlinnoise.h */,
-				958917381924321B0097726F /* rangetweakbar.h */,
 				95891736192431F90097726F /* callbacks.h */,
 				5DFACF6D1920AA5500EB8587 /* text.cpp */,
 				5DFACF6E1920AA5600EB8587 /* text.h */,

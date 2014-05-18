@@ -819,10 +819,6 @@ static void Display() {
 // the program starts here
 void AppMain(int argc, char *argv[]) {
     
-    
-    // TODO temp
-    gInputHandler.LoadFromFile("input.txt");
-    
     // initialise GLUT and create window
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGB | GLUT_SINGLE | GLUT_DEPTH);

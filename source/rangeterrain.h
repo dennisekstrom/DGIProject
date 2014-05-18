@@ -92,7 +92,7 @@ public:
         return dist <= spread ? h * (1 - sin((dist * PI) / (spread * 2))) : 0;
     }
     
-    float lift(int x, int y) {
+    float lift(int x, int y) const {
         float dx = this->x - x;
         float dy = this->y - y;
         float dist = sqrt(dx * dx + dy * dy) * GRID_RES;
@@ -250,7 +250,7 @@ class RangeTerrain {
 private:
     
     ControlPoint*   controlPoints[Y_INTERVAL][X_INTERVAL];
-    bool            controlPointChangeRequiresHMapRegeneration;
+    bool            regenerationRequired;
     PerlinNoise     perlinNoise;
     
     ChangeManager*  changedControlPoints;
@@ -260,12 +260,16 @@ private:
 public:
     
     float hmap[Y_INTERVAL][X_INTERVAL];
+    float noise[Y_INTERVAL][X_INTERVAL];
     vec3 normals[X_INTERVAL][Y_INTERVAL];
     
     //    TrianglePair trianglePairs[(Y_INTERVAL - 1)][(X_INTERVAL - 1)];
     
     GLfloat vertexData[(X_INTERVAL - 1) * (Y_INTERVAL - 1) * 2 * 3 * FLOATS_PER_VERTEX];
     vector<int> changedVertexIndices;
+
+    void SetNoise(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed);
+    void FlattenNoise();
     
 private:
     
@@ -282,7 +286,9 @@ private:
     //    void GenerateTrianglePairs();               // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void GenerateVertexData();                  // Requires hmap and normals
     
-    void UpdateHMap(ControlPoint &cp);                                          // Updates hmap from the given control point
+    void ApplyNoise();
+    
+    void UpdateHMap(const ControlPoint &cp);                                    // Updates hmap from the given control point
     void UpdateNormal(const int &x, const int &y);                              // Requires hmap
     void UpdateTrianglePair(const int &x, const int &y);                        // Requires hmap and normal
     void UpdateVertexData(const int &x, const int &y/*, const vec4* color=NULL*/);  // Requires hmap and normal
@@ -339,9 +345,7 @@ public:
     void Reset();           // Delete control points and flatten hmap
     void UpdateAll();       // Update everything from changed control points
     void GenerateAll();     // Generate everything from control points
-    
-    void GeneratePerlinNoise(double persistance, double frequency, double amplitude, double octaves, double seed);
-    
+        
     void SetControlPoint(int x, int y, float h, float spread, ControlPointFuncType func);
     void SetControlPointSpread(int x, int y, float spread);
     void SetControlPointFuncType(int x, int y, ControlPointFuncType functype);

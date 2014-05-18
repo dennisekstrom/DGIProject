@@ -22,7 +22,7 @@ RangeTerrain::RangeTerrain() {
     assert(TERRAIN_WIDTH == TERRAIN_DEPTH);
     
     memset(controlPoints, NULL, Y_INTERVAL*X_INTERVAL*sizeof(ControlPoint*));
-    controlPointChangeRequiresHMapRegeneration = false;
+    regenerationRequired = false;
     
     changedControlPoints    = new ChangeManager(X_INTERVAL, Y_INTERVAL);
     changedHMapCoords       = new ChangeManager(X_INTERVAL, Y_INTERVAL);
@@ -30,8 +30,8 @@ RangeTerrain::RangeTerrain() {
     
     changedVertexIndices.reserve(Y_INTERVAL * X_INTERVAL * 6); // Each vertex appears in 6 different triangles
     
-    
     FlattenHMap();
+    FlattenNoise();
     
 //    SetControlPoint(0, 0, 4, 4, FUNC_COS);
 //    SetControlPoint(8, 8, 3, 7, FUNC_LINEAR);
@@ -70,8 +70,8 @@ void RangeTerrain::SetControlPoint(int x, int y, float h, float spread, ControlP
             return;
         
         // is hmap regeneration necessary
-        if(controlPointChangeRequiresHMapRegeneration || abs(h) < abs(old_h) || spread != old_spread || functype != old_functype)
-            controlPointChangeRequiresHMapRegeneration = true;
+        if(regenerationRequired || abs(h) < abs(old_h) || spread != old_spread || functype != old_functype)
+            regenerationRequired = true;
         
         // delete old pointer
         delete controlPoints[y][x];
@@ -95,8 +95,8 @@ void RangeTerrain::SetControlPointSpread(int x, int y, float spread) {
             return;
         
         // is hmap regeneration necessary
-        if(controlPointChangeRequiresHMapRegeneration || spread != old_spread )
-            controlPointChangeRequiresHMapRegeneration = true;
+        if(regenerationRequired || spread != old_spread )
+            regenerationRequired = true;
         
         // perform the update
         controlPoints[y][x]->spread = spread;
@@ -117,10 +117,8 @@ void RangeTerrain::SetControlPointFuncType(int x, int y, ControlPointFuncType fu
             return;
         
         // is hmap regeneration necessary
-        if(controlPointChangeRequiresHMapRegeneration || functype != old_functype )
-            controlPointChangeRequiresHMapRegeneration = true;
-        
-        cout << controlPointChangeRequiresHMapRegeneration << endl;
+        if(regenerationRequired || functype != old_functype )
+            regenerationRequired = true;
         
         // perform the update
         controlPoints[y][x]->SetFuncType(functype);
@@ -132,7 +130,7 @@ void RangeTerrain::SetControlPointFuncType(int x, int y, ControlPointFuncType fu
 
 void RangeTerrain::Reset() {
     memset(controlPoints, NULL, Y_INTERVAL*X_INTERVAL*sizeof(ControlPoint*));
-    controlPointChangeRequiresHMapRegeneration = false;
+    regenerationRequired = false;
 
     FlattenHMap();
     GenerateAll();
@@ -145,46 +143,42 @@ void RangeTerrain::FlattenHMap() {
             hmap[y][x] = 0;
 }
 
+void RangeTerrain::FlattenNoise() {
+    
+    for ( int y=0; y<Y_INTERVAL; y++ )
+        for ( int x=0; x<X_INTERVAL; x++ )
+            noise[y][x] = 0;
+}
+
 void RangeTerrain::UpdateAll() {
     
-    if (controlPointChangeRequiresHMapRegeneration) {
-        GenerateHMap();
-        GenerateNormals();
-        GenerateVertexData();
-    } else {
-        UpdateHMap();
-        UpdateNormals();
-        UpdateChangedVertices();
-        UpdateVertexData();
+    if (regenerationRequired) {
+        GenerateAll();
+        return;
     }
+    
+    UpdateHMap();
+    UpdateNormals();
+    UpdateChangedVertices();
+    UpdateVertexData();
 
 //    UpdateTrianglePairs();
     
     changedControlPoints->Reset();
-    controlPointChangeRequiresHMapRegeneration = false;
+    regenerationRequired = false;
 }
 
 void RangeTerrain::GenerateAll() {
     
+//    FlattenHMap();
     GenerateHMap();
+    ApplyNoise();
     GenerateNormals();
 //    GenerateTrianglePairs();
     GenerateVertexData();
     
     changedControlPoints->Reset();
-    controlPointChangeRequiresHMapRegeneration = false;
-}
-
-void RangeTerrain::GeneratePerlinNoise(double persistance, double frequency, double amplitude, double octaves, double seed) {
-    perlinNoise.SetParams(persistance, frequency, amplitude, octaves, seed);
-    for( int x = 0; x < X_INTERVAL; x++)
-        for( int y = 0; y < Y_INTERVAL; y++)
-        {
-            double height = perlinNoise.GetHeight(x,y);
-            gTerrain.hmap[y][x] = height;
-        }
-    
-    gTerrain.GenerateAll();
+    regenerationRequired = false;
 }
 
 // [TODO: THIS FUNCTION IS NOT UP TO DATE]
@@ -192,72 +186,21 @@ void RangeTerrain::UpdateHMap() { // Changes only upwards
     
     changedHMapCoords->Reset();
 
-    int x, y;
-    ControlPoint* cp;
-    for ( xy &xy : changedControlPoints->identifiers ) {
-
-        x = xy.x;
-        y = xy.y;
-        cp = controlPoints[y][x];
-        
-        // Height of control point itself
-        hmap[y][x] = cp->h;
-        changedHMapCoords->SetChanged(x, y);
-        
-        // Height of surrounding points
-        int min_x = ceil(std::max(x - cp->spread / GRID_RES, 0.0f));
-        int max_x = floor(std::min(x + cp->spread / GRID_RES, float(X_INTERVAL - 1)));
-        int min_y = ceil(std::max(y - cp->spread / GRID_RES, 0.0f));
-        int max_y = floor(std::min(y + cp->spread / GRID_RES, float(Y_INTERVAL - 1)));
-        for (int yy=min_y; yy<=max_y; yy++) {
-            for (int xx=min_x; xx<=max_x; xx++) {
-                float h = cp->lift(xx, yy);
-                if (!controlPoints[yy][xx] && abs(h) > abs(hmap[yy][xx])) {
-                    hmap[yy][xx] = h;
-                    changedHMapCoords->SetChanged(xx, yy);
-                }
-            }
-        }
-    }
+    for ( xy &xy : changedControlPoints->identifiers )
+        UpdateHMap(*controlPoints[xy.y][xy.x]);
 }
 
 void RangeTerrain::GenerateHMap() {
     
     changedHMapCoords->Reset();
+    FlattenHMap();
     
-    ControlPoint* cp;
-    for ( int y=0; y<Y_INTERVAL; y++ ) {
-        for ( int x=0; x<X_INTERVAL; x++ ) {
-            if (controlPoints[y][x]) {
-                
-                cp = controlPoints[y][x];
-                
-                // Height of control point itself
-                hmap[y][x] = cp->h;
-                changedHMapCoords->SetChanged(x, y);
-                
-                // Height of surrounding points
-                int min_x = ceil(std::max(x - cp->spread / GRID_RES, 0.0f));
-                int max_x = floor(std::min(x + cp->spread / GRID_RES, float(X_INTERVAL - 1)));
-                int min_y = ceil(std::max(y - cp->spread / GRID_RES, 0.0f));
-                int max_y = floor(std::min(y + cp->spread / GRID_RES, float(Y_INTERVAL - 1)));
-                for (int yy=min_y; yy<=max_y; yy++) {
-                    for (int xx=min_x; xx<=max_x; xx++) {
-                        float h = cp->lift(xx, yy);
-                        
-                        if (!changedHMapCoords->DidChange(xx, yy)) {    // Change if not previously changed...
-                            hmap[yy][xx] = h;
-                            changedHMapCoords->SetChanged(xx, yy);
-                        } else if (!controlPoints[yy][xx] && abs(h) > abs(hmap[yy][xx])) {                  // ... or if higher
-                            hmap[yy][xx] = h;
-                            // No need to register change since we know it's already been registered
-                        }
-                    }
-                }
-            }
-        }
-    }
+    for ( int y=0; y<Y_INTERVAL; y++ )
+        for ( int x=0; x<X_INTERVAL; x++ )
+            if (controlPoints[y][x])
+                UpdateHMap(*controlPoints[y][x]);
 
+    ApplyNoise();
 }
 
 void RangeTerrain::UpdateChangedVertices() {
@@ -340,6 +283,44 @@ void RangeTerrain::GenerateVertexData() {
     for ( int y=0; y<Y_INTERVAL; y++ )
         for ( int x=0; x<X_INTERVAL; x++ )
             UpdateVertexData(x, y);
+}
+
+void RangeTerrain::SetNoise(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed) {
+    PerlinNoise pn(_persistence, _frequency, _amplitude, _octaves, _randomseed);
+    for( int x=0; x<X_INTERVAL; x++)
+        for( int y=0; y<Y_INTERVAL; y++)
+            noise[y][x] = pn.GetHeight(x, y);
+}
+
+void RangeTerrain::ApplyNoise() {
+    for( int x=0; x<X_INTERVAL; x++) {
+        for( int y=0; y<Y_INTERVAL; y++) {
+            if (abs(noise[y][x]) > abs(hmap[y][x]))
+                hmap[y][x] = noise[y][x];
+        }
+    }
+}
+
+void RangeTerrain::UpdateHMap(const ControlPoint &cp) {
+
+    // Height of control point itself
+    hmap[cp.y][cp.x] = cp.h;
+    changedHMapCoords->SetChanged(cp.x, cp.y);
+    
+    // Height of surrounding points
+    int min_x = ceil(std::max(cp.x - cp.spread / GRID_RES, 0.0f));
+    int max_x = floor(std::min(cp.x + cp.spread / GRID_RES, float(X_INTERVAL - 1)));
+    int min_y = ceil(std::max(cp.y - cp.spread / GRID_RES, 0.0f));
+    int max_y = floor(std::min(cp.y + cp.spread / GRID_RES, float(Y_INTERVAL - 1)));
+    for (int yy=min_y; yy<=max_y; yy++) {
+        for (int xx=min_x; xx<=max_x; xx++) {
+            float h = cp.lift(xx, yy);
+            if (!controlPoints[yy][xx] && abs(h) > abs(hmap[yy][xx])) {
+                hmap[yy][xx] = h;
+                changedHMapCoords->SetChanged(xx, yy);
+            }
+        }
+    }
 }
 
 void RangeTerrain::UpdateNormal(const int &x, const int &y) {

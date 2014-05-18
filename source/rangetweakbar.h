@@ -32,8 +32,11 @@ private:
     int _screenWidth;
     int _screenHeight;
     
+    int                     objectCounter;
     TerrainObject*          currentObject;
     vector<TerrainObject*>  objects;
+    
+    bool RemoveTerrainObject(TerrainObject* obj);
     
 public:
     RangeTweakBar();
@@ -43,7 +46,8 @@ public:
     void Draw();
     void Update(const float &dt);
     void TakeAction(const float &dt);
-    
+
+    void LoadTerrainObjectsFromFile();
     void NewTerrainObject();
     void UpdateObjectToCurrent(TerrainObject* object);
 };

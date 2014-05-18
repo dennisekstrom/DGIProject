@@ -7,6 +7,7 @@
 //
 
 #include "rangetweakbar.h"
+#include "protracerinputhandler.h"
 #include "tdogl/Camera.h"
 #include <glm/glm.hpp>
 #include <GLUT/glut.h>
@@ -14,6 +15,7 @@
 RangeTweakBar gTweakBar;
 
 TwBar* generalBar;
+TwBar* noiseBar;
 TwBar* controlBar;
 TwBar* objectBar;
 TwBar* difficultyBar;
@@ -32,7 +34,7 @@ float       octaves     = 2;
 string      difficulty = ""; // [TODO: implement support]
 
 RangeTweakBar::RangeTweakBar() {
-    
+    objectCounter = 0;
     currentObject = NULL;
 }
 
@@ -49,7 +51,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     generalBar = TwNewBar("General");
     TwDefine("General label=GENERAL");
     TwDefine("General position='0 0'");
-    TwDefine("General size='256 256'");
+    TwDefine("General size='205 256'");
     TwDefine("General resizable=false");
     TwDefine("General movable=false");
     TwDefine("General fontresizable=false");
@@ -112,10 +114,53 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 NULL,
                 "key=T help='Position the camera at the tee looking at the target. Both tee and target must be set.' ");
     
+    noiseBar = TwNewBar("Noise");
+    TwDefine("Noise label=NOISE");
+    TwDefine("Noise position='205 0'");
+    TwDefine("Noise size='205 256'");
+    TwDefine("Noise resizable=false");
+    TwDefine("Noise movable=false");
+    TwDefine("Noise fontresizable=false");
+    TwDefine("Noise color='255 255 255' alpha=63 ");
+    TwDefine("Noise text=light");
+    
+    TwAddVarRW(noiseBar, "Persistance", TW_TYPE_FLOAT, &persistance,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the persistance of perlin noise.' ");
+    
+    TwAddVarRW(noiseBar, "Frequency", TW_TYPE_FLOAT, &frequency,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the frequency of perlin noise.' ");
+    
+    TwAddVarRW(noiseBar, "Amplitude", TW_TYPE_FLOAT, &amplitude,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the amplitude of perlin noise' ");
+    
+    TwAddVarRW(noiseBar, "Octaves", TW_TYPE_FLOAT, &octaves,
+               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the octaves of perlin noise' ");
+    
+    
+    TwAddSeparator(noiseBar, NULL, NULL);
+    
+    TwAddButton(noiseBar,
+                "Generate perlin noise",
+                (TwButtonCallback) [] (void* clientData) {
+                    gTerrain.SetNoise(persistance, frequency, amplitude, octaves, rand() % 1000);
+                    gTerrain.GenerateAll();
+                },
+                NULL,
+                "key=V help='Apply perlin noise to terrain.'");
+    
+    TwAddButton(noiseBar,
+                "Remove noise",
+                (TwButtonCallback) [] (void* clientData) {
+                    gTerrain.FlattenNoise();
+                    gTerrain.GenerateAll();
+                },
+                NULL,
+                "help='Remove the noise' ");
+    
     controlBar = TwNewBar("Controls");
     TwDefine("Controls label=CONTROLS");
-    TwDefine("Controls position='256 0'");
-    TwDefine("Controls size='256 256'");
+    TwDefine("Controls position='410 0'");
+    TwDefine("Controls size='205 256'");
     TwDefine("Controls resizable=false");
     TwDefine("Controls movable=false");
     TwDefine("Controls fontresizable=false");
@@ -126,10 +171,10 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                "min=-20 max=20 step=0.25 precision=2 keyIncr=Y keyDecr=I help='Raise/lower selected segments.' ");
     
     TwAddVarRW(controlBar, "X-Tilt", TW_TYPE_FLOAT, &xtilt,
-               "min=-85 max=85 step=2 keyIncr=K keyDecr=H help='Tilt selected segments along x-axis.' ");
+               "min=-85 max=85 step=2 keyIncr=H keyDecr=K help='Tilt selected segments along x-axis.' ");
     
     TwAddVarRW(controlBar, "Y-Tilt", TW_TYPE_FLOAT, &ytilt,
-               "min=-85 max=85 step=2 keyIncr=U keyDecr=J help='Tilt selected segments along y-axis.' ");
+               "min=-85 max=85 step=2 keyIncr=J keyDecr=U help='Tilt selected segments along y-axis.' ");
     
     TwAddVarRW(controlBar, "Spread", TW_TYPE_FLOAT, &spread,
                "min=0 max=20 step=0.25 keyIncr=+ keyDecr=- help='Set the spread for the selected segments.' ");
@@ -152,8 +197,8 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddButton(controlBar,
                 "Flatten selection",
                 (TwButtonCallback) [] (void* clientData) {
-                    float h = gRangeDrawer.GetAverageHeightOfMarked();
-                    gRangeDrawer.FlattenMarked(h, spread, functype);
+                    float h = gRangeDrawer.GetAverageHeight(gRangeDrawer.currentlyMarked);
+                    gRangeDrawer.SetMonotoneHeight(gRangeDrawer.currentlyMarked, h, spread, functype);
                 },
                 NULL,
                 "key=SPACE help='Flatten the current selection.' ");
@@ -165,43 +210,11 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
-    
-    TwAddSeparator(controlBar, NULL, NULL);
-    
-    
-    TwAddVarRW(controlBar, "Persistance", TW_TYPE_FLOAT, &persistance,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the persistance of perlin noise.' ");
-    
-    TwAddVarRW(controlBar, "Frequency", TW_TYPE_FLOAT, &frequency,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the frequency of perlin noise.' ");
-    
-    TwAddVarRW(controlBar, "Amplitude", TW_TYPE_FLOAT, &amplitude,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the amplitude of perlin noise' ");
-    
-    TwAddVarRW(controlBar, "Octaves", TW_TYPE_FLOAT, &octaves,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the octaves of perlin noise' ");
-    
-    
-    TwAddSeparator(controlBar, NULL, NULL);
-    
-    TwAddButton(controlBar,
-                "Generate perlin noise",
-                (TwButtonCallback) [] (void* clientData) {
-                    
-                    gTerrain.GeneratePerlinNoise(persistance, frequency, amplitude, octaves, rand() % 1000);
-                    
-                },
-                NULL,
-                "key=V help='Generate perflin noise on all terrain except manipulated terrain' ");
-    
-    
-    
-    
-    
+
     objectBar = TwNewBar("Greens");
     TwDefine("Greens label=GREENS");
-    TwDefine("Greens position='512 0'");
-    TwDefine("Greens size='256 256'");
+    TwDefine("Greens position='615 0'");
+    TwDefine("Greens size='205 256'");
     TwDefine("Greens resizable=false");
     TwDefine("Greens movable=false");
     TwDefine("Greens fontresizable=false");
@@ -267,6 +280,17 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddSeparator(objectBar, NULL, NULL);
     
     TwAddButton(objectBar,
+                "Load greens from file.",
+                (TwButtonCallback) [] (void* clientData) {
+                    set<xy, xy_comparator> tmp;
+                    gTweakBar.LoadTerrainObjectsFromFile();
+                },
+                NULL,
+                "help='Loads greens from a file.' ");
+
+    TwAddSeparator(objectBar, NULL, NULL);
+    
+    TwAddButton(objectBar,
                 "New green",
                 (TwButtonCallback) [] (void* clientData) { gTweakBar.NewTerrainObject(); },
                 NULL,
@@ -277,21 +301,9 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 (TwButtonCallback) [] (void* clientData) {
                     if (gTweakBar.currentObject) {
                         
-                        // remove from the bar
-                        TwRemoveVar(objectBar, gTweakBar.currentObject->name.c_str());
+                        // remove the current object
+                        gTweakBar.RemoveTerrainObject(gTweakBar.currentObject);
                         
-                        // remove from the vector of objects
-                        int idx = -1;
-                        for ( int i=0; i<gTweakBar.objects.size(); i++ ) {
-                            if (gTweakBar.objects[i] == gTweakBar.currentObject) {
-                                idx = i;
-                                break;
-                            }
-                        }
-                        assert(idx != -1); // since currentObject != NULL, it should also have been in the vector
-                        gTweakBar.objects.erase(gTweakBar.objects.begin() + idx);
-                        delete gTweakBar.currentObject;
-
                         // after this, no object is selected
                         gTweakBar.currentObject = NULL;
                         
@@ -306,8 +318,8 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     
     difficultyBar = TwNewBar("Difficulty");
     TwDefine("Difficulty label=DIFFICULTY");
-    TwDefine("Difficulty position='768 0'");
-    TwDefine("Difficulty size='256 256'");
+    TwDefine("Difficulty position='820 0'");
+    TwDefine("Difficulty size='205 256'");
     TwDefine("Difficulty resizable=false");
     TwDefine("Difficulty movable=false");
     TwDefine("Difficulty fontresizable=false");
@@ -406,7 +418,121 @@ void RangeTweakBar::TakeAction(const float &dt) {
     }
 }
 
-int num_greens = 0;
+bool RangeTweakBar::RemoveTerrainObject(TerrainObject* obj) {
+    
+    if (obj == NULL)
+        return false;
+    
+    // remove from the bar
+    TwRemoveVar(objectBar, obj->name.c_str());
+    
+    // remove from the vector of objects
+    int idx = -1;
+    for ( int i=0; i<objects.size(); i++ ) {
+        if (objects[i] == obj) {
+            idx = i;
+            break;
+        }
+    }
+    
+    if (idx == -1)
+        return false;
+    
+    objects.erase(objects.begin() + idx);
+    delete obj;
+    return true;
+}
+
+void RangeTweakBar::LoadTerrainObjectsFromFile() {
+    
+    // remove the existing objects
+    while (!objects.empty())
+        RemoveTerrainObject(objects.back());
+    
+    // after this, no object is selected
+    gTweakBar.currentObject = NULL;
+    
+    // reset the current marking
+    gRangeDrawer.UnmarkAll();
+    
+    vector<GreenInfo> greens = ProtracerInputHandler::LoadFromFile("input.txt");
+    
+    for (GreenInfo &green : greens) {
+        TerrainObject* to = new TerrainObject(ProtracerInputHandler::GreenInfo2TerrainObject(green));
+        
+        gRangeDrawer.SetMonotoneTilt( to->marking, green.targetPos + green.targetCenterOffset, to->xtilt, to->ytilt, to->cp_spread, to->cp_functype );
+
+        objects.push_back(to);
+        
+        TwAddButton(objectBar,
+                    to->name.c_str(),
+                    (TwButtonCallback) [] (void* clientData) {
+                        
+                        if (gTweakBar.currentObject) {
+                            
+                            // remember current marking
+                            gTweakBar.currentObject->height     = height;
+                            gTweakBar.currentObject->xtilt      = xtilt;
+                            gTweakBar.currentObject->ytilt      = ytilt;
+                            gTweakBar.currentObject->cp_spread  = spread;
+                            gTweakBar.currentObject->marking    = gRangeDrawer.currentlyMarked;
+                            
+                            // visually unselect the current object
+                            TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "'").c_str());
+                        }
+                        
+                        // change current object
+                        TerrainObject* to = (TerrainObject*) clientData;
+                        gTweakBar.currentObject = to;
+                        
+                        // we're about to mark control points
+                        gMarkMode = MARK_CONTROL_POINT;
+                        
+                        // adjust parameters
+                        height          = to->height;
+                        heightPrev      = to->height;
+                        ytilt           = to->ytilt;
+                        spread          = to->cp_spread;
+                        functype        = to->cp_functype;
+                        
+                        // adjust prev parameters not to cause weird initial changes
+                        xtilt           = to->xtilt;
+                        xtiltPrev       = to->xtilt;
+                        ytiltPrev       = to->ytilt;
+                        spreadPrev      = to->cp_spread;
+                        functypePrev    = to->cp_functype;
+                        
+                        // refresh the control bar since these changes affect it too
+                        TwRefreshBar(controlBar);
+                        
+                        // visually select the new object
+                        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "     SELECTED'").c_str());
+                        
+                        // update marking
+                        gRangeDrawer.UnmarkAll();
+                        for (auto xy : to->marking)
+                            gRangeDrawer.Mark(xy.x, xy.y);
+                        
+                    },
+                    to,
+                    (string("label='") + to->name + "'").c_str());
+        
+        // make sure nothing is selected
+        currentObject = NULL;
+
+        height = 0;
+        heightPrev = 0;
+        xtilt = 0;
+        xtiltPrev = 0;
+        ytilt = 0;
+        ytiltPrev = 0;
+        spread = 5;
+        spreadPrev = 5;
+        functype = FUNC_LINEAR;
+        functypePrev = FUNC_LINEAR;
+    }
+}
+
 void RangeTweakBar::NewTerrainObject() {
     
     
@@ -429,7 +555,7 @@ void RangeTweakBar::NewTerrainObject() {
     
     // create new object
     TerrainObject* to = new TerrainObject;
-    to->name = string("green") + to_string(++num_greens);
+    to->name = string("green") + to_string(++objectCounter);
     to->height = 0;
     to->xtilt = 0;
     to->ytilt = 0;
@@ -461,6 +587,8 @@ void RangeTweakBar::NewTerrainObject() {
                     // change current object
                     TerrainObject* to = (TerrainObject*) clientData;
                     gTweakBar.currentObject = to;
+                    
+                    // we're about to mark control points
                     gMarkMode = MARK_CONTROL_POINT;
                     
                     // adjust parameters

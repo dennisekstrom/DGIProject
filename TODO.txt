@@ -1,3 +1,4 @@
 [X] - Skybox ground (will it still look good in ortho view)
-[ ] - Somehow mark tee and target when in texture mode
+[X] - Somehow mark tee and target when in texture mode
+[ ] - New textures for tee and target
 [ ] - Implement difficulty calculation and present it (anttweakbar or text?)

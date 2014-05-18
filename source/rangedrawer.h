@@ -9,6 +9,10 @@
 #ifndef DGIProject_rangedrawer_h
 #define DGIProject_rangedrawer_h
 
+#define PI              3.14159265359
+#define RAD2DEG(X)      X*180.0f/PI
+#define DEG2RAD(X)      X*PI/180.0f
+
 #include <set>
 #include <map>
 #include <iostream>
@@ -109,6 +113,7 @@ private:
     
     inline void SetMarkChanged() { markChanged = true; }
     void ColorVertex(const int &x, const int &y, const vec4& c);
+    void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
     
 public:
     
@@ -116,13 +121,13 @@ public:
     ~RangeDrawer();
     
     void MarkTerrain();
-    void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
     void LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype);
-    void FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype);
     void TiltMarked(const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype);
     
-    float GetAverageHeightOfMarked();
-    glm::vec2 GetCenterOfMarked();
+    static void SetMonotoneHeight(const set<xy, xy_comparator> &marking, const float &h, const float &spread, const ControlPointFuncType &functype);
+    static void SetMonotoneTilt(const set<xy, xy_comparator> &marking, const vec3 &pivotPoint, const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype);
+    static float GetAverageHeight(const set<xy, xy_comparator> &marking);
+    static glm::vec2 GetCenter(const set<xy, xy_comparator> &marking);
     float GetHeight(float tx, float ty);
     
     void Mark(const int &x, const int &y);

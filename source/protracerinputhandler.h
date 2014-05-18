@@ -13,25 +13,29 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "rangeterrain.h"
+#include "rangetweakbar.h"
 
 using namespace glm;
 
 struct GreenInfo {
+    string name;
     vec3 targetPos;
-    vec3 targetCenterOffset;
+    vec3 targetCenterOffset; // y is ignored
     float radius;
+    float xtilt;
+    float ytilt;
+    float slopeSpread;
     ControlPointFuncType slopeFunc;
 };
 
 class ProtracerInputHandler {
     
-private:
-    vector<GreenInfo> greens;
-    
 public:
-    void LoadFromFile(const string &filename);
+    
+    static vector<GreenInfo> LoadFromFile(const string &filename);
+    static TerrainObject GreenInfo2TerrainObject(const GreenInfo &green);
 };
 
-extern ProtracerInputHandler gInputHandler;
+//extern ProtracerInputHandler gInputHandler;
 
 #endif /* defined(__DGIProject__protracerinputhandler__) */

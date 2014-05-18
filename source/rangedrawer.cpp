@@ -8,10 +8,6 @@
 
 #include "rangedrawer.h"
 
-#define PI              3.14159265359
-#define RAD2DEG(X)      X*180.0f/PI
-#define DEG2RAD(X)      X*PI/180.0f
-
 RangeDrawer gRangeDrawer;
 MarkMode gMarkMode = NONE;
 vec4 white(1,1,1,1);
@@ -77,27 +73,27 @@ inline void RangeDrawer::Lift(const int &x, const int &y, const float &lift, con
     gTerrain.SetControlPoint(x, y, h + lift, spread, functype);
 }
 
-float RangeDrawer::GetAverageHeightOfMarked() {
+float RangeDrawer::GetAverageHeight(const set<xy, xy_comparator> &marking) {
     
-    if (currentlyMarked.empty())
+    if (marking.empty())
         return 0;
     
     float sum = 0;
-    for (auto xy : currentlyMarked)
+    for (auto xy : marking)
         sum += gTerrain.hmap[xy.y][xy.x];
-    return sum / currentlyMarked.size();
+    return sum / marking.size();
 }
 
-glm::vec2 RangeDrawer::GetCenterOfMarked() {
-    if (currentlyMarked.empty())
+glm::vec2 RangeDrawer::GetCenter(const set<xy, xy_comparator> &marking) {
+    if (marking.empty())
         return glm::vec2(0, 0);
     
     float sumx = 0, sumy = 0;
-    for (auto xy : currentlyMarked) {
+    for (auto xy : marking) {
         sumx += 4*xy.x + 2;
         sumy += 4*xy.y + 2;
     }
-    return glm::vec2(sumx / (4*currentlyMarked.size()), sumy / (4*currentlyMarked.size()));
+    return glm::vec2(sumx / (4*marking.size()), sumy / (4*marking.size()));
 }
 
 //const int spread = 4;// [TODO: THIS IS TEMP]
@@ -123,23 +119,9 @@ void RangeDrawer::LiftMarked(const float &lift, const float &spread, const Contr
     }
 }
 
-void RangeDrawer::FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype) {
-    
-    int x, y;
-    for ( auto xy : currentlyMarked ) {
-        x = xy.x;
-        y = xy.y;
-        
-        gTerrain.SetControlPoint(x  , y  , h, spread, functype);
-        gTerrain.SetControlPoint(x  , y+1, h, spread, functype);
-        gTerrain.SetControlPoint(x+1, y  , h, spread, functype);
-        gTerrain.SetControlPoint(x+1, y+1, h, spread, functype);
-    }
-}
-
 void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype) {
     
-    glm::vec2 center = GetCenterOfMarked();
+    glm::vec2 center = GetCenter(currentlyMarked);
     const float &cx = center.x, &cy = center.y;
     const float tanx = tan(DEG2RAD(xtilt)), tany = tan(DEG2RAD(ytilt));
     
@@ -150,27 +132,67 @@ void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt, const float
         y = xy.y;
         
         // v1
-        lift = (cx - float(x  )) * float(GRID_RES) * tanx + (cy - float(y  )) * float(GRID_RES) * tany;
+        lift = (float(x  ) - cx) * float(GRID_RES) * tanx + (float(y  ) - cy) * float(GRID_RES) * tany;
         Lift(x  , y  , lift, spread, functype);
         
         
         // For vertices 2-4, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
         if (y == Y_INTERVAL - 2 || !marked[y+1][x  ]) {
-            lift = (cx - (x  )) * float(GRID_RES) * tanx + (cy - (y+1)) * float(GRID_RES) * tany;
+            lift = ((x  ) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
             Lift(x  , y+1, lift, spread, functype);
         }
         
         if (x == X_INTERVAL - 2 || (!marked[y  ][x+1] && (y == 0 || !marked[y-1][x+1]))) {
-            lift = (cx - (x+1)) * float(GRID_RES) * tanx + (cy - (y  )) * float(GRID_RES) * tany;
+            lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y  ) - cy) * float(GRID_RES) * tany;
             Lift(x+1, y  , lift, spread, functype);
             
         }
         
         if ((y == Y_INTERVAL - 2 && x == X_INTERVAL - 2) || (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1])) {
-            lift = (cx - (x+1)) * float(GRID_RES) * tanx + (cy - (y+1)) * float(GRID_RES) * tany;
+            lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
             Lift(x+1, y+1, lift, spread, functype);
             
         }
+    }
+}
+
+
+void RangeDrawer::SetMonotoneHeight(const set<xy, xy_comparator> &marking, const float &h, const float &spread, const ControlPointFuncType &functype) {
+    
+    int x, y;
+    for ( auto xy : marking ) {
+        x = xy.x;
+        y = xy.y;
+        
+        gTerrain.SetControlPoint(x  , y  , h, spread, functype);
+        gTerrain.SetControlPoint(x  , y+1, h, spread, functype);
+        gTerrain.SetControlPoint(x+1, y  , h, spread, functype);
+        gTerrain.SetControlPoint(x+1, y+1, h, spread, functype);
+    }
+}
+
+void RangeDrawer::SetMonotoneTilt(const set<xy, xy_comparator> &marking, const vec3 &pivotPoint, const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype) {
+    
+    const float &cx = pivotPoint.x, &cy = -pivotPoint.z;
+    const float tanx = tan(DEG2RAD(xtilt)), tany = tan(DEG2RAD(ytilt));
+    
+    int x, y;
+    float lift;
+    for ( auto xy : marking ) {
+        x = xy.x;
+        y = xy.y;
+        
+        lift = (float(x  ) - cx) * float(GRID_RES) * tanx + (float(y  ) - cy) * float(GRID_RES) * tany;
+        gTerrain.SetControlPoint(x  , y  , pivotPoint.y + lift, spread, functype);
+        
+        lift = ((x  ) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
+        gTerrain.SetControlPoint(x  , y+1, pivotPoint.y + lift, spread, functype);
+        
+        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y  ) - cy) * float(GRID_RES) * tany;
+        gTerrain.SetControlPoint(x+1, y  , pivotPoint.y + lift, spread, functype);
+        
+        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
+        gTerrain.SetControlPoint(x+1, y+1, pivotPoint.y + lift, spread, functype);
     }
 }
 
