@@ -33,7 +33,7 @@ class ProtracerInputHandler {
 public:
     
     static vector<GreenInfo> LoadFromFile(const string &filename);
-    static TerrainObject GreenInfo2TerrainObject(const GreenInfo &green);
+
 };
 
 //extern ProtracerInputHandler gInputHandler;

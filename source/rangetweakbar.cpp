@@ -210,6 +210,17 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
+    
+    TwAddSeparator(controlBar, NULL, NULL);
+    
+    TwAddButton(controlBar,
+                "Terrain from file",
+                (TwButtonCallback) [] (void* clientData) {
+                    set<xy, xy_comparator> tmp;
+                    gTweakBar.TerrainFromFile();
+                },
+                NULL,
+                "help='Generates terrain from a protracer formatted terrain file.' ");
 
     objectBar = TwNewBar("Greens");
     TwDefine("Greens label=GREENS");
@@ -276,17 +287,6 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "help='Mark the target position - it will appear red.' ");
-
-    TwAddSeparator(objectBar, NULL, NULL);
-    
-    TwAddButton(objectBar,
-                "Load greens from file.",
-                (TwButtonCallback) [] (void* clientData) {
-                    set<xy, xy_comparator> tmp;
-                    gTweakBar.LoadTerrainObjectsFromFile();
-                },
-                NULL,
-                "help='Loads greens from a file.' ");
 
     TwAddSeparator(objectBar, NULL, NULL);
     
@@ -443,7 +443,13 @@ bool RangeTweakBar::RemoveTerrainObject(TerrainObject* obj) {
     return true;
 }
 
-void RangeTweakBar::LoadTerrainObjectsFromFile() {
+inline float dist(const float &x1, const float &y1, const float &x2, const float &y2) {
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    return sqrt(dx * dx + dy * dy);
+}
+
+void RangeTweakBar::TerrainFromFile() {
     
     // remove the existing objects
     while (!objects.empty())
@@ -458,78 +464,28 @@ void RangeTweakBar::LoadTerrainObjectsFromFile() {
     vector<GreenInfo> greens = ProtracerInputHandler::LoadFromFile("input.txt");
     
     for (GreenInfo &green : greens) {
-        TerrainObject* to = new TerrainObject(ProtracerInputHandler::GreenInfo2TerrainObject(green));
+//        TerrainObject* to = new TerrainObject(ProtracerInputHandler::GreenInfo2TerrainObject(green));
         
-        gRangeDrawer.SetMonotoneTilt( to->marking, green.targetPos + green.targetCenterOffset, to->xtilt, to->ytilt, to->cp_spread, to->cp_functype );
-
-        objects.push_back(to);
+        const vec3 pivotPoint = green.targetPos + green.targetCenterOffset;
+        const float &cx = pivotPoint.x, &cy = -pivotPoint.z;
+        const float tanx = tan(DEG2RAD(green.xtilt)), tany = tan(DEG2RAD(green.ytilt));
         
-        TwAddButton(objectBar,
-                    to->name.c_str(),
-                    (TwButtonCallback) [] (void* clientData) {
-                        
-                        if (gTweakBar.currentObject) {
-                            
-                            // remember current marking
-                            gTweakBar.currentObject->height     = height;
-                            gTweakBar.currentObject->xtilt      = xtilt;
-                            gTweakBar.currentObject->ytilt      = ytilt;
-                            gTweakBar.currentObject->cp_spread  = spread;
-                            gTweakBar.currentObject->marking    = gRangeDrawer.currentlyMarked;
-                            
-                            // visually unselect the current object
-                            TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "'").c_str());
-                        }
-                        
-                        // change current object
-                        TerrainObject* to = (TerrainObject*) clientData;
-                        gTweakBar.currentObject = to;
-                        
-                        // we're about to mark control points
-                        gMarkMode = MARK_CONTROL_POINT;
-                        
-                        // adjust parameters
-                        height          = to->height;
-                        heightPrev      = to->height;
-                        ytilt           = to->ytilt;
-                        spread          = to->cp_spread;
-                        functype        = to->cp_functype;
-                        
-                        // adjust prev parameters not to cause weird initial changes
-                        xtilt           = to->xtilt;
-                        xtiltPrev       = to->xtilt;
-                        ytiltPrev       = to->ytilt;
-                        spreadPrev      = to->cp_spread;
-                        functypePrev    = to->cp_functype;
-                        
-                        // refresh the control bar since these changes affect it too
-                        TwRefreshBar(controlBar);
-                        
-                        // visually select the new object
-                        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "     SELECTED'").c_str());
-                        
-                        // update marking
-                        gRangeDrawer.UnmarkAll();
-                        for (auto xy : to->marking)
-                            gRangeDrawer.Mark(xy.x, xy.y);
-                        
-                    },
-                    to,
-                    (string("label='") + to->name + "'").c_str());
+        float x = green.targetPos.x;
+        float y = -green.targetPos.z;
         
-        // make sure nothing is selected
-        currentObject = NULL;
-
-        height = 0;
-        heightPrev = 0;
-        xtilt = 0;
-        xtiltPrev = 0;
-        ytilt = 0;
-        ytiltPrev = 0;
-        spread = 5;
-        spreadPrev = 5;
-        functype = FUNC_LINEAR;
-        functypePrev = FUNC_LINEAR;
+        int min_x = floor(std::max(green.targetPos.x - green.radius, 0.0f));
+        int max_x = ceil(std::min(green.targetPos.x + green.radius, float(X_INTERVAL)));
+        int min_y = floor(std::max(-green.targetPos.z - green.radius, 0.0f));
+        int max_y = ceil(std::min(-green.targetPos.z + green.radius, float(Y_INTERVAL)));
+        
+        for (int yy=min_y; yy<=max_y; yy++) {
+            for (int xx=min_x; xx<=max_x; xx++) {
+                if (dist(x, y, xx, yy) < green.radius) {
+                    float lift = (xx - cx) * float(GRID_RES) * tanx + (yy - cy) * float(GRID_RES) * tany;
+                    gTerrain.SetControlPoint(xx  , yy  , pivotPoint.y + lift, green.slopeSpread, green.slopeFunc);
+                }
+            }
+        }
     }
 }
 

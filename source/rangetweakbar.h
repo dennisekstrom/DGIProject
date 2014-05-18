@@ -47,7 +47,7 @@ public:
     void Update(const float &dt);
     void TakeAction(const float &dt);
 
-    void LoadTerrainObjectsFromFile();
+    void TerrainFromFile();
     void NewTerrainObject();
     void UpdateObjectToCurrent(TerrainObject* object);
 };

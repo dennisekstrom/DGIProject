@@ -170,31 +170,31 @@ void RangeDrawer::SetMonotoneHeight(const set<xy, xy_comparator> &marking, const
         gTerrain.SetControlPoint(x+1, y+1, h, spread, functype);
     }
 }
-
-void RangeDrawer::SetMonotoneTilt(const set<xy, xy_comparator> &marking, const vec3 &pivotPoint, const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype) {
-    
-    const float &cx = pivotPoint.x, &cy = -pivotPoint.z;
-    const float tanx = tan(DEG2RAD(xtilt)), tany = tan(DEG2RAD(ytilt));
-    
-    int x, y;
-    float lift;
-    for ( auto xy : marking ) {
-        x = xy.x;
-        y = xy.y;
-        
-        lift = (float(x  ) - cx) * float(GRID_RES) * tanx + (float(y  ) - cy) * float(GRID_RES) * tany;
-        gTerrain.SetControlPoint(x  , y  , pivotPoint.y + lift, spread, functype);
-        
-        lift = ((x  ) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
-        gTerrain.SetControlPoint(x  , y+1, pivotPoint.y + lift, spread, functype);
-        
-        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y  ) - cy) * float(GRID_RES) * tany;
-        gTerrain.SetControlPoint(x+1, y  , pivotPoint.y + lift, spread, functype);
-        
-        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
-        gTerrain.SetControlPoint(x+1, y+1, pivotPoint.y + lift, spread, functype);
-    }
-}
+//
+//void RangeDrawer::SetMonotoneTilt(const set<xy, xy_comparator> &marking, const vec3 &pivotPoint, const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype) {
+//    
+//    const float &cx = pivotPoint.x, &cy = -pivotPoint.z;
+//    const float tanx = tan(DEG2RAD(xtilt)), tany = tan(DEG2RAD(ytilt));
+//    
+//    int x, y;
+//    float lift;
+//    for ( auto xy : marking ) {
+//        x = xy.x;
+//        y = xy.y;
+//        
+//        lift = (float(x  ) - cx) * float(GRID_RES) * tanx + (float(y  ) - cy) * float(GRID_RES) * tany;
+//        gTerrain.SetControlPoint(x  , y  , pivotPoint.y + lift, spread, functype);
+//        
+//        lift = ((x  ) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
+//        gTerrain.SetControlPoint(x  , y+1, pivotPoint.y + lift, spread, functype);
+//        
+//        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y  ) - cy) * float(GRID_RES) * tany;
+//        gTerrain.SetControlPoint(x+1, y  , pivotPoint.y + lift, spread, functype);
+//        
+//        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
+//        gTerrain.SetControlPoint(x+1, y+1, pivotPoint.y + lift, spread, functype);
+//    }
+//}
 
 void RangeDrawer::Mark(const int &x, const int &y) {
     
