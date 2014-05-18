@@ -725,6 +725,7 @@ static void TakeKeyAction(const float &dt) {
         gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.up());
     if (keys['Q'])
         gCamera1.offsetPosition(dt * moveSpeed * gCamera1.up());
+        
     
     // rotate the camera based on arrow keys
     const float rotSpeed = 45.0; //degrees per second
@@ -883,6 +884,18 @@ void AppMain(int argc, char *argv[]) {
     initSkyBox();
     initTeeModel();
     initTargetModel();
+    
+    // add perlin noise TODO testing
+//    gTerrain.hmap
+    //PerlinNoise HeightGenerator(/* ... */);
+//    PerlinNoise pn = PerlinNoise(1, 5, 3, 7, 4);
+//    for( int x = 0; x < 64; x++)
+//        for( int y = 0; y < 64; y++)
+//        {
+//            //double height = HeightGenerator.GetHeight(x,y);
+//            double height = pn.GetHeight(x,y);
+//            gTerrain.hmap[y][x] = height;
+//        }
     
     // glut settings
     //    glutIgnoreKeyRepeat(1);

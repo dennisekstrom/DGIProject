@@ -14,6 +14,7 @@
 using glm::vec3;
 
 RangeTerrain gTerrain;
+//PerlinNoise perlinNoise;
 
 RangeTerrain::RangeTerrain() {
 
@@ -28,6 +29,7 @@ RangeTerrain::RangeTerrain() {
     changedVertices         = new ChangeManager(X_INTERVAL, Y_INTERVAL);
     
     changedVertexIndices.reserve(Y_INTERVAL * X_INTERVAL * 6); // Each vertex appears in 6 different triangles
+    
     
     FlattenHMap();
     
@@ -171,6 +173,18 @@ void RangeTerrain::GenerateAll() {
     
     changedControlPoints->Reset();
     controlPointChangeRequiresHMapRegeneration = false;
+}
+
+void RangeTerrain::GeneratePerlinNoise(double persistance, double frequency, double amplitude, double octaves, double seed) {
+    perlinNoise.SetParams(persistance, frequency, amplitude, octaves, seed);
+    for( int x = 0; x < X_INTERVAL; x++)
+        for( int y = 0; y < Y_INTERVAL; y++)
+        {
+            double height = perlinNoise.GetHeight(x,y);
+            gTerrain.hmap[y][x] = height;
+        }
+    
+    gTerrain.GenerateAll();
 }
 
 // [TODO: THIS FUNCTION IS NOT UP TO DATE]
