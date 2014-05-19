@@ -36,6 +36,4 @@ public:
 
 };
 
-//extern ProtracerInputHandler gInputHandler;
-
 #endif /* defined(__DGIProject__protracerinputhandler__) */

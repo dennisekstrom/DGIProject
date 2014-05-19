@@ -745,16 +745,14 @@ static void Update(const float &dt) {
     // Act on key events
     TakeKeyAction(dt);
     
-    // Terrain needs update if control point changed
-    if (gTerrain.ControlPointChanged())
-        gTerrain.UpdateAll();
+    // Update terrain
+    gTerrain.Update();
     
     // Adjust to terrain and marking changes
-    if (gTerrain.ControlPointChanged() || gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
+    if (gTerrain.VertexChanged() || gRangeDrawer.MarkChanged()) {
         gRangeDrawer.MarkTerrain();
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
-        gRangeDrawer.ResetMarkChanged();
     }
     
     //Mouse click
@@ -794,7 +792,7 @@ static void Display() {
     double thisTime = double(glutGet(GLUT_ELAPSED_TIME)) / 1000;
     float dt = thisTime - lastTime;
     lastTime = thisTime;
-    //cout << "render time: " << round(dt * 1000) << " ms" << endl;
+    cout << "render time: " << round(dt * 1000) << " ms" << endl;
     
     // take tweakbar action
     gTweakBar.Update(dt);

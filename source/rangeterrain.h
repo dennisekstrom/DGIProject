@@ -273,87 +273,43 @@ public:
     
 private:
     
-    void FlattenHMap();
+    void FlattenHMap();                         // Flatten the hmap
+    
+    void Regenerate();                          // Generate everything from control points
     
     void UpdateHMap();                          // Update from changed control points
     void UpdateNormals();                       // Requires hmap
     void UpdateChangedVertices();               // Requires hmap (and should be ran after UpdateNormals() too)
-    //    void UpdateTrianglePairs();                 // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void UpdateVertexData();                    // Requires hmap and normals (and for the moment that changedVertices is updated by running UpdateTrianglePairs)
     
     void GenerateHMap();                        // Generate from control points
     void GenerateNormals();                     // Requires hmap
-    //    void GenerateTrianglePairs();               // Requires hmap and normals [TODO: REMOVE TRIANGLE PAIRS]
     void GenerateVertexData();                  // Requires hmap and normals
     
     void ApplyNoise();
     
-    void UpdateHMap(const ControlPoint &cp);                                    // Updates hmap from the given control point
-    void UpdateNormal(const int &x, const int &y);                              // Requires hmap
-    void UpdateTrianglePair(const int &x, const int &y);                        // Requires hmap and normal
-    void UpdateVertexData(const int &x, const int &y/*, const vec4* color=NULL*/);  // Requires hmap and normal
-    
-    inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n, const vec4 &c) {
-        vertexData[idx++] = v.x;
-        vertexData[idx++] = v.y;
-        vertexData[idx++] = v.z;
-        vertexData[idx++] = t.x;
-        vertexData[idx++] = t.y;
-        vertexData[idx++] = n.x;
-        vertexData[idx++] = n.y;
-        vertexData[idx++] = n.z;
-        vertexData[idx++] = c.r;
-        vertexData[idx++] = c.g;
-        vertexData[idx++] = c.b;
-        vertexData[idx++] = c.a;
-    }
-    
-    inline vec4 ColorFromHeight(const float &h) const {
-        vector<vec4> levels;
-        levels.push_back( vec4( 0.5,      0,      0,      1) ); // dark red
-        levels.push_back( vec4(   1,      0,      0,      1) ); // red
-        levels.push_back( vec4(   1,    0.5,      0,      1) ); // orange
-        levels.push_back( vec4(   1,      1,      0,      1) ); // yellow
-        levels.push_back( vec4(   0,      1,      0,      1) ); // green
-        levels.push_back( vec4(   0,      1,      1,      1) ); // cyan
-        levels.push_back( vec4(   0,      0,      1,      1) ); // blue
-        levels.push_back( vec4( 0.5,    0.5,      1,      1) ); // light blue
-        
-        float h_min = -5, h_max = 5;
-        
-        if (h <= h_min)
-            return levels.front();
-        
-        if (h >= h_max)
-            return levels.back();
-        
-        float idx = (levels.size() - 1) * (h - h_min) / (h_max - h_min);
-        float idx_low = floor( idx );
-        float idx_high = ceil( idx );
-        
-        vec4 level_low = levels[idx_low];
-        vec4 level_high = levels[idx_high];
-        
-        return level_low + (idx - idx_low) * (level_high - level_low);
-    }
+    void UpdateHMap(const ControlPoint &cp);                // Updates hmap from the given control point
+    void UpdateNormal(const int &x, const int &y);          // Requires hmap
+    void UpdateTrianglePair(const int &x, const int &y);    // Requires hmap and normal
+    void UpdateVertexData(const int &x, const int &y);      // Requires hmap and normal
+
+    inline bool ControlPointChanged() const { return !changedControlPoints->identifiers.empty(); }
+    inline void SetVertexData(int idx, const vec3 &v, const vec2 &t, const vec3 &n, const vec4 &c);
+    vec4 ColorFromHeight(const float &h) const;
     
 public:
     
     RangeTerrain();
     ~RangeTerrain();
     
-    void Reset();           // Delete control points and flatten hmap
-    void UpdateAll();       // Update everything from changed control points
-    void GenerateAll();     // Generate everything from control points
-        
+    void Reset();       // Delete control points and flatten hmap
+    void Update();      // Update everything from changed control points
+    
     void SetControlPoint(int x, int y, float h, float spread, ControlPointFuncType func);
     void SetControlPointSpread(int x, int y, float spread);
     void SetControlPointFuncType(int x, int y, ControlPointFuncType functype);
     
-    
-    inline ControlPoint* GetControlPoint(const int &x, const int &y) const { return controlPoints[y][x]; }
-    inline bool ControlPointChanged() { return !changedControlPoints->identifiers.empty(); }
-    inline bool VertexChanged() { return !changedVertexIndices.empty(); }
+    inline bool VertexChanged() const { return !changedVertexIndices.empty(); }
 };
 
 extern RangeTerrain gTerrain;

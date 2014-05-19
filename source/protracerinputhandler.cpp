@@ -13,8 +13,6 @@
 
 using namespace glm;
 
-//ProtracerInputHandler gInputHandler;
-
 vector<GreenInfo> ProtracerInputHandler::LoadFromFile(const string &filename) {
     
     vector<GreenInfo> greens;

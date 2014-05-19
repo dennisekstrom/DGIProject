@@ -85,14 +85,14 @@ public:
 
 class RangeDrawer {
     
-    //    friend class TerrainObjectManager;
     friend class RangeTweakBar;
     
 private:
     
     // Marking
-    bool marked[Y_INTERVAL-1][X_INTERVAL-1];
-    bool markChanged;
+    MarkMode                markMode;
+    bool                    marked[Y_INTERVAL-1][X_INTERVAL-1];
+    bool                    markChanged;
     set<xy, xy_comparator>  currentlyMarked;
     
     // Tee and target
@@ -104,65 +104,26 @@ private:
     bool        targetMarked;
     
     // Drawing
-    AreaMarkingManager*     markedWithShift;
+    AreaMarkingManager* markedWithShift;
     
     // Mouse
-    bool                    mouseIsDown;
-    bool                    mouseDownIsMarking;     // true means mouse down for marking, false means unmarking
-    
-    
-    inline void SetMarkChanged() { markChanged = true; }
-    void ColorVertex(const int &x, const int &y, const vec4& c);
-    void Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype);
-    
-public:
-    
-    RangeDrawer();
-    ~RangeDrawer();
-    
-    void MarkTerrain();
-    void LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype);
-    void TiltMarked(const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype);
-    
-    static void SetMonotoneHeight(const set<xy, xy_comparator> &marking, const float &h, const float &spread, const ControlPointFuncType &functype);
-    static void SetMonotoneTilt(const set<xy, xy_comparator> &marking, const vec3 &pivotPoint, const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype);
-    static float GetAverageHeight(const set<xy, xy_comparator> &marking);
-    static glm::vec2 GetCenter(const set<xy, xy_comparator> &marking);
-    float GetHeight(float tx, float ty);
+    bool mouseIsDown;
+    bool mouseDownIsMarking;     // true means mouse down for marking, false means unmarking
     
     void Mark(const int &x, const int &y);
     void Unmark(const int &x, const int &y);
     void ToggleMarked(const int &x, const int &y);
-    void UnmarkAll();
-    void MarkHole(const float &tx, const float &ty);
-    void MarkMat(const float &tx, const float &ty);
-    
-    void MarkTerrainCoord(const float &tx, const float &ty);
-    void UnmarkTerrainCoord(const float &tx, const float &ty);
-    void ToggleMarkedTerrainCoord(const float &tx, const float &ty);
-    
-    void TerrainCoordClicked(const float &tx, const float &ty, const bool &shift_down);
-    
-    inline bool MarkChanged()                           { return markChanged; }
-    inline void ResetMarkChanged()                      { markChanged = false; }
-    inline bool IsMarked(const int &x, const int &y)    { return marked[y][x]; }
-    inline bool TeeMarked()                             { return teeMarked; };
-    inline bool TargetMarked()                          { return targetMarked; }
-    
-    inline vec3 TeeTerrainPos() {
-        return vec3(teeTerrainPos.x, GetHeight(teeTerrainPos.x, teeTerrainPos.y), -teeTerrainPos.y);
-    }
-    
-    inline vec3 TargetTerrainPos() {
-        return vec3(targetTerrainPos.x, GetHeight(targetTerrainPos.x, targetTerrainPos.y), -targetTerrainPos.y);
-    }
-        
-    inline void NotifyMouseReleased() { mouseIsDown = false; }
 
-//    void SetTee(const xy &teePos)        { this->teePos = teePos; teeMarked = true; }
-//    void SetTarget(const xy &targetPos)  { this->targetPos = targetPos; targetMarked = true;}
-//    void RemoveTee()                     { teeMarked = false; }
-//    void RemoveTarget()                  { targetMarked = false; }
+    // Kepp track of whether mark changed (in between displaying of the marking)
+    inline void SetMarkChanged()    { markChanged = true; }
+    inline void ResetMarkChanged()  { markChanged = false; }
+    
+    void ColorQuad(const int &x, const int &y, const vec4& c);
+    float GetHeight(float tx, float ty);
+    
+    inline void  LiftVertex(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
+        gTerrain.SetControlPoint(x, y, gTerrain.hmap[y][x] + lift, spread, functype);
+    }
     
     inline static int TerrainX2QuadX(const float &tx) {
         assert(tx >= 0 && tx <= TERRAIN_WIDTH);
@@ -173,9 +134,39 @@ public:
         assert(ty >= 0 && ty <= TERRAIN_DEPTH);
         return int(floor((Y_INTERVAL - 1) * ty / float(TERRAIN_DEPTH)));
     }
+    
+public:
+    
+    RangeDrawer();
+    ~RangeDrawer();
+    
+    void MarkTerrain();
+    void LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype);
+    void TiltMarked(const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype);
+    void FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype);
+    
+    void UnmarkAll();
+    
+    void MarkTerrainCoord(const float &tx, const float &ty);
+    void UnmarkTerrainCoord(const float &tx, const float &ty);
+    void ToggleMarkedTerrainCoord(const float &tx, const float &ty);
+    void TerrainCoordClicked(const float &tx, const float &ty, const bool &shift_down);
+    
+    inline bool MarkChanged()                           { return markChanged; }
+    inline bool IsMarked(const int &x, const int &y)    { return marked[y][x]; }
+    inline bool TeeMarked()                             { return teeMarked; };
+    inline bool TargetMarked()                          { return targetMarked; }
+    inline void SetMarkMode(const MarkMode &mode)       { markMode = mode; }
+    
+    inline vec3 TeeTerrainPos()    { return vec3(teeTerrainPos.x,    GetHeight(teeTerrainPos.x,    teeTerrainPos.y),    -teeTerrainPos.y);    }
+    inline vec3 TargetTerrainPos() { return vec3(targetTerrainPos.x, GetHeight(targetTerrainPos.x, targetTerrainPos.y), -targetTerrainPos.y); }
+    
+    inline void NotifyMouseReleased() { mouseIsDown = false; }
+    
+    static float GetAverageHeight(const set<xy, xy_comparator> &marking);
+    static glm::vec2 GetCenter(const set<xy, xy_comparator> &marking);
 };
 
 extern RangeDrawer gRangeDrawer;
-extern MarkMode gMarkMode;
 
 #endif

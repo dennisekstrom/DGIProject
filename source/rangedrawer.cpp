@@ -9,12 +9,6 @@
 #include "rangedrawer.h"
 
 RangeDrawer gRangeDrawer;
-MarkMode gMarkMode = NONE;
-vec4 white(1,1,1,1);
-vec4 red(1,0,0,1);
-vec4 blue(0,0,1,1);
-//vec2 gHolePosition;
-//vec2 gMatPosition;
 
 RangeDrawer::RangeDrawer() {
     
@@ -27,13 +21,15 @@ RangeDrawer::RangeDrawer() {
     markedWithShift = new AreaMarkingManager(Y_INTERVAL - 1, X_INTERVAL - 1);
     
     mouseIsDown = false;
+    
+    markMode = NONE;
 }
 
 RangeDrawer::~RangeDrawer() {
     delete markedWithShift;
 }
 
-void RangeDrawer::ColorVertex(const int&x, const int &y, const vec4 &c) {
+void RangeDrawer::ColorQuad(const int&x, const int &y, const vec4 &c) {
     // Using same methods as in RangeTerrain::UpdateVertexData() and RangeTerrain::SetVertexData()
     int idx = (y  )*FLOATS_PER_ROW + (x  )*FLOATS_PER_TRIANGLE_PAIR;
     
@@ -55,22 +51,18 @@ void RangeDrawer::MarkTerrain() {
     for ( auto xy : currentlyMarked ) {
         
         // x, y are coordinates of the quad
-        ColorVertex(xy.x, xy.y, white);
+        ColorQuad(xy.x, xy.y, vec4(1,1,1,1)); // white
     }
     
     // Color the target position
     if (targetMarked)
-        ColorVertex(targetMarkPos.x, targetMarkPos.y, red);
+        ColorQuad(targetMarkPos.x, targetMarkPos.y, vec4(1,0,0,1)); // red
     
     // Color the tee position
     if (teeMarked)
-        ColorVertex(teeMarkPos.x, teeMarkPos.y, blue);
-}
-
-inline void RangeDrawer::Lift(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
-    ControlPoint* cp = gTerrain.GetControlPoint(x, y);
-    float h = cp ? cp->h : gTerrain.hmap[y][x];
-    gTerrain.SetControlPoint(x, y, h + lift, spread, functype);
+        ColorQuad(teeMarkPos.x, teeMarkPos.y, vec4(0,0,1,1)); // blue
+    
+    ResetMarkChanged();
 }
 
 float RangeDrawer::GetAverageHeight(const set<xy, xy_comparator> &marking) {
@@ -96,8 +88,6 @@ glm::vec2 RangeDrawer::GetCenter(const set<xy, xy_comparator> &marking) {
     return glm::vec2(sumx / (4*marking.size()), sumy / (4*marking.size()));
 }
 
-//const int spread = 4;// [TODO: THIS IS TEMP]
-//const ControlPointFuncType functype = FUNC_SIN;// [TODO: THIS IS TEMP]
 void RangeDrawer::LiftMarked(const float &lift, const float &spread, const ControlPointFuncType &functype) {
     
     int x, y;
@@ -105,17 +95,17 @@ void RangeDrawer::LiftMarked(const float &lift, const float &spread, const Contr
         x = xy.x;
         y = xy.y;
         
-        Lift(x  , y  , lift, spread, functype);     // v1
+        LiftVertex(x  , y  , lift, spread, functype);     // v1
         
         // For vertices 2-4, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
         if (y == Y_INTERVAL - 2 || !marked[y+1][x  ])
-            Lift(x  , y+1, lift, spread, functype); // v2
+            LiftVertex(x  , y+1, lift, spread, functype); // v2
         
         if (x == X_INTERVAL - 2 || (!marked[y  ][x+1] && (y == 0 || !marked[y-1][x+1])))
-            Lift(x+1, y  , lift, spread, functype); // v3
+            LiftVertex(x+1, y  , lift, spread, functype); // v3
         
         if ((y == Y_INTERVAL - 2 && x == X_INTERVAL - 2) || (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1]))
-            Lift(x+1, y+1, lift, spread, functype); // v4
+            LiftVertex(x+1, y+1, lift, spread, functype); // v4
     }
 }
 
@@ -133,34 +123,34 @@ void RangeDrawer::TiltMarked(const float &xtilt, const float &ytilt, const float
         
         // v1
         lift = (float(x  ) - cx) * float(GRID_RES) * tanx + (float(y  ) - cy) * float(GRID_RES) * tany;
-        Lift(x  , y  , lift, spread, functype);
+        LiftVertex(x  , y  , lift, spread, functype);
         
         
         // For vertices 2-4, we need to check for other coordinates being marked to avoid multiple adjustments of same controlpoint
         if (y == Y_INTERVAL - 2 || !marked[y+1][x  ]) {
             lift = ((x  ) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
-            Lift(x  , y+1, lift, spread, functype);
+            LiftVertex(x  , y+1, lift, spread, functype);
         }
         
         if (x == X_INTERVAL - 2 || (!marked[y  ][x+1] && (y == 0 || !marked[y-1][x+1]))) {
             lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y  ) - cy) * float(GRID_RES) * tany;
-            Lift(x+1, y  , lift, spread, functype);
+            LiftVertex(x+1, y  , lift, spread, functype);
             
         }
         
         if ((y == Y_INTERVAL - 2 && x == X_INTERVAL - 2) || (!marked[y+1][x  ] && !marked[y  ][x+1] && !marked[y+1][x+1])) {
             lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
-            Lift(x+1, y+1, lift, spread, functype);
+            LiftVertex(x+1, y+1, lift, spread, functype);
             
         }
     }
 }
 
 
-void RangeDrawer::SetMonotoneHeight(const set<xy, xy_comparator> &marking, const float &h, const float &spread, const ControlPointFuncType &functype) {
+void RangeDrawer::FlattenMarked(const float &h, const float &spread, const ControlPointFuncType &functype) {
     
     int x, y;
-    for ( auto xy : marking ) {
+    for ( auto xy : currentlyMarked ) {
         x = xy.x;
         y = xy.y;
         
@@ -170,31 +160,6 @@ void RangeDrawer::SetMonotoneHeight(const set<xy, xy_comparator> &marking, const
         gTerrain.SetControlPoint(x+1, y+1, h, spread, functype);
     }
 }
-//
-//void RangeDrawer::SetMonotoneTilt(const set<xy, xy_comparator> &marking, const vec3 &pivotPoint, const float &xtilt, const float &ytilt, const float &spread, const ControlPointFuncType &functype) {
-//    
-//    const float &cx = pivotPoint.x, &cy = -pivotPoint.z;
-//    const float tanx = tan(DEG2RAD(xtilt)), tany = tan(DEG2RAD(ytilt));
-//    
-//    int x, y;
-//    float lift;
-//    for ( auto xy : marking ) {
-//        x = xy.x;
-//        y = xy.y;
-//        
-//        lift = (float(x  ) - cx) * float(GRID_RES) * tanx + (float(y  ) - cy) * float(GRID_RES) * tany;
-//        gTerrain.SetControlPoint(x  , y  , pivotPoint.y + lift, spread, functype);
-//        
-//        lift = ((x  ) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
-//        gTerrain.SetControlPoint(x  , y+1, pivotPoint.y + lift, spread, functype);
-//        
-//        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y  ) - cy) * float(GRID_RES) * tany;
-//        gTerrain.SetControlPoint(x+1, y  , pivotPoint.y + lift, spread, functype);
-//        
-//        lift = ((x+1) - cx) * float(GRID_RES) * tanx + ((y+1) - cy) * float(GRID_RES) * tany;
-//        gTerrain.SetControlPoint(x+1, y+1, pivotPoint.y + lift, spread, functype);
-//    }
-//}
 
 void RangeDrawer::Mark(const int &x, const int &y) {
     
@@ -277,7 +242,7 @@ void RangeDrawer::TerrainCoordClicked(const float &tx, const float &ty, const bo
     
     const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
     
-    switch (gMarkMode) {
+    switch (markMode) {
     
         case MARK_CONTROL_POINT:
             if (!mouseIsDown) { // Mouse was recently pressed
@@ -333,53 +298,6 @@ void RangeDrawer::TerrainCoordClicked(const float &tx, const float &ty, const bo
             break;
     }
 }
-
-//void RangeDrawer::MarkHole(const float &tx, const float &ty) {
-//    //TODO, color needs to be reset on previous, should exist a better way
-//    
-//    vec4 c = gTerrain.ColorFromHeight(gTerrain.hmap[(int)gHolePosition.y][(int)gHolePosition.x]);
-//    
-//    int idx = (gHolePosition.y  )*FLOATS_PER_ROW + (gHolePosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
-//    for ( int i=0; i<6; i++ ) {
-//        gTerrain.changedVertexIndices.push_back( idx );
-//        idx += 8; // Skip v, n, and t
-//        gTerrain.vertexData[idx++] = c.r; gTerrain.vertexData[idx++] = c.g;
-//        gTerrain.vertexData[idx++] = c.b; gTerrain.vertexData[idx++] = c.a;
-//    }
-//    
-//    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
-//    gHolePosition.x = x;
-//    gHolePosition.y = y;
-//    
-//}
-//
-//void RangeDrawer::MarkMat(const float &tx, const float &ty) {
-//    //TODO, color needs to be reset on previous, should exist a better way
-//    
-//    vec4 c = gTerrain.ColorFromHeight(gTerrain.hmap[(int)gMatPosition.y][(int)gMatPosition.x]);
-//    
-//    int idx = (gMatPosition.y  )*FLOATS_PER_ROW + (gMatPosition.x  )*FLOATS_PER_TRIANGLE_PAIR;
-//    for ( int i=0; i<6; i++ ) {
-//        gTerrain.changedVertexIndices.push_back( idx );
-//        idx += 8; // Skip v, n, and t
-//        gTerrain.vertexData[idx++] = c.r; gTerrain.vertexData[idx++] = c.g;
-//        gTerrain.vertexData[idx++] = c.b; gTerrain.vertexData[idx++] = c.a;
-//    }
-//    
-//    const int x = TerrainX2QuadX(tx), y = TerrainY2QuadY(ty);
-//    gMatPosition.x = x;
-//    gMatPosition.y = y;
-//    
-//}
-
-//xy RangeDrawer::GetTeePosition() {
-//    return teeMarkPos;
-//}
-//
-//xy RangeDrawer::GetTargetPosition() {
-//    return targetMarkPos;
-//    
-//}
 
 float RangeDrawer::GetHeight(float tx, float ty) {
 

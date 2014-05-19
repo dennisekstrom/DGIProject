@@ -20,17 +20,20 @@ TwBar* controlBar;
 TwBar* objectBar;
 TwBar* difficultyBar;
 
-ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
-
+// terrain parameters
 float       height      = 0,    heightPrev      = 0;
 float       xtilt       = 0,    xtiltPrev       = 0;
 float       ytilt       = 0,    ytiltPrev       = 0;
 float       spread      = 5,    spreadPrev      = 5;
+ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
+
+// noise parameters
 float       persistance = 1;
 float       frequency   = 0.2;
 float       amplitude   = 0.8;
 float       octaves     = 2;
 
+// difficulty parameters
 string      difficulty = ""; // [TODO: implement support]
 
 RangeTweakBar::RangeTweakBar() {
@@ -42,12 +45,16 @@ RangeTweakBar::~RangeTweakBar() {}
 
 void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     
-    _screenWidth = screenWidth;
-    _screenHeight = screenHeight;
-    
+    // Initialize anttweakbar
     TwInit(TW_OPENGL_CORE, NULL);
     TwWindowSize(screenWidth, screenHeight);
     
+    // The tweak bar needs the callbacks
+    TwGLUTModifiersFunc(glutGetModifiers);
+    
+    //----------------------------------------------------
+    // The General Bar
+    //----------------------------------------------------
     generalBar = TwNewBar("General");
     TwDefine("General label=GENERAL");
     TwDefine("General position='0 0'");
@@ -58,6 +65,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("General color='255 255 255' alpha=63 ");
     TwDefine("General text=light");
     
+    // We need these globals (defined in main.mm)
     extern bool gLeftCameraFullscreen;
     extern bool gLeftCameraUseColor;
     extern bool gRightCameraUseColor;
@@ -114,6 +122,9 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 NULL,
                 "key=T help='Position the camera at the tee looking at the target. Both tee and target must be set.' ");
     
+    //----------------------------------------------------
+    // The Noise Bar
+    //----------------------------------------------------
     noiseBar = TwNewBar("Noise");
     TwDefine("Noise label=NOISE");
     TwDefine("Noise position='205 0'");
@@ -143,7 +154,6 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 "Generate perlin noise",
                 (TwButtonCallback) [] (void* clientData) {
                     gTerrain.SetNoise(persistance, frequency, amplitude, octaves, rand() % 1000);
-                    gTerrain.GenerateAll();
                 },
                 NULL,
                 "key=V help='Apply perlin noise to terrain.'");
@@ -152,11 +162,13 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 "Remove noise",
                 (TwButtonCallback) [] (void* clientData) {
                     gTerrain.FlattenNoise();
-                    gTerrain.GenerateAll();
                 },
                 NULL,
                 "help='Remove the noise' ");
     
+    //----------------------------------------------------
+    // The Control Bar
+    //----------------------------------------------------
     controlBar = TwNewBar("Controls");
     TwDefine("Controls label=CONTROLS");
     TwDefine("Controls position='410 0'");
@@ -198,7 +210,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 "Flatten selection",
                 (TwButtonCallback) [] (void* clientData) {
                     float h = gRangeDrawer.GetAverageHeight(gRangeDrawer.currentlyMarked);
-                    gRangeDrawer.SetMonotoneHeight(gRangeDrawer.currentlyMarked, h, spread, functype);
+                    gRangeDrawer.FlattenMarked(h, spread, functype);
                 },
                 NULL,
                 "key=SPACE help='Flatten the current selection.' ");
@@ -222,6 +234,9 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 NULL,
                 "help='Generates terrain from a protracer formatted terrain file.' ");
 
+    //----------------------------------------------------
+    // The Green Bar
+    //----------------------------------------------------
     objectBar = TwNewBar("Greens");
     TwDefine("Greens label=GREENS");
     TwDefine("Greens position='615 0'");
@@ -235,27 +250,12 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddButton(objectBar,
                 "Mark tee position",
                 (TwButtonCallback) [] (void* clientData) {
-                    if (gTweakBar.currentObject) {
-                        
-                        // remember current marking
-                        gTweakBar.currentObject->height     = height;
-                        gTweakBar.currentObject->xtilt      = xtilt;
-                        gTweakBar.currentObject->ytilt      = ytilt;
-                        gTweakBar.currentObject->cp_spread  = spread;
-                        gTweakBar.currentObject->marking    = gRangeDrawer.currentlyMarked;
-                        
-                        // visually unselect the current object
-                        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "'").c_str());
-                    }
                     
-                    // no green selected now
-                    gTweakBar.currentObject = NULL;
+                    // reset selection
+                    gTweakBar.SelectObject(NULL);
                     
-                    // reset the current marking
-                    gRangeDrawer.UnmarkAll();
-                    
-                    // set the mark mode
-                    gMarkMode = MARK_TEE;
+                    // we're about to mark the tee
+                    gRangeDrawer.SetMarkMode(MARK_TEE);
                 },
                 NULL,
                 "help='Mark the tee position - it will appear blue.' ");
@@ -263,27 +263,12 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddButton(objectBar,
                 "Mark target position",
                 (TwButtonCallback) [] (void* clientData) {
-                    if (gTweakBar.currentObject) {
-                        
-                        // remember current marking
-                        gTweakBar.currentObject->height     = height;
-                        gTweakBar.currentObject->xtilt      = xtilt;
-                        gTweakBar.currentObject->ytilt      = ytilt;
-                        gTweakBar.currentObject->cp_spread  = spread;
-                        gTweakBar.currentObject->marking    = gRangeDrawer.currentlyMarked;
-                        
-                        // visually unselect the current object
-                        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "'").c_str());
-                    }
                     
-                    // no green selected now
-                    gTweakBar.currentObject = NULL;
+                    // reset selection
+                    gTweakBar.SelectObject(NULL);
                     
-                    // reset the current marking
-                    gRangeDrawer.UnmarkAll();
-                    
-                    // set the mark mode
-                    gMarkMode = MARK_TARGET;
+                    // we're about to mark the target
+                    gRangeDrawer.SetMarkMode(MARK_TARGET);
                 },
                 NULL,
                 "help='Mark the target position - it will appear red.' ");
@@ -304,11 +289,8 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                         // remove the current object
                         gTweakBar.RemoveTerrainObject(gTweakBar.currentObject);
                         
-                        // after this, no object is selected
-                        gTweakBar.currentObject = NULL;
-                        
-                        // reset the current marking
-                        gRangeDrawer.UnmarkAll();
+                        // reset selection
+                        gTweakBar.SelectObject(NULL);
                     }
                 },
                 NULL,
@@ -325,13 +307,10 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Difficulty fontresizable=false");
     TwDefine("Difficulty color='255 255 255' alpha=63 ");
     TwDefine("Difficulty text=light");
-    TwDefine("Difficulty valueswidth=120");
+    TwDefine("Difficulty valueswidth=100");
     
     TwAddVarRO(difficultyBar, "Difficulty", TW_TYPE_STDSTRING, &difficulty,
                "help='Difficulty of a shot hit from tee to target.' ");
-    
-    // tweak bar needs the callbacks
-    TwGLUTModifiersFunc(glutGetModifiers);
 }
 
 void RangeTweakBar::Draw() {
@@ -351,17 +330,8 @@ void RangeTweakBar::Update(const float &dt) {
 }
 
 void RangeTweakBar::TakeAction(const float &dt) {
-    
-    if (!currentObject) {
-        height = 0;
-        heightPrev = 0;
-        xtilt = 0;
-        xtiltPrev = 0;
-        ytilt = 0;
-        ytiltPrev = 0;
-        return;
-    }
-    
+
+    // Don't allow changes if nothing
     if (gRangeDrawer.currentlyMarked.empty()) {
         height = heightPrev;
         xtilt = xtiltPrev;
@@ -418,7 +388,7 @@ void RangeTweakBar::TakeAction(const float &dt) {
     }
 }
 
-bool RangeTweakBar::RemoveTerrainObject(TerrainObject* obj) {
+bool RangeTweakBar::RemoveTerrainObject(TerrainObject* &obj) {
     
     if (obj == NULL)
         return false;
@@ -440,6 +410,7 @@ bool RangeTweakBar::RemoveTerrainObject(TerrainObject* obj) {
     
     objects.erase(objects.begin() + idx);
     delete obj;
+    obj = NULL;
     return true;
 }
 
@@ -464,7 +435,6 @@ void RangeTweakBar::TerrainFromFile() {
     vector<GreenInfo> greens = ProtracerInputHandler::LoadFromFile("input.txt");
     
     for (GreenInfo &green : greens) {
-//        TerrainObject* to = new TerrainObject(ProtracerInputHandler::GreenInfo2TerrainObject(green));
         
         const vec3 pivotPoint = green.targetPos + green.targetCenterOffset;
         const float &cx = pivotPoint.x, &cy = -pivotPoint.z;
@@ -491,24 +461,6 @@ void RangeTweakBar::TerrainFromFile() {
 
 void RangeTweakBar::NewTerrainObject() {
     
-    
-    if (gTweakBar.currentObject) {
-        
-        // remember current marking
-        gTweakBar.currentObject->height     = height;
-        gTweakBar.currentObject->xtilt      = xtilt;
-        gTweakBar.currentObject->ytilt      = ytilt;
-        gTweakBar.currentObject->cp_spread  = spread;
-        gTweakBar.currentObject->marking    = gRangeDrawer.currentlyMarked;
-        
-        // visually unselect the current object
-        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "'").c_str());
-    }
-    
-    // reset the current marking
-    
-    gRangeDrawer.UnmarkAll();
-    
     // create new object
     TerrainObject* to = new TerrainObject;
     to->name = string("green") + to_string(++objectCounter);
@@ -517,62 +469,91 @@ void RangeTweakBar::NewTerrainObject() {
     to->ytilt = 0;
     to->cp_spread = spread;
     to->cp_functype = functype;
+    
+    // add it to the collection
     objects.push_back(to);
     
-    // select the new object
-    currentObject = to;
-    gMarkMode = MARK_CONTROL_POINT;
-    
+    // add it to the tweakbar
     TwAddButton(objectBar,
                 to->name.c_str(),
                 (TwButtonCallback) [] (void* clientData) {
                     
-                    if (gTweakBar.currentObject) {
-                        
-                        // remember current marking
-                        gTweakBar.currentObject->height     = height;
-                        gTweakBar.currentObject->xtilt      = xtilt;
-                        gTweakBar.currentObject->ytilt      = ytilt;
-                        gTweakBar.currentObject->cp_spread  = spread;
-                        gTweakBar.currentObject->marking    = gRangeDrawer.currentlyMarked;
-                        
-                        // visually unselect the current object
-                        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "'").c_str());
-                    }
-                    
-                    // change current object
-                    TerrainObject* to = (TerrainObject*) clientData;
-                    gTweakBar.currentObject = to;
+                    // select this object
+                    gTweakBar.SelectObject((TerrainObject*) clientData);
                     
                     // we're about to mark control points
-                    gMarkMode = MARK_CONTROL_POINT;
-                    
-                    // adjust parameters
-                    height          = to->height;
-                    heightPrev      = to->height;
-                    ytilt           = to->ytilt;
-                    spread          = to->cp_spread;
-                    functype        = to->cp_functype;
-                    
-                    // adjust prev parameters not to cause weird initial changes
-                    xtilt           = to->xtilt;
-                    xtiltPrev       = to->xtilt;
-                    ytiltPrev       = to->ytilt;
-                    spreadPrev      = to->cp_spread;
-                    functypePrev    = to->cp_functype;
-                    
-                    //refresg the control bar since these changes affect it too
-                    TwRefreshBar(controlBar);
-                    
-                    // visually select the new object
-                    TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "     SELECTED'").c_str());
-                    
-                    // update marking
-                    gRangeDrawer.UnmarkAll();
-                    for (auto xy : to->marking)
-                        gRangeDrawer.Mark(xy.x, xy.y);
-                    
+                    gRangeDrawer.SetMarkMode(MARK_CONTROL_POINT);
                 },
                 to,
-                (string("label='") + to->name + "     SELECTED'").c_str());
+                NULL); // label will be set in SetCurrentObject()
+    
+    // select it (this causes label to be set too)
+    SelectObject(to);
+    
+    // we're about to mark control points
+    gRangeDrawer.SetMarkMode(MARK_CONTROL_POINT);
+}
+
+void RangeTweakBar::SelectObject(TerrainObject* to) {
+
+    if (currentObject) {
+        
+        // remember current marking
+        currentObject->height     = height;
+        currentObject->xtilt      = xtilt;
+        currentObject->ytilt      = ytilt;
+        currentObject->cp_spread  = spread;
+        currentObject->marking    = gRangeDrawer.currentlyMarked;
+        
+        // visually unselect the current object
+        TwDefine((string("Greens/") + currentObject->name + " label='" + currentObject->name + "'").c_str());
+    }
+    
+    // reset the current marking
+    gRangeDrawer.UnmarkAll();
+
+    // update current object
+    gTweakBar.currentObject = to;
+    
+    if (to) {
+        
+        // adjust parameters
+        height          = to->height;
+        heightPrev      = to->height;
+        ytilt           = to->ytilt;
+        spread          = to->cp_spread;
+        functype        = to->cp_functype;
+        
+        // adjust prev parameters not to cause weird initial changes
+        xtilt           = to->xtilt;
+        xtiltPrev       = to->xtilt;
+        ytiltPrev       = to->ytilt;
+        spreadPrev      = to->cp_spread;
+        functypePrev    = to->cp_functype;
+        
+        //refresg the control bar since these changes affect it too
+        TwRefreshBar(controlBar);
+   
+        // visually select the new object
+        TwDefine((string("Greens/") + gTweakBar.currentObject->name + " label='" + gTweakBar.currentObject->name + "     SELECTED'").c_str());
+        
+        // update marking
+        gRangeDrawer.UnmarkAll();
+        for (auto xy : to->marking)
+            gRangeDrawer.Mark(xy.x, xy.y);
+    
+    } else {
+        
+        // reset params to defaults
+        height = 0;
+        heightPrev = 0;
+        xtilt = 0;
+        xtiltPrev = 0;
+        ytilt = 0;
+        ytiltPrev = 0;
+        spread = 5;
+        spreadPrev = 5;
+        functype = FUNC_LINEAR;
+        functypePrev = FUNC_LINEAR;
+    }
 }

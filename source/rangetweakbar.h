@@ -29,27 +29,26 @@ struct TerrainObject {
 class RangeTweakBar {
     
 private:
-    int _screenWidth;
-    int _screenHeight;
     
     int                     objectCounter;
     TerrainObject*          currentObject;
     vector<TerrainObject*>  objects;
     
-    bool RemoveTerrainObject(TerrainObject* obj);
+    void SelectObject(TerrainObject* to);
+    
+    void TerrainFromFile();
+    void NewTerrainObject();
+    bool RemoveTerrainObject(TerrainObject* &obj);
+    
+    void TakeAction(const float &dt);
     
 public:
     RangeTweakBar();
     ~RangeTweakBar();
     
     void Init(const int &screenWidth, const int &screenHeight);
-    void Draw();
     void Update(const float &dt);
-    void TakeAction(const float &dt);
-
-    void TerrainFromFile();
-    void NewTerrainObject();
-    void UpdateObjectToCurrent(TerrainObject* object);
+    void Draw();
 };
 extern RangeTweakBar gTweakBar;
 

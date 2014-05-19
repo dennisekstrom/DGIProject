@@ -37,14 +37,12 @@ bool DifficultyAnalyzer::ClosestIntersection(vec3 start, vec3 dir,Intersection& 
     float closest_index = -1;
     
     // iterate through all terrain vertices and check for intersection
-    // X_INTERVAL * Y_INTERVAL * FLOATS_PER_TRIANGLE * 2 - 36
     for (int i = 0; i < (X_INTERVAL-1) * (Y_INTERVAL-1) * FLOATS_PER_TRIANGLE * 2 - 36 ; i += 36) {
+        
         vec3 v0 = vec3(gTerrain.vertexData[i], gTerrain.vertexData[i+1], gTerrain.vertexData[i+2]);
         vec3 v1 = vec3(gTerrain.vertexData[i+12],gTerrain.vertexData[i+13],gTerrain.vertexData[i+14]);
         vec3 v2 = vec3(gTerrain.vertexData[i+24],gTerrain.vertexData[i+25],gTerrain.vertexData[i+26]);
-        //        i = i+36;
-        //cout << sizeof(gTerrain.vertexData) << endl;
-        //cout << i << endl;
+
         vec3 e1 = v1 - v0;
         vec3 e2 = v2 - v0;
         vec3 b = start - v0;
@@ -60,8 +58,8 @@ bool DifficultyAnalyzer::ClosestIntersection(vec3 start, vec3 dir,Intersection& 
     if (closest_index >= 0) {
         closestIntersection.position = start + closest_t * dir;
         closestIntersection.distance = closest_t;
-        //closestIntersection.triangleIndex = closest_index;
         return true;
     }
+    
     return false;
 }

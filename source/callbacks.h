@@ -66,15 +66,4 @@ void CBMotion(int x, int y) {
     }
 }
 
-// --------------------------------------------------------------------------
-// Helpers
-// --------------------------------------------------------------------------
-/*
-bool KeyOnce(unsigned char key) {
-    assert(0 <= key && key < 255);
-    bool ret = keys[key];
-    keys[key] = false;
-    return ret;
-}
- */
 #endif
