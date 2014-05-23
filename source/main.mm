@@ -114,12 +114,12 @@ static void initTeeModel() {
     gTeeAsset.drawType = GL_TRIANGLES;
     gTeeAsset.drawStart = 0;
     gTeeAsset.drawCount = 6*2*3;
-    gTeeAsset.cubeTextures[0] = LoadTexture("wooden-crate.jpg");
-    gTeeAsset.cubeTextures[1] = LoadTexture("wooden-crate.jpg");
-    gTeeAsset.cubeTextures[2] = LoadTexture("wooden-crate.jpg");
-    gTeeAsset.cubeTextures[3] = LoadTexture("wooden-crate.jpg");
-    gTeeAsset.cubeTextures[4] = LoadTexture("wooden-crate.jpg");
-    gTeeAsset.cubeTextures[5] = LoadTexture("wooden-crate.jpg");
+    gTeeAsset.cubeTextures[0] = LoadTexture("blue.jpg");
+    gTeeAsset.cubeTextures[1] = LoadTexture("blue.jpg");
+    gTeeAsset.cubeTextures[2] = LoadTexture("blue.jpg");
+    gTeeAsset.cubeTextures[3] = LoadTexture("blue.jpg");
+    gTeeAsset.cubeTextures[4] = LoadTexture("blue.jpg");
+    gTeeAsset.cubeTextures[5] = LoadTexture("blue.jpg");
     
     glGenBuffers(1, &gTeeAsset.vbo);
     glGenVertexArrays(1, &gTeeAsset.vao);
@@ -132,65 +132,73 @@ static void initTeeModel() {
     
     // Make a cube out of triangles (two triangles per side)
     GLfloat vertexData[] = {
-        //  X     Y     Z       U     V
+      // X, Y, Z    U,V     Normal      Color
         // bottom
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1,-1,-1,   0,0,    0,-1,0,     0,0,1,1,
+         1,-1,-1,   1,0,    0,-1,0,     0,0,1,1,
+        -1,-1, 1,   0,1,    0,-1,0,     0,0,1,1,
+         1,-1,-1,   1,0,    0,-1,0,     0,0,1,1,
+         1,-1, 1,   1,1,    0,-1,0,     0,0,1,1,
+        -1,-1, 1,   0,1,    0,-1,0,     0,0,1,1,
         
         // top
-        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1, 1,-1,   0,0,    0, 1,0,     0,0,1,1,
+        -1, 1, 1,   0,1,    0, 1,0,     0,0,1,1,
+         1, 1,-1,   1,0,    0, 1,0,     0,0,1,1,
+         1, 1,-1,   1,0,    0, 1,0,     0,0,1,1,
+        -1, 1, 1,   0,1,    0, 1,0,     0,0,1,1,
+         1, 1, 1,   1,1,    0, 1,0,     0,0,1,1,
         
         // front
-        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
-        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-        
+        -1,-1, 1,   1,0,    0,0, 1,     0,0,1,1,
+         1,-1, 1,   0,0,    0,0, 1,     0,0,1,1,
+        -1, 1, 1,   1,1,    0,0, 1,     0,0,1,1,
+         1,-1, 1,   0,0,    0,0, 1,     0,0,1,1,
+         1, 1, 1,   0,1,    0,0, 1,     0,0,1,1,
+        -1, 1, 1,   1,1,    0,0, 1,     0,0,1,1,
+    
         // back
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        -1,-1,-1,   0,0,    0,0,-1,     0,0,1,1,
+        -1, 1,-1,   0,1,    0,0,-1,     0,0,1,1,
+         1,-1,-1,   1,0,    0,0,-1,     0,0,1,1,
+         1,-1,-1,   1,0,    0,0,-1,     0,0,1,1,
+        -1, 1,-1,   0,1,    0,0,-1,     0,0,1,1,
+         1, 1,-1,   1,1,    0,0,-1,     0,0,1,1,
         
         // left
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1,-1, 1,   0,1,    -1,0,0,     0,0,1,1,
+        -1, 1,-1,   1,0,    -1,0,0,     0,0,1,1,
+        -1,-1,-1,   0,0,    -1,0,0,     0,0,1,1,
+        -1,-1, 1,   0,1,    -1,0,0,     0,0,1,1,
+        -1, 1, 1,   1,1,    -1,0,0,     0,0,1,1,
+        -1, 1,-1,   1,0,    -1,0,0,     0,0,1,1,
         
         // right
-        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+         1,-1, 1,   1,1,     1,0,0,     0,0,1,1,
+         1,-1,-1,   1,0,     1,0,0,     0,0,1,1,
+         1, 1,-1,   0,0,     1,0,0,     0,0,1,1,
+         1,-1, 1,   1,1,     1,0,0,     0,0,1,1,
+         1, 1,-1,   0,0,     1,0,0,     0,0,1,1,
+         1, 1, 1,   0,1,     1,0,0,     0,0,1,1,
     };
     
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
     
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vert"));
-    glVertexAttribPointer(gTeeAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 12*sizeof(GLfloat), NULL);
     
     // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
     glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vertTexCoord"));
-    glVertexAttribPointer(gTeeAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_FALSE, 12*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // connect the normal to the "vertNormal" attribute of the vertex shader
+    glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vertNormal"));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE, 12*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
+    
+    // connect the normal to the "vertNormal" attribute of the vertex shader
+    glEnableVertexAttribArray(gTeeAsset.shaders->attrib("vertColor"));
+    glVertexAttribPointer(gTeeAsset.shaders->attrib("vertColor"), 4, GL_FLOAT, GL_FALSE,  12*sizeof(GLfloat), (const GLvoid*)(8 * sizeof(GLfloat)));
     
     // unbind the VAO
     glBindVertexArray(0);
@@ -212,12 +220,12 @@ static void initTargetModel() {
     gTargetAsset.drawType = GL_TRIANGLES;
     gTargetAsset.drawStart = 0;
     gTargetAsset.drawCount = 6*2*3;
-    gTargetAsset.cubeTextures[0] = LoadTexture("wooden-crate.jpg");
-    gTargetAsset.cubeTextures[1] = LoadTexture("wooden-crate.jpg");
-    gTargetAsset.cubeTextures[2] = LoadTexture("wooden-crate.jpg");
-    gTargetAsset.cubeTextures[3] = LoadTexture("wooden-crate.jpg");
-    gTargetAsset.cubeTextures[4] = LoadTexture("wooden-crate.jpg");
-    gTargetAsset.cubeTextures[5] = LoadTexture("wooden-crate.jpg");
+    gTargetAsset.cubeTextures[0] = LoadTexture("red.jpg");
+    gTargetAsset.cubeTextures[1] = LoadTexture("red.jpg");
+    gTargetAsset.cubeTextures[2] = LoadTexture("red.jpg");
+    gTargetAsset.cubeTextures[3] = LoadTexture("red.jpg");
+    gTargetAsset.cubeTextures[4] = LoadTexture("red.jpg");
+    gTargetAsset.cubeTextures[5] = LoadTexture("red.jpg");
     
     glGenBuffers(1, &gTargetAsset.vbo);
     glGenVertexArrays(1, &gTargetAsset.vao);
@@ -230,65 +238,73 @@ static void initTargetModel() {
     
     // Make a cube out of triangles (two triangles per side)
     GLfloat vertexData[] = {
-        //  X     Y     Z       U     V
+      // X, Y, Z    U,V     Normal      Color
         // bottom
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
+        -1,-1,-1,   0,0,    0,-1,0,     1,0,0,1,
+         1,-1,-1,   1,0,    0,-1,0,     1,0,0,1,
+        -1,-1, 1,   0,1,    0,-1,0,     1,0,0,1,
+         1,-1,-1,   1,0,    0,-1,0,     1,0,0,1,
+         1,-1, 1,   1,1,    0,-1,0,     1,0,0,1,
+        -1,-1, 1,   0,1,    0,-1,0,     1,0,0,1,
         
         // top
-        -1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1, 1,-1,   0,0,    0, 1,0,     1,0,0,1,
+        -1, 1, 1,   0,1,    0, 1,0,     1,0,0,1,
+         1, 1,-1,   1,0,    0, 1,0,     1,0,0,1,
+         1, 1,-1,   1,0,    0, 1,0,     1,0,0,1,
+        -1, 1, 1,   0,1,    0, 1,0,     1,0,0,1,
+         1, 1, 1,   1,1,    0, 1,0,     1,0,0,1,
         
         // front
-        -1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
-        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-        1.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+        -1,-1, 1,   1,0,    0,0, 1,     1,0,0,1,
+         1,-1, 1,   0,0,    0,0, 1,     1,0,0,1,
+        -1, 1, 1,   1,1,    0,0, 1,     1,0,0,1,
+         1,-1, 1,   0,0,    0,0, 1,     1,0,0,1,
+         1, 1, 1,   0,1,    0,0, 1,     1,0,0,1,
+        -1, 1, 1,   1,1,    0,0, 1,     1,0,0,1,
         
         // back
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        -1,-1,-1,   0,0,    0,0,-1,     1,0,0,1,
+        -1, 1,-1,   0,1,    0,0,-1,     1,0,0,1,
+         1,-1,-1,   1,0,    0,0,-1,     1,0,0,1,
+         1,-1,-1,   1,0,    0,0,-1,     1,0,0,1,
+        -1, 1,-1,   0,1,    0,0,-1,     1,0,0,1,
+         1, 1,-1,   1,1,    0,0,-1,     1,0,0,1,
         
         // left
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
-        -1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 0.0f,
+        -1,-1, 1,   0,1,    -1,0,0,     1,0,0,1,
+        -1, 1,-1,   1,0,    -1,0,0,     1,0,0,1,
+        -1,-1,-1,   0,0,    -1,0,0,     1,0,0,1,
+        -1,-1, 1,   0,1,    -1,0,0,     1,0,0,1,
+        -1, 1, 1,   1,1,    -1,0,0,     1,0,0,1,
+        -1, 1,-1,   1,0,    -1,0,0,     1,0,0,1,
         
         // right
-        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,   1.0f, 0.0f,
-        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-        1.0f,-1.0f, 1.0f,   1.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,   0.0f, 0.0f,
-        1.0f, 1.0f, 1.0f,   0.0f, 1.0f
+         1,-1, 1,   1,1,     1,0,0,     1,0,0,1,
+         1,-1,-1,   1,0,     1,0,0,     1,0,0,1,
+         1, 1,-1,   0,0,     1,0,0,     1,0,0,1,
+         1,-1, 1,   1,1,     1,0,0,     1,0,0,1,
+         1, 1,-1,   0,0,     1,0,0,     1,0,0,1,
+         1, 1, 1,   0,1,     1,0,0,     1,0,0,1,
     };
     
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
     
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vert"));
-    glVertexAttribPointer(gTargetAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), NULL);
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 12*sizeof(GLfloat), NULL);
     
     // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
     glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vertTexCoord"));
-    glVertexAttribPointer(gTargetAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_TRUE,  5*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_FALSE, 12*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+    
+    // connect the normal to the "vertNormal" attribute of the vertex shader
+    glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vertNormal"));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE, 12*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
+    
+    // connect the normal to the "vertNormal" attribute of the vertex shader
+    glEnableVertexAttribArray(gTargetAsset.shaders->attrib("vertColor"));
+    glVertexAttribPointer(gTargetAsset.shaders->attrib("vertColor"), 4, GL_FLOAT, GL_FALSE,  12*sizeof(GLfloat), (const GLvoid*)(8 * sizeof(GLfloat)));
     
     // unbind the VAO
     glBindVertexArray(0);
