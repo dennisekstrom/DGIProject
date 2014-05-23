@@ -792,7 +792,7 @@ static void Display() {
     double thisTime = double(glutGet(GLUT_ELAPSED_TIME)) / 1000;
     float dt = thisTime - lastTime;
     lastTime = thisTime;
-    cout << "render time: " << round(dt * 1000) << " ms" << endl;
+//    cout << "render time: " << round(dt * 1000) << " ms" << endl;
     
     // take tweakbar action
     gTweakBar.Update(dt);
@@ -801,7 +801,7 @@ static void Display() {
     Update(dt);
     
     // calculate difficulty
-    gDifficultyAnalyzer.Update(dt);
+//    gDifficultyAnalyzer.Update(dt);
     
     // render the scene
     Render();

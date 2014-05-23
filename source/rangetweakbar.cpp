@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Dennis Ekström. All rights reserved.
 //
 
+#include "difficultyanalyzer.h"
 #include "rangetweakbar.h"
 #include "protracerinputhandler.h"
 #include "tdogl/Camera.h"
@@ -309,6 +310,16 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Difficulty text=light");
     TwDefine("Difficulty valueswidth=100");
     
+    TwAddButton(difficultyBar,
+                "Calculate difficulty",
+                (TwButtonCallback) [] (void* clientData) {
+                    difficulty = to_string(DifficultyAnalyzer::CalculateDifficulty(gRangeDrawer.TeeTerrainPos(), gRangeDrawer.TargetTerrainPos()));
+                },
+                NULL,
+                "key=RETURN help='Calculate the difficulty from the current tee and target.' ");
+    
+    TwAddSeparator(difficultyBar, NULL, NULL);
+    
     TwAddVarRO(difficultyBar, "Difficulty", TW_TYPE_STDSTRING, &difficulty,
                "help='Difficulty of a shot hit from tee to target.' ");
 }
@@ -319,14 +330,6 @@ void RangeTweakBar::Draw() {
 
 void RangeTweakBar::Update(const float &dt) {
     TakeAction(dt);
-    
-    if (gRangeDrawer.teeMarked && gRangeDrawer.targetMarked) {
-        difficulty = "Undetermined";
-        TwRefreshBar(difficultyBar);
-    } else {
-        difficulty = "";
-        TwRefreshBar(difficultyBar);
-    }
 }
 
 void RangeTweakBar::TakeAction(const float &dt) {

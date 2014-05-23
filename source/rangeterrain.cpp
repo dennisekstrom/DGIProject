@@ -169,7 +169,8 @@ void RangeTerrain::Update() {
         UpdateHMap();
         UpdateNormals();
         UpdateChangedVertices();
-        UpdateVertexData();
+//        UpdateVertexData();
+        GenerateVertexData();
 
         changedControlPoints->Reset();
         regenerationRequired = false;

@@ -30,13 +30,34 @@ class DifficultyAnalyzer {
     
 private:
     
-    bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestIntersection);
+//    float difficulty;
+    
+//    vec3 prevTeeTerrainPos;
+//    vec3 prevTargetTerrainPos;
+    
+    
+    static float HeightDifficulty(const float &extraHeight) {
+        return extraHeight;
+    }
+    static float SideCurveDifficulty(const float &curve) { // Curve is maximum distance from of a straight
+        return curve;
+    }
+
+    static bool IntersectionBetweenPoints(const vec3 &start, const vec3 &end);
+    static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestIntersection);
+    
+    static bool PathIsClear(const vec3 &tee, const vec3 & p1, const vec3 &p2, const vec3 &target);
     
 public:
     
-    void Update(const float &dt);
+//    DifficultyAnalyzer();
+    
+    static float CalculateDifficulty(const vec3 &tee, const vec3 &target);
+    
+//    void Update(const float &dt);
+//    float GetDifficulty() { return difficulty; }
     
 };
-extern DifficultyAnalyzer gDifficultyAnalyzer;
+//extern DifficultyAnalyzer gDifficultyAnalyzer;
 
 #endif /* defined(__DGIProject__difficultyanalyzer__) */
