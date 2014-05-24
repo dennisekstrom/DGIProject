@@ -31,6 +31,7 @@
 		95916815191B92D6001A0A44 /* rangeterrain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95916814191B92D6001A0A44 /* rangeterrain.cpp */; };
 		95F4317D192F669100B031EF /* blue.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F4317B192F663A00B031EF /* blue.jpg */; };
 		95F4317E192F669100B031EF /* red.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F4317C192F663A00B031EF /* red.jpg */; };
+		95F43183192F873900B031EF /* orange.jpg in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F43182192F873900B031EF /* orange.jpg */; };
 		95F5FB12191C30C70084FA41 /* grass.png in Copy Files (4 items) (6 items) */ = {isa = PBXBuildFile; fileRef = 95F5FB11191C30C70084FA41 /* grass.png */; };
 		95F5FB16191FF8540084FA41 /* rangedrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F5FB15191FF8540084FA41 /* rangedrawer.cpp */; };
 		95F7507C191B784900384CFF /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 95F74DD3191B784700384CFF /* main.mm */; };
@@ -51,6 +52,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				95F43183192F873900B031EF /* orange.jpg in Copy Files (4 items) (6 items) */,
 				95F4317D192F669100B031EF /* blue.jpg in Copy Files (4 items) (6 items) */,
 				95F4317E192F669100B031EF /* red.jpg in Copy Files (4 items) (6 items) */,
 				954E87961928AAE30058CF7A /* input.txt in Copy Files (4 items) (6 items) */,
@@ -112,6 +114,7 @@
 		95EE55AE192025FA002E0789 /* grass_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = grass_big.jpg; sourceTree = "<group>"; };
 		95F4317B192F663A00B031EF /* blue.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = blue.jpg; sourceTree = "<group>"; };
 		95F4317C192F663A00B031EF /* red.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = red.jpg; sourceTree = "<group>"; };
+		95F43182192F873900B031EF /* orange.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = orange.jpg; sourceTree = "<group>"; };
 		95F5FB11191C30C70084FA41 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		95F5FB14191FF5B90084FA41 /* rangedrawer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rangedrawer.h; sourceTree = "<group>"; };
 		95F5FB15191FF8540084FA41 /* rangedrawer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rangedrawer.cpp; sourceTree = "<group>"; };
@@ -191,6 +194,7 @@
 		95F74DCE191B784700384CFF /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				95F43182192F873900B031EF /* orange.jpg */,
 				95F4317B192F663A00B031EF /* blue.jpg */,
 				95F4317C192F663A00B031EF /* red.jpg */,
 				956AA6E8192606CA008C6703 /* libAntTweakBar.dylib */,

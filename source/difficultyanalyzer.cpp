@@ -14,7 +14,7 @@
 
 const float p1_relative = 0.5;
 const float p2_relative = 0.7;
-const float H = 2;
+const float H = 15;
 
 //const float extraHeightSteps = 1;
 //const float curveSteps = 1;
@@ -22,8 +22,8 @@ const float H = 2;
 //const int maxCurveSteps = 20;
 //const int maxSteps = 20;
 const int maxHeightSteps = 30;
-const int maxCurveSteps = 30;
-const int maxComboSteps = 20;
+const int maxCurveSteps = 20;
+const int maxComboSteps = 15;
 const float heightPerStep = 1;
 const float curvePerStep = 1;
 
@@ -35,73 +35,62 @@ bool DifficultyAnalyzer::PathIsClear(const vec3 &tee, const vec3 & p1, const vec
     return !IntersectionBetweenPoints(tee, p1) && !IntersectionBetweenPoints(p1, p2) && !IntersectionBetweenPoints(p2, target);
 }
 
-//void DifficultyAnalyzer::Update(const float &dt) {
-//    
-//    // Don't do any new calculations if nothing changed
-//    if (prevTeeTerrainPos != gRangeDrawer.TeeTerrainPos() || prevTargetTerrainPos != gRangeDrawer.TargetTerrainPos()) {
-//        difficulty = CalculateDifficulty(gRangeDrawer.TeeTerrainPos(), gRangeDrawer.TargetTerrainPos());
-//        prevTeeTerrainPos = gRangeDrawer.TeeTerrainPos();
-//        prevTargetTerrainPos = gRangeDrawer.TargetTerrainPos();
-//    }
-//    
-//    
-//    /*
-//    // ***** TEMP BELOW *****
-//    if (gRangeDrawer.TeeMarked() && gRangeDrawer.TargetMarked()) {
-//        vec3 start_offset(0,1,0);
-//        vec3 start = gRangeDrawer.TeeTerrainPos();
-//        vec3 dir = gRangeDrawer.TargetTerrainPos() - start;
-//        Intersection intersection;
-//        bool intersected = ClosestIntersection(start + start_offset, dir, intersection);
-//        if (intersected) {
-//            cout << "Position x,y,z: " << intersection.position.x << " "  << intersection.position.y << " " << intersection.position.z << endl;
-//            cout << "Distance: " << intersection.distance << endl;
-//        } else {
-//            cout << "No intersection!" << endl;
-//        }
-//    }
-//    // ***** TEMP ABOVE *****
-//   */
-//}
-
-float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &target) {
+float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &target, vec3 &p1_adjusted, vec3 &p2_adjusted) {
     /*
      See attached description of golf shot modelling.
      */
     
-    float L = length(target - tee);
-    float h = target.y - tee.y;
-    float l = ( L * H ) / ( H - h * (1 - p2_relative) );
+    // Lift tee and target just slightly to avoid immediate collisions with ground
+    vec3 adjustedTee = tee + vec3(0,0.1,0);
+    vec3 adjustedTarget = target + vec3(0,0.1,0);;
     
-    vec3 dir = normalize(target - tee);
-    vec3 up(0, 1, 0);
-    vec3 right = cross(dir, up);
+    vec3 tee_to_target_xz = adjustedTarget - adjustedTee;
+    tee_to_target_xz.y = 0;
     
-    const vec3 p1 = tee + dir * l * p1_relative + up * H;
-    const vec3 p2 = tee + dir * l * p2_relative + up * H;
-    
-    // Is path clear to begin with?
-    if (PathIsClear(tee, p1, p2, target))
-        return 0;
-    
+    float L = length(tee_to_target_xz);
+    float h = adjustedTarget.y - adjustedTee.y;
+
+    // Steps when finding difficulty
     int heightSteps = 0;
     int curveSteps = 0;
     int comboSteps = 0; // combination of height and curve
     
+    // We need to adjust height if target is to high for our initial approach
+    float initialHeightDifficulty = 0; // Stems from having to hit high enough to reach the green
+    float adjustedHeight = H; // The new height of the golf shot
+    if (h + heightPerStep > H) {
+        heightSteps = 1 + ceil((h - H) / heightPerStep); // Increase heightSteps to get future height difficulty calculations right
+        adjustedHeight += heightSteps * heightPerStep;
+        initialHeightDifficulty = HeightDifficulty(heightSteps * heightPerStep); // Difficulty to add to curve difficulty
+    }
+    
+    float l = ( L * adjustedHeight ) / ( adjustedHeight - h * (1 - p2_relative) );
+    
+    vec3 dir = normalize(tee_to_target_xz);
+    vec3 up(0, 1, 0);
+    vec3 right = cross(dir, up);
+    
+    const vec3 p1 = adjustedTee + dir * l * p1_relative + up * adjustedHeight;
+    const vec3 p2 = adjustedTee + dir * l * p2_relative + up * adjustedHeight;
+    
     // These will be adjusted as difficulty increases
-    vec3 p1_adjusted = p1;
-    vec3 p2_adjusted = p2;
+    p1_adjusted = p1;
+    p2_adjusted = p2;
+    
+    
+    // Is path clear to begin with?
+    if (PathIsClear(adjustedTee, p1, p2, adjustedTarget))
+        return HeightDifficulty(heightSteps * heightPerStep) + initialHeightDifficulty;
     
     while (true) {
         
         // Take next step depending on which is easiest.
         float heightDifficulty = HeightDifficulty((heightSteps + 1) * heightPerStep);
-        float curveDifficulty = HeightDifficulty((curveSteps + 1) * curvePerStep);
-        float comboDifficulty = HeightDifficulty((comboSteps + 1) * heightPerStep) + HeightDifficulty((comboSteps + 1) * curvePerStep);
+        float curveDifficulty  = CurveDifficulty((curveSteps + 1) * curvePerStep) + initialHeightDifficulty;
+        float comboDifficulty  = HeightDifficulty((comboSteps + 1) * heightPerStep) + CurveDifficulty((comboSteps + 1) * curvePerStep);
         
         // If number of steps have been exceeded in all directions, the difficulty is infinite
         if (heightSteps == maxHeightSteps && curveSteps == maxCurveSteps && comboSteps == maxComboSteps)
-//            return std::numeric_limits<float>::max();
             return -1;
             
         // If number of steps are exceeded, make sure steps more steps aren't taking by settings difficulty to infinite
@@ -119,7 +108,7 @@ float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &targe
             diff = up * (heightSteps * heightPerStep);
             p1_adjusted = p1 + diff;
             p2_adjusted = p2 + diff;
-            if (PathIsClear(tee, p1_adjusted, p2_adjusted, target))
+            if (PathIsClear(adjustedTee, p1_adjusted, p2_adjusted, adjustedTarget))
                 return heightDifficulty;
             
         } else if (minDifficulty == curveDifficulty) {
@@ -130,14 +119,14 @@ float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &targe
             diff = right * (curveSteps * curvePerStep);
             p1_adjusted = p1 + diff;
             p2_adjusted = p2 + diff;
-            if (PathIsClear(tee, p1_adjusted, p2_adjusted, target))
+            if (PathIsClear(adjustedTee, p1_adjusted, p2_adjusted, adjustedTarget))
                 return curveDifficulty;
             
             // Try curve to the left (path curves right)
             diff = -right * (curveSteps * curvePerStep);
             p1_adjusted = p1 + diff;
             p2_adjusted = p2 + diff;
-            if (PathIsClear(tee, p1_adjusted, p2_adjusted, target))
+            if (PathIsClear(adjustedTee, p1_adjusted, p2_adjusted, adjustedTarget))
                 return curveDifficulty;
             
             
@@ -150,14 +139,14 @@ float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &targe
             diff = up * (comboSteps * heightPerStep) + right * (comboSteps * curvePerStep);
             p1_adjusted = p1 + diff;
             p2_adjusted = p2 + diff;
-            if (PathIsClear(tee, p1_adjusted, p2_adjusted, target))
+            if (PathIsClear(adjustedTee, p1_adjusted, p2_adjusted, adjustedTarget))
                 return comboDifficulty;
             
             // Try curve to the left (path curves right)
             diff = up * (comboSteps * heightPerStep) - right * (comboSteps * curvePerStep);
             p1_adjusted = p1 + diff;
             p2_adjusted = p2 + diff;
-            if (PathIsClear(tee, p1_adjusted, p2_adjusted, target))
+            if (PathIsClear(adjustedTee, p1_adjusted, p2_adjusted, adjustedTarget))
                 return comboDifficulty;
         }
     }

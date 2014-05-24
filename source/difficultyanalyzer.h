@@ -15,12 +15,10 @@
 
 using namespace glm;
 
-
 /*
  Defines an intersection with a triangle
  */
-struct Intersection
-{
+struct Intersection {
     vec3 position;
     float distance;
     ModelAsset* asset;
@@ -30,16 +28,10 @@ class DifficultyAnalyzer {
     
 private:
     
-//    float difficulty;
-    
-//    vec3 prevTeeTerrainPos;
-//    vec3 prevTargetTerrainPos;
-    
-    
     static float HeightDifficulty(const float &extraHeight) {
         return extraHeight;
     }
-    static float SideCurveDifficulty(const float &curve) { // Curve is maximum distance from of a straight
+    static float CurveDifficulty(const float &curve) { // Curve is maximum distance from of a straight
         return curve;
     }
 
@@ -50,14 +42,8 @@ private:
     
 public:
     
-//    DifficultyAnalyzer();
-    
-    static float CalculateDifficulty(const vec3 &tee, const vec3 &target);
-    
-//    void Update(const float &dt);
-//    float GetDifficulty() { return difficulty; }
+    static float CalculateDifficulty(const vec3 &tee, const vec3 &target, vec3 &p1_adjusted, vec3 &p2_adjusted);
     
 };
-//extern DifficultyAnalyzer gDifficultyAnalyzer;
 
 #endif /* defined(__DGIProject__difficultyanalyzer__) */

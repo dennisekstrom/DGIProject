@@ -122,7 +122,8 @@ private:
     float GetHeight(float tx, float ty);
     
     inline void  LiftVertex(const int &x, const int &y, const float &lift, const float &spread, const ControlPointFuncType &functype) {
-        gTerrain.SetControlPoint(x, y, gTerrain.hmap[y][x] + lift, spread, functype);
+        float h = gTerrain.controlPoints[y][x] ? gTerrain.controlPoints[y][x]->h : gTerrain.hmap[y][x];
+        gTerrain.SetControlPoint(x, y, h + lift, spread, functype);
     }
     
     inline static int TerrainX2QuadX(const float &tx) {

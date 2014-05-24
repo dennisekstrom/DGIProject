@@ -55,6 +55,14 @@
 #define TARGET_MODEL_SCALE 0.3
 
 // globals
+vec3 gPathTee;
+vec3 gPathP1;
+vec3 gPathP2;
+vec3 gPathTarget;
+bool gPathInitiated = false;
+bool gPathChanged = false;
+bool gPathShouldBeDrawn = false;
+
 bool gLeftCameraUseColor = false;
 bool gRightCameraUseColor = true;
 bool gLeftCameraFullscreen = false;
@@ -68,10 +76,12 @@ int gWindowId;
 tdogl::Camera gCamera1; //Left camera
 tdogl::Camera gCamera2; //Right camera, overview
 
+ModelAsset gPathAsset;
 ModelAsset gTerrainModelAsset;
 ModelAsset gSkyboxAsset;
 ModelAsset gTeeAsset;
 ModelAsset gTargetAsset;
+ModelInstance gPathInstance;
 ModelInstance gSkyBoxInstance;
 ModelInstance gTeeInstance;
 ModelInstance gTargetInstance;
@@ -108,18 +118,225 @@ static tdogl::Texture* LoadTexture(const char* filename) {
 }
 
 //TODO set up in seperate class instead
+static void createPathModel(const vec3 &tee, const vec3 &p1, const vec3 &p2, const vec3 &target) {
+    
+    // initial calculations to produce path of triangles
+    vec3 dir1 = glm::normalize(p1 - tee);
+    vec3 dir2 = glm::normalize(target - p2);
+    vec3 UP(0,1,0);
+    vec3 RIGHT = glm::cross(dir1, UP);
+    vec3 FORWARD = glm::cross(UP, RIGHT); // in ground plane
+    
+    float WIDTH = 0.25f; // half width
+    
+//    float l_p1_to_tee = glm::length(p1 - tee);
+//    float l_p2_to_target = glm::length(p2 - target);
+//    
+//    float y1 = p1.y;
+//    float xz1 = length(p1 - tee - vec3(0,y1,0));
+//    float wAlongGround1 = l_p1_to_tee * WIDTH / y1;
+//    float wVertical1 = l_p1_to_tee * WIDTH / xz1;
+    vec3 n_up1 = glm::cross(RIGHT, dir1);
+    
+//    float y2 = p2.y;
+//    float xz2 = length(p2 - target - vec3(0,y2,0));
+//    float wAlongGround2 = l_p2_to_target * WIDTH / y2;
+//    float wVertical2 = l_p2_to_target * WIDTH / xz2;
+    vec3 n_up2 = glm::cross(RIGHT, dir2);
+    
+    vec3 v1_te = tee + WIDTH * FORWARD;
+    vec3 v2_te = tee + WIDTH * RIGHT;
+    vec3 v3_te = tee + WIDTH * -FORWARD;
+    vec3 v4_te = tee + WIDTH * -RIGHT;
+
+    vec3 v1_p1 = p1 + WIDTH * -UP;
+    vec3 v2_p1 = p1 + WIDTH * RIGHT;
+    vec3 v3_p1 = p1 + WIDTH * UP;
+    vec3 v4_p1 = p1 + WIDTH * -RIGHT;
+    
+    vec3 v1_p2 = p2 + WIDTH * -UP;
+    vec3 v2_p2 = p2 + WIDTH * RIGHT;
+    vec3 v3_p2 = p2 + WIDTH * UP;
+    vec3 v4_p2 = p2 + WIDTH * -RIGHT;
+    
+    vec3 v1_ta = target + WIDTH * -FORWARD;
+    vec3 v2_ta = target + WIDTH * RIGHT;
+    vec3 v3_ta = target + WIDTH * FORWARD;
+    vec3 v4_ta = target + WIDTH * -RIGHT;
+    
+    gPathAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
+    gPathAsset.drawType = GL_TRIANGLES;
+    gPathAsset.drawStart = 0;
+    gPathAsset.drawCount = 12*2*3;
+    gPathAsset.texture = LoadTexture("orange.jpg");
+    
+    if (!gPathInitiated) {
+        glGenBuffers(1, &gPathAsset.vbo);
+        glGenVertexArrays(1, &gPathAsset.vao);
+    }
+    
+    // bind the VAO
+    glBindVertexArray(gPathAsset.vao);
+    
+    // bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, gPathAsset.vbo);
+    
+    // color
+    vec4 c(1,0,0,1);
+    
+    // make a path out of triangles
+    GLfloat vertexData[] = {
+        // X, Y, Z                           U,V     Normal                           Color
+        // tee to p1
+        // 1-2
+        v1_te.x, v1_te.y, v1_te.z,           1,1,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           1,0,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        v1_te.x, v1_te.y, v1_te.z,           1,1,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_te.x, v2_te.y, v2_te.z,           0,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        // 2-3
+        v2_te.x, v2_te.y, v2_te.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           1,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           0,0,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
+        
+        v2_te.x, v2_te.y, v2_te.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           0,0,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
+        v3_te.x, v3_te.y, v3_te.z,           0,1,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
+        
+        // 3-4
+        v3_te.x, v3_te.y, v3_te.z,           1,1,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           1,0,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        v3_te.x, v3_te.y, v3_te.z,           1,1,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_te.x, v4_te.y, v4_te.z,           0,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        // 4-1
+        v4_te.x, v4_te.y, v4_te.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           1,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           0,0,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
+        
+        v4_te.x, v4_te.y, v4_te.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           0,0,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
+        v1_te.x, v1_te.y, v1_te.z,           0,1,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
+        
+        // p1 to p2
+        // 1-2
+        v1_p1.x, v1_p1.y, v1_p1.z,           1,1,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           1,0,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        v1_p1.x, v1_p1.y, v1_p1.z,           1,1,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           0,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        // 2-3
+        v2_p1.x, v2_p1.y, v2_p1.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           1,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           0,0,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        
+        v2_p1.x, v2_p1.y, v2_p1.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           0,0,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           0,1,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        
+        // 3-4
+        v3_p1.x, v3_p1.y, v3_p1.z,           1,1,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           1,0,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        v3_p1.x, v3_p1.y, v3_p1.z,           1,1,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           0,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        // 4-1
+        v4_p1.x, v4_p1.y, v4_p1.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           1,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           0,0,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        
+        v4_p1.x, v4_p1.y, v4_p1.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           0,0,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           0,1,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+
+        // p2 to target
+        // 1-2
+        v1_p2.x, v1_p2.y, v1_p2.z,           1,1,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
+        v1_ta.x, v1_ta.y, v1_ta.z,           1,0,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
+        v2_ta.x, v2_ta.y, v2_ta.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        v1_p2.x, v1_p2.y, v1_p2.z,           1,1,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
+        v2_ta.x, v2_ta.y, v2_ta.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           0,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        // 2-3
+        v2_p2.x, v2_p2.y, v2_p2.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_ta.x, v2_ta.y, v2_ta.z,           1,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_ta.x, v3_ta.y, v3_ta.z,           0,0,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
+        
+        v2_p2.x, v2_p2.y, v2_p2.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_ta.x, v3_ta.y, v3_ta.z,           0,0,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           0,1,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
+        
+        // 3-4
+        v3_p2.x, v3_p2.y, v3_p2.z,           1,1,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
+        v3_ta.x, v3_ta.y, v3_ta.z,           1,0,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
+        v4_ta.x, v4_ta.y, v4_ta.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        v3_p2.x, v3_p2.y, v3_p2.z,           1,1,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
+        v4_ta.x, v4_ta.y, v4_ta.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           0,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        
+        // 4-1
+        v4_p2.x, v4_p2.y, v4_p2.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_ta.x, v4_ta.y, v4_ta.z,           1,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_ta.x, v1_ta.y, v1_ta.z,           0,0,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
+        
+        v4_p2.x, v4_p2.y, v4_p2.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_ta.x, v1_ta.y, v1_ta.z,           0,0,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           0,1,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
+    };
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    
+    if (!gPathInitiated) {
+        // connect the xyz to the "vert" attribute of the vertex shader
+        glEnableVertexAttribArray(gPathAsset.shaders->attrib("vert"));
+        glVertexAttribPointer(gPathAsset.shaders->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 12*sizeof(GLfloat), NULL);
+        
+        // connect the uv coords to the "vertTexCoord" attribute of the vertex shader
+        glEnableVertexAttribArray(gPathAsset.shaders->attrib("vertTexCoord"));
+        glVertexAttribPointer(gPathAsset.shaders->attrib("vertTexCoord"), 2, GL_FLOAT, GL_FALSE, 12*sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+        
+        // connect the normal to the "vertNormal" attribute of the vertex shader
+        glEnableVertexAttribArray(gPathAsset.shaders->attrib("vertNormal"));
+        glVertexAttribPointer(gPathAsset.shaders->attrib("vertNormal"), 3, GL_FLOAT, GL_TRUE, 12*sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat)));
+        
+        // connect the normal to the "vertNormal" attribute of the vertex shader
+        glEnableVertexAttribArray(gPathAsset.shaders->attrib("vertColor"));
+        glVertexAttribPointer(gPathAsset.shaders->attrib("vertColor"), 4, GL_FLOAT, GL_FALSE,  12*sizeof(GLfloat), (const GLvoid*)(8 * sizeof(GLfloat)));
+    }
+    
+    // unbind the VAO
+    glBindVertexArray(0);
+    
+    // setup model instance of path
+    gPathInstance.asset = &gPathAsset;
+    
+    gPathInitiated = true;
+}
+
+
+//TODO set up in seperate class instead
 static void initTeeModel() {
     
     gTeeAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
     gTeeAsset.drawType = GL_TRIANGLES;
     gTeeAsset.drawStart = 0;
     gTeeAsset.drawCount = 6*2*3;
-    gTeeAsset.cubeTextures[0] = LoadTexture("blue.jpg");
-    gTeeAsset.cubeTextures[1] = LoadTexture("blue.jpg");
-    gTeeAsset.cubeTextures[2] = LoadTexture("blue.jpg");
-    gTeeAsset.cubeTextures[3] = LoadTexture("blue.jpg");
-    gTeeAsset.cubeTextures[4] = LoadTexture("blue.jpg");
-    gTeeAsset.cubeTextures[5] = LoadTexture("blue.jpg");
+    gTeeAsset.texture = LoadTexture("blue.jpg");
     
     glGenBuffers(1, &gTeeAsset.vbo);
     glGenVertexArrays(1, &gTeeAsset.vao);
@@ -203,15 +420,8 @@ static void initTeeModel() {
     // unbind the VAO
     glBindVertexArray(0);
     
-    // setup model instance of skybox
-    ModelInstance instance;
-    instance.asset = &gTeeAsset;
-    // translate and scale skybox
-    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
-    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
-    
-    gTeeInstance = instance;
-    
+    // setup model instance of tee
+    gTeeInstance.asset = &gTeeAsset;
 }
 
 static void initTargetModel() {
@@ -220,12 +430,7 @@ static void initTargetModel() {
     gTargetAsset.drawType = GL_TRIANGLES;
     gTargetAsset.drawStart = 0;
     gTargetAsset.drawCount = 6*2*3;
-    gTargetAsset.cubeTextures[0] = LoadTexture("red.jpg");
-    gTargetAsset.cubeTextures[1] = LoadTexture("red.jpg");
-    gTargetAsset.cubeTextures[2] = LoadTexture("red.jpg");
-    gTargetAsset.cubeTextures[3] = LoadTexture("red.jpg");
-    gTargetAsset.cubeTextures[4] = LoadTexture("red.jpg");
-    gTargetAsset.cubeTextures[5] = LoadTexture("red.jpg");
+    gTargetAsset.texture = LoadTexture("red.jpg");
     
     glGenBuffers(1, &gTargetAsset.vbo);
     glGenVertexArrays(1, &gTargetAsset.vao);
@@ -309,15 +514,8 @@ static void initTargetModel() {
     // unbind the VAO
     glBindVertexArray(0);
     
-    // setup model instance of skybox
-    ModelInstance instance;
-    instance.asset = &gTargetAsset;
-    // translate and scale skybox
-    instance.transform = glm::translate(glm::mat4(), glm::vec3(0,0,0)) *
-    glm::scale(glm::mat4(), glm::vec3(SKYBOX_SCALE,SKYBOX_SCALE,SKYBOX_SCALE));
-    
-    gTargetInstance = instance;
-    
+    // setup model instance of target
+    gTargetInstance.asset = &gTargetAsset;
 }
 
 // initializes the skybox
@@ -498,6 +696,45 @@ glm::mat4 scale(GLfloat x, GLfloat y, GLfloat z) {
     return glm::scale(glm::mat4(), glm::vec3(x,y,z));
 }
 
+static void RenderPath() {
+    
+    //glDisable(GL_DEPTH_TEST);
+    ModelAsset* asset = &gPathAsset;
+    tdogl::Program* shaders = asset->shaders;
+    
+    //bind the shaders
+    shaders->use();
+    
+    //set the shader uniforms
+    shaders->setUniform("camera", gCamera1.matrix());
+    shaders->setUniform("useColor", gLeftCameraUseColor);
+    shaders->setUniform("monotoneLight", false);
+    
+    shaders->setUniform("model", gPathInstance.transform);
+    shaders->setUniform("materialTex", 0); //set to 0 because the texture will be bound to GL_TEXTURE0
+    shaders->setUniform("light.position", gLightPosition);
+    shaders->setUniform("light.intensities", gLightIntensities);
+    //    shaders->setUniform("light.attenuation", gLightAttenuation);
+    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient);
+    shaders->setUniform("cameraPosition", gCamera1.position());
+    
+    
+    //bind the texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, asset->texture->object());
+    
+    //bind VAO and draw
+    glBindVertexArray(asset->vao);
+    glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
+    
+    //unbind everything
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    shaders->stopUsing();
+}
+
+
 static void RenderTee() {
     gTeeInstance.transform = glm::translate(glm::mat4(), gRangeDrawer.TeeTerrainPos()) *
     glm::scale(glm::mat4(), vec3(1,1,1) * float(TEE_MODEL_SCALE));
@@ -520,23 +757,20 @@ static void RenderTee() {
     shaders->setUniform("light.position", gLightPosition);
     shaders->setUniform("light.intensities", gLightIntensities);
     //    shaders->setUniform("light.attenuation", gLightAttenuation);
-    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient*15);
+    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient);
     shaders->setUniform("cameraPosition", gCamera1.position());
     
-    for (int i = 0; i < 6; i++) {
-        //bind the texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, asset->cubeTextures[i]->object());
-        //
-        //    //bind VAO and draw
-        glBindVertexArray(asset->vao);
-        glDrawArrays(asset->drawType, i*6, 6);
-        //
-        //    //unbind everything
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-    }
+    //bind the texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, asset->texture->object());
+    
+    //bind VAO and draw
+    glBindVertexArray(asset->vao);
+    glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
+    
+    //unbind everything
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     shaders->stopUsing();
 }
@@ -563,28 +797,23 @@ static void RenderTarget() {
     shaders->setUniform("light.position", gLightPosition);
     shaders->setUniform("light.intensities", gLightIntensities);
     //    shaders->setUniform("light.attenuation", gLightAttenuation);
-    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient*15);
+    shaders->setUniform("light.ambientCoefficient", gLightAmbientCoefficient);
     shaders->setUniform("cameraPosition", gCamera1.position());
     
-    for (int i = 0; i < 6; i++) {
-        //bind the texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, asset->cubeTextures[i]->object());
-        //
-        //    //bind VAO and draw
-        glBindVertexArray(asset->vao);
-        glDrawArrays(asset->drawType, i*6, 6);
-        //
-        //    //unbind everything
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
-    }
+    //bind the texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, asset->texture->object());
+    
+    //bind VAO and draw
+    glBindVertexArray(asset->vao);
+    glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
+    
+    //unbind everything
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     shaders->stopUsing();
 }
-
-
 
 static void RenderSkyBox() {
     
@@ -690,20 +919,23 @@ static void Render() {
         else
             glViewport(0, 0, SCREEN_W, SCREEN_W/2);
         
+        if (i == 0) {
+            // render skybox, should always be rendered behind everything else
+            glDisable(GL_DEPTH_TEST);
+            RenderSkyBox();
+            glEnable(GL_DEPTH_TEST);
+
+            RenderTee();
+            RenderTarget();
+            
+            if (gPathInitiated && gPathShouldBeDrawn)
+                RenderPath();
+        }
+        
         std::list<ModelInstance>::const_iterator it;
         for(it = gInstances.begin(); it != gInstances.end(); ++it){
-            if (i == 0) {
-                // render skybox, should always be rendered behind everything else
-                glDisable(GL_DEPTH_TEST);
-                RenderSkyBox();
-                glEnable(GL_DEPTH_TEST);
-                
-            }
             if (i == 0 || gLeftCameraFullscreen) {
                 RenderInstance(*it, gCamera1, false);
-                RenderTee();
-                RenderTarget();
-                //                drawText("DGI Project Alpha", 0, 0, 30);
             } else {
                 RenderInstance(*it, gCamera2, true); // Render second viewport with 2D projection matrix
             }
@@ -769,6 +1001,12 @@ static void Update(const float &dt) {
         gRangeDrawer.MarkTerrain();
         UpdateUsingMapBuffer(gTerrainModelAsset, gTerrain.vertexData, gTerrain.changedVertexIndices, FLOATS_PER_VERTEX);
         gTerrain.changedVertexIndices.clear();
+    }
+    
+    // Update ballpath
+    if (gPathChanged) {
+        createPathModel(gPathTee, gPathP1, gPathP2, gPathTarget);
+        gPathChanged = false;
     }
     
     //Mouse click
@@ -885,7 +1123,7 @@ void AppMain(int argc, char *argv[]) {
     gCamera2.SetAboveMode(true);
     
     // setup gLight
-    gLightPosition = glm::vec3(TERRAIN_WIDTH / 2, 10, TERRAIN_DEPTH / 2);
+    gLightPosition = glm::vec3(TERRAIN_WIDTH / 2, 10, -TERRAIN_DEPTH / 2);
     gLightIntensities = glm::vec3(1,1,1); //white
     gLightAttenuation = 0.0001f;
     gLightAmbientCoefficient = 0.080f;

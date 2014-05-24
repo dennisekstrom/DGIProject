@@ -181,7 +181,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Controls text=light");
     
     TwAddVarRW(controlBar, "Height", TW_TYPE_FLOAT, &height,
-               "min=-20 max=20 step=0.25 precision=2 keyIncr=Y keyDecr=I help='Raise/lower selected segments.' ");
+               "min=-100 max=100 step=0.25 precision=2 keyIncr=Y keyDecr=I help='Raise/lower selected segments.' ");
     
     TwAddVarRW(controlBar, "X-Tilt", TW_TYPE_FLOAT, &xtilt,
                "min=-85 max=85 step=2 keyIncr=H keyDecr=K help='Tilt selected segments along x-axis.' ");
@@ -212,6 +212,14 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 (TwButtonCallback) [] (void* clientData) {
                     float h = gRangeDrawer.GetAverageHeight(gRangeDrawer.currentlyMarked);
                     gRangeDrawer.FlattenMarked(h, spread, functype);
+                    
+                    xtilt = 0;
+                    ytilt = 0;
+                    height = h;
+                    
+                    xtiltPrev = 0;
+                    ytiltPrev = 0;
+                    heightPrev = h;
                 },
                 NULL,
                 "key=SPACE help='Flatten the current selection.' ");
@@ -220,6 +228,20 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 "Flatten terrain",
                 (TwButtonCallback) [] (void* clientData) {
                     gTerrain.Reset();
+                    
+                    xtilt = 0;
+                    ytilt = 0;
+                    height = 0;
+                    
+                    xtiltPrev = 0;
+                    ytiltPrev = 0;
+                    heightPrev = 0;
+                    
+                    for (auto o : gTweakBar.objects) {
+                        o->xtilt = 0;
+                        o->ytilt = 0;
+                        o->height = 0;
+                    }
                 },
                 NULL,
                 "key=R help='Flatten the entire terrain.' ");
@@ -310,10 +332,30 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Difficulty text=light");
     TwDefine("Difficulty valueswidth=100");
     
+    extern bool gPathShouldBeDrawn;
+    extern bool gPathChanged;
+    extern vec3 gPathTee;
+    extern vec3 gPathP1;
+    extern vec3 gPathP2;
+    extern vec3 gPathTarget;
+    
     TwAddButton(difficultyBar,
                 "Calculate difficulty",
                 (TwButtonCallback) [] (void* clientData) {
-                    difficulty = to_string(DifficultyAnalyzer::CalculateDifficulty(gRangeDrawer.TeeTerrainPos(), gRangeDrawer.TargetTerrainPos()));
+                    vec3 p1, p2;
+                    float d = DifficultyAnalyzer::CalculateDifficulty(gRangeDrawer.TeeTerrainPos(), gRangeDrawer.TargetTerrainPos(), p1, p2);
+                    if (d >= 0) {
+                        difficulty = to_string(d);
+                        gPathTee = gRangeDrawer.TeeTerrainPos();
+                        gPathP1 = p1;
+                        gPathP2 = p2;
+                        gPathTarget = gRangeDrawer.TargetTerrainPos();
+                        gPathChanged = true;
+                        gPathShouldBeDrawn = true;
+                    } else {
+                        difficulty = "Impossible!";
+                        gPathShouldBeDrawn = false;
+                    }
                 },
                 NULL,
                 "key=RETURN help='Calculate the difficulty from the current tee and target.' ");
