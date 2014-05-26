@@ -29,8 +29,8 @@ float       spread      = 5,    spreadPrev      = 5;
 ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
 
 // noise parameters
-float       persistance = 1;
-float       frequency   = 0.2;
+float       persistance = 2;
+float       frequency   = 0.16;
 float       amplitude   = 0.8;
 float       octaves     = 2;
 
@@ -137,16 +137,16 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Noise text=light");
     
     TwAddVarRW(noiseBar, "Persistance", TW_TYPE_FLOAT, &persistance,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the persistance of perlin noise.' ");
+               "min=0 max=20 step=0.01 keyIncr=+ keyDecr=- help='Set the persistance of perlin noise.' ");
     
     TwAddVarRW(noiseBar, "Frequency", TW_TYPE_FLOAT, &frequency,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the frequency of perlin noise.' ");
+               "min=0 max=20 step=0.01 keyIncr=+ keyDecr=- help='Set the frequency of perlin noise.' ");
     
     TwAddVarRW(noiseBar, "Amplitude", TW_TYPE_FLOAT, &amplitude,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the amplitude of perlin noise' ");
+               "min=0 max=20 step=0.01 keyIncr=+ keyDecr=- help='Set the amplitude of perlin noise' ");
     
     TwAddVarRW(noiseBar, "Octaves", TW_TYPE_FLOAT, &octaves,
-               "min=0 max=20 step=0.1 keyIncr=+ keyDecr=- help='Set the octaves of perlin noise' ");
+               "min=0 max=20 step=1 keyIncr=+ keyDecr=- help='Set the octaves of perlin noise' ");
     
     
     TwAddSeparator(noiseBar, NULL, NULL);
