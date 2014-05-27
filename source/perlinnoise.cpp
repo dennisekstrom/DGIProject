@@ -5,10 +5,12 @@
 //  Created by Tobias Wikström on 17/05/14.
 //  Copyright (c) 2014 Tobias Wikström. All rights reserved.
 //
-
-// TODO, investigate magic numbers, and more algorithms
+// https://code.google.com/p/fractalterraingeneration/wiki/Perlin_Noise
 
 #include "perlinnoise.h"
+#include <iostream>
+#include <cmath>
+
 
 PerlinNoise::PerlinNoise()
 {
@@ -25,7 +27,7 @@ PerlinNoise::PerlinNoise(double _persistence, double _frequency, double _amplitu
     frequency = _frequency;
     amplitude  = _amplitude;
     octaves = _octaves;
-    seed = 2 + _randomseed * _randomseed;
+    seed = _randomseed;
 }
 
 void PerlinNoise::SetParams(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed)
@@ -34,25 +36,25 @@ void PerlinNoise::SetParams(double _persistence, double _frequency, double _ampl
     frequency = _frequency;
     amplitude  = _amplitude;
     octaves = _octaves;
-    seed = 2 + _randomseed * _randomseed;
+    seed = _randomseed;
 }
 
 
 double PerlinNoise::GetHeight(double x, double y) const
 {
-    //properties of one octave (changing each loop)
-    double t = 0.0f;
-    double _amplitude = 1;
-    double freq = frequency;
+    double height = 0.0f;
+    double _changing_amp = 1;
+    double _freq = frequency;
     
-    for(int k = 0; k < octaves; k++)
+    //Iterate through the octaves, applying all the parameters to the noise value
+    for(int i = 0; i < octaves; i++)
     {
-        t += GetValue(y * freq + seed, x * freq + seed) * _amplitude;
-        _amplitude *= persistence;
-        freq *= 2;
+        height += GetValue(y * _freq + seed, x * _freq + seed) * _changing_amp;
+        _changing_amp *= persistence;
+        _freq *= 2; //increase frequency two-folds for each octave iteration
     }
     
-    return t * amplitude;
+    return height * amplitude;
 }
 
 double PerlinNoise::GetValue(double x, double y) const
@@ -83,7 +85,7 @@ double PerlinNoise::GetValue(double x, double y) const
     
     double n34 = Noise(Xint+2, Yint+2);
     
-    //find the noise values of the four corners
+    //find the noise values/gradient of the four corners
     double x0y0 = 0.0625*(n01+n02+n03+n04) + 0.125*(n05+n06+n07+n08) + 0.25*(n09);
     double x1y0 = 0.0625*(n07+n12+n08+n14) + 0.125*(n09+n16+n02+n04) + 0.25*(n06);
     double x0y1 = 0.0625*(n05+n06+n23+n24) + 0.125*(n03+n04+n09+n28) + 0.25*(n08);
@@ -97,18 +99,18 @@ double PerlinNoise::GetValue(double x, double y) const
     return fin;
 }
 
-double PerlinNoise::Interpolate(double x, double y, double a) const
+// Cosine interpolation, for smooth interpolation
+// http://paulbourke.net/miscellaneous/interpolation/
+double PerlinNoise::Interpolate(double a, double b, double mu) const
 {
-    double negA = 1.0 - a;
-    double negASqr = negA * negA;
-    double fac1 = 3.0 * (negASqr) - 2.0 * (negASqr * negA);
-    double aSqr = a * a;
-    double fac2 = 3.0 * aSqr - 2.0 * (aSqr * a);
-    
-    return x * fac1 + y * fac2; //add the weighted factors
+    double PI = 3.1415927;
+    double mu2=(1.0-cos(mu*PI))* 0.5;
+    return a*(1.0-mu2)+b*mu2;
+
 }
 
 // Base function for noise, seems to be a quite standardized way of generating the noise.
+// Basically a pseudo random generator with two inputs, returning a value between -1 and 1.
 double PerlinNoise::Noise(int x, int y) const
 {
     int n = x + y * 57;
