@@ -120,49 +120,47 @@ static tdogl::Texture* LoadTexture(const char* filename) {
 //TODO set up in seperate class instead
 static void createPathModel(const vec3 &tee, const vec3 &p1, const vec3 &p2, const vec3 &target) {
     
+    float hw = 0.5f; // half hw
+    const vec3 up(0,1,0);
+    
     // initial calculations to produce path of triangles
     vec3 dir1 = glm::normalize(p1 - tee);
-    vec3 dir2 = glm::normalize(target - p2);
-    vec3 UP(0,1,0);
-    vec3 RIGHT = glm::cross(dir1, UP);
-    vec3 FORWARD = glm::cross(UP, RIGHT); // in ground plane
+    vec3 dir2 = glm::normalize(p2 - p1);
+    vec3 dir3 = glm::normalize(target - p2);
     
-    float WIDTH = 0.25f; // half width
+    vec3 r1 = glm::cross(dir1, up);
+    vec3 r2 = glm::cross(dir2, up);
+    vec3 r3 = glm::cross(dir3, up);
     
-//    float l_p1_to_tee = glm::length(p1 - tee);
-//    float l_p2_to_target = glm::length(p2 - target);
-//    
-//    float y1 = p1.y;
-//    float xz1 = length(p1 - tee - vec3(0,y1,0));
-//    float wAlongGround1 = l_p1_to_tee * WIDTH / y1;
-//    float wVertical1 = l_p1_to_tee * WIDTH / xz1;
-    vec3 n_up1 = glm::cross(RIGHT, dir1);
-    
-//    float y2 = p2.y;
-//    float xz2 = length(p2 - target - vec3(0,y2,0));
-//    float wAlongGround2 = l_p2_to_target * WIDTH / y2;
-//    float wVertical2 = l_p2_to_target * WIDTH / xz2;
-    vec3 n_up2 = glm::cross(RIGHT, dir2);
-    
-    vec3 v1_te = tee + WIDTH * FORWARD;
-    vec3 v2_te = tee + WIDTH * RIGHT;
-    vec3 v3_te = tee + WIDTH * -FORWARD;
-    vec3 v4_te = tee + WIDTH * -RIGHT;
+    vec3 fw1 = glm::cross(up, r1);
+//    vec3 fw2 = glm::cross(up, r2);
+    vec3 fw3 = glm::cross(up, r3);
 
-    vec3 v1_p1 = p1 + WIDTH * -UP;
-    vec3 v2_p1 = p1 + WIDTH * RIGHT;
-    vec3 v3_p1 = p1 + WIDTH * UP;
-    vec3 v4_p1 = p1 + WIDTH * -RIGHT;
+    float wAlongGround1 = glm::length(p1 - tee) * hw / p2.y;
+    float wAlongGround2 = glm::length(target - p2) * hw / p2.y;
     
-    vec3 v1_p2 = p2 + WIDTH * -UP;
-    vec3 v2_p2 = p2 + WIDTH * RIGHT;
-    vec3 v3_p2 = p2 + WIDTH * UP;
-    vec3 v4_p2 = p2 + WIDTH * -RIGHT;
+    vec3 n_up1 = glm::cross(r1, dir1);
+    vec3 n_up2 = glm::cross(r3, dir3);
     
-    vec3 v1_ta = target + WIDTH * -FORWARD;
-    vec3 v2_ta = target + WIDTH * RIGHT;
-    vec3 v3_ta = target + WIDTH * FORWARD;
-    vec3 v4_ta = target + WIDTH * -RIGHT;
+    vec3 v1_te = tee + wAlongGround1 * fw1;
+    vec3 v2_te = tee + hw * r1;
+    vec3 v3_te = tee + wAlongGround1 * -fw1;
+    vec3 v4_te = tee + hw * -r1;
+
+    vec3 v1_p1 = p1 + hw * -up;
+    vec3 v2_p1 = p1 + hw * r2;
+    vec3 v3_p1 = p1 + hw * up;
+    vec3 v4_p1 = p1 + hw * -r2;
+    
+    vec3 v1_p2 = p2 + hw * -up;
+    vec3 v2_p2 = p2 + hw * r2;
+    vec3 v3_p2 = p2 + hw * up;
+    vec3 v4_p2 = p2 + hw * -r2;
+    
+    vec3 v1_ta = target + wAlongGround2 * -fw3;
+    vec3 v2_ta = target + hw * r3;
+    vec3 v3_ta = target + wAlongGround2 * fw3;
+    vec3 v4_ta = target + hw * -r3;
     
     gPathAsset.shaders = LoadShaders("vertex-shader.txt", "fragment-shader.txt");
     gPathAsset.drawType = GL_TRIANGLES;
@@ -191,110 +189,110 @@ static void createPathModel(const vec3 &tee, const vec3 &p1, const vec3 &p2, con
         // 1-2
         v1_te.x, v1_te.y, v1_te.z,           1,1,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
         v1_p1.x, v1_p1.y, v1_p1.z,           1,0,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
-        v2_p1.x, v2_p1.y, v2_p1.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           0,0,        r1.x,    r1.y,    r1.z,      c.r, c.g, c.b, c.a,
         
         v1_te.x, v1_te.y, v1_te.z,           1,1,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
-        v2_p1.x, v2_p1.y, v2_p1.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v2_te.x, v2_te.y, v2_te.z,           0,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           0,0,        r1.x,    r1.y,    r1.z,      c.r, c.g, c.b, c.a,
+        v2_te.x, v2_te.y, v2_te.z,           0,1,        r1.x,    r1.y,    r1.z,      c.r, c.g, c.b, c.a,
         
         // 2-3
-        v2_te.x, v2_te.y, v2_te.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v2_p1.x, v2_p1.y, v2_p1.z,           1,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_te.x, v2_te.y, v2_te.z,           1,1,        r1.x,    r1.y,    r1.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           1,0,        r1.x,    r1.y,    r1.z,      c.r, c.g, c.b, c.a,
         v3_p1.x, v3_p1.y, v3_p1.z,           0,0,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
         
-        v2_te.x, v2_te.y, v2_te.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_te.x, v2_te.y, v2_te.z,           1,1,        r1.x,    r1.y,    r1.z,      c.r, c.g, c.b, c.a,
         v3_p1.x, v3_p1.y, v3_p1.z,           0,0,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
         v3_te.x, v3_te.y, v3_te.z,           0,1,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
         
         // 3-4
         v3_te.x, v3_te.y, v3_te.z,           1,1,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
         v3_p1.x, v3_p1.y, v3_p1.z,           1,0,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
-        v4_p1.x, v4_p1.y, v4_p1.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           0,0,       -r1.x,   -r1.y,   -r1.z,      c.r, c.g, c.b, c.a,
         
         v3_te.x, v3_te.y, v3_te.z,           1,1,     n_up1.x, n_up1.y, n_up1.z,      c.r, c.g, c.b, c.a,
-        v4_p1.x, v4_p1.y, v4_p1.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v4_te.x, v4_te.y, v4_te.z,           0,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           0,0,       -r1.x,   -r1.y,   -r1.z,      c.r, c.g, c.b, c.a,
+        v4_te.x, v4_te.y, v4_te.z,           0,1,       -r1.x,   -r1.y,   -r1.z,      c.r, c.g, c.b, c.a,
         
         // 4-1
-        v4_te.x, v4_te.y, v4_te.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v4_p1.x, v4_p1.y, v4_p1.z,           1,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_te.x, v4_te.y, v4_te.z,           1,1,       -r1.x,   -r1.y,   -r1.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           1,0,       -r1.x,   -r1.y,   -r1.z,      c.r, c.g, c.b, c.a,
         v1_p1.x, v1_p1.y, v1_p1.z,           0,0,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
         
-        v4_te.x, v4_te.y, v4_te.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_te.x, v4_te.y, v4_te.z,           1,1,       -r1.x,   -r1.y,   -r1.z,      c.r, c.g, c.b, c.a,
         v1_p1.x, v1_p1.y, v1_p1.z,           0,0,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
         v1_te.x, v1_te.y, v1_te.z,           0,1,    -n_up1.x,-n_up1.y,-n_up1.z,      c.r, c.g, c.b, c.a,
         
         // p1 to p2
         // 1-2
-        v1_p1.x, v1_p1.y, v1_p1.z,           1,1,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
-        v1_p2.x, v1_p2.y, v1_p2.z,           1,0,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
-        v2_p2.x, v2_p2.y, v2_p2.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           1,1,       -up.x,   -up.y,   -up.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           1,0,       -up.x,   -up.y,   -up.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           0,0,        r2.x,    r2.y,    r2.z,      c.r, c.g, c.b, c.a,
         
-        v1_p1.x, v1_p1.y, v1_p1.z,           1,1,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
-        v2_p2.x, v2_p2.y, v2_p2.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v2_p1.x, v2_p1.y, v2_p1.z,           0,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           1,1,       -up.x,   -up.y,   -up.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           0,0,        r2.x,    r2.y,    r2.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           0,1,        r2.x,    r2.y,    r2.z,      c.r, c.g, c.b, c.a,
         
         // 2-3
-        v2_p1.x, v2_p1.y, v2_p1.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v2_p2.x, v2_p2.y, v2_p2.z,           1,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v3_p2.x, v3_p2.y, v3_p2.z,           0,0,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           1,1,        r2.x,    r2.y,    r2.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           1,0,        r2.x,    r2.y,    r2.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           0,0,        up.x,    up.y,    up.z,      c.r, c.g, c.b, c.a,
         
-        v2_p1.x, v2_p1.y, v2_p1.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v3_p2.x, v3_p2.y, v3_p2.z,           0,0,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
-        v3_p1.x, v3_p1.y, v3_p1.z,           0,1,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
+        v2_p1.x, v2_p1.y, v2_p1.z,           1,1,        r2.x,    r2.y,    r2.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           0,0,        up.x,    up.y,    up.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           0,1,        up.x,    up.y,    up.z,      c.r, c.g, c.b, c.a,
         
         // 3-4
-        v3_p1.x, v3_p1.y, v3_p1.z,           1,1,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
-        v3_p2.x, v3_p2.y, v3_p2.z,           1,0,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
-        v4_p2.x, v4_p2.y, v4_p2.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           1,1,        up.x,    up.y,    up.z,      c.r, c.g, c.b, c.a,
+        v3_p2.x, v3_p2.y, v3_p2.z,           1,0,        up.x,    up.y,    up.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           0,0,       -r2.x,   -r2.y,   -r2.z,      c.r, c.g, c.b, c.a,
         
-        v3_p1.x, v3_p1.y, v3_p1.z,           1,1,        UP.x,    UP.y,    UP.z,      c.r, c.g, c.b, c.a,
-        v4_p2.x, v4_p2.y, v4_p2.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v4_p1.x, v4_p1.y, v4_p1.z,           0,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v3_p1.x, v3_p1.y, v3_p1.z,           1,1,        up.x,    up.y,    up.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           0,0,       -r2.x,   -r2.y,   -r2.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           0,1,       -r2.x,   -r2.y,   -r2.z,      c.r, c.g, c.b, c.a,
         
         // 4-1
-        v4_p1.x, v4_p1.y, v4_p1.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v4_p2.x, v4_p2.y, v4_p2.z,           1,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v1_p2.x, v1_p2.y, v1_p2.z,           0,0,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           1,1,       -r2.x,   -r2.y,   -r2.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           1,0,       -r2.x,   -r2.y,   -r2.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           0,0,       -up.x,   -up.y,   -up.z,      c.r, c.g, c.b, c.a,
         
-        v4_p1.x, v4_p1.y, v4_p1.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v1_p2.x, v1_p2.y, v1_p2.z,           0,0,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
-        v1_p1.x, v1_p1.y, v1_p1.z,           0,1,       -UP.x,   -UP.y,   -UP.z,      c.r, c.g, c.b, c.a,
+        v4_p1.x, v4_p1.y, v4_p1.z,           1,1,       -r2.x,   -r2.y,   -r2.z,      c.r, c.g, c.b, c.a,
+        v1_p2.x, v1_p2.y, v1_p2.z,           0,0,       -up.x,   -up.y,   -up.z,      c.r, c.g, c.b, c.a,
+        v1_p1.x, v1_p1.y, v1_p1.z,           0,1,       -up.x,   -up.y,   -up.z,      c.r, c.g, c.b, c.a,
 
         // p2 to target
         // 1-2
         v1_p2.x, v1_p2.y, v1_p2.z,           1,1,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
         v1_ta.x, v1_ta.y, v1_ta.z,           1,0,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
-        v2_ta.x, v2_ta.y, v2_ta.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_ta.x, v2_ta.y, v2_ta.z,           0,0,        r3.x,    r3.y,    r3.z,      c.r, c.g, c.b, c.a,
         
         v1_p2.x, v1_p2.y, v1_p2.z,           1,1,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
-        v2_ta.x, v2_ta.y, v2_ta.z,           0,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v2_p2.x, v2_p2.y, v2_p2.z,           0,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_ta.x, v2_ta.y, v2_ta.z,           0,0,        r3.x,    r3.y,    r3.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           0,1,        r3.x,    r3.y,    r3.z,      c.r, c.g, c.b, c.a,
         
         // 2-3
-        v2_p2.x, v2_p2.y, v2_p2.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
-        v2_ta.x, v2_ta.y, v2_ta.z,           1,0,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           1,1,        r3.x,    r3.y,    r3.z,      c.r, c.g, c.b, c.a,
+        v2_ta.x, v2_ta.y, v2_ta.z,           1,0,        r3.x,    r3.y,    r3.z,      c.r, c.g, c.b, c.a,
         v3_ta.x, v3_ta.y, v3_ta.z,           0,0,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
         
-        v2_p2.x, v2_p2.y, v2_p2.z,           1,1,     RIGHT.x, RIGHT.y, RIGHT.z,      c.r, c.g, c.b, c.a,
+        v2_p2.x, v2_p2.y, v2_p2.z,           1,1,        r3.x,    r3.y,    r3.z,      c.r, c.g, c.b, c.a,
         v3_ta.x, v3_ta.y, v3_ta.z,           0,0,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
         v3_p2.x, v3_p2.y, v3_p2.z,           0,1,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
         
         // 3-4
         v3_p2.x, v3_p2.y, v3_p2.z,           1,1,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
         v3_ta.x, v3_ta.y, v3_ta.z,           1,0,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
-        v4_ta.x, v4_ta.y, v4_ta.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_ta.x, v4_ta.y, v4_ta.z,           0,0,       -r3.x,   -r3.y,   -r3.z,      c.r, c.g, c.b, c.a,
         
         v3_p2.x, v3_p2.y, v3_p2.z,           1,1,     n_up2.x, n_up2.y, n_up2.z,      c.r, c.g, c.b, c.a,
-        v4_ta.x, v4_ta.y, v4_ta.z,           0,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v4_p2.x, v4_p2.y, v4_p2.z,           0,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_ta.x, v4_ta.y, v4_ta.z,           0,0,       -r3.x,   -r3.y,   -r3.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           0,1,       -r3.x,   -r3.y,   -r3.z,      c.r, c.g, c.b, c.a,
         
         // 4-1
-        v4_p2.x, v4_p2.y, v4_p2.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
-        v4_ta.x, v4_ta.y, v4_ta.z,           1,0,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           1,1,       -r3.x,   -r3.y,   -r3.z,      c.r, c.g, c.b, c.a,
+        v4_ta.x, v4_ta.y, v4_ta.z,           1,0,       -r3.x,   -r3.y,   -r3.z,      c.r, c.g, c.b, c.a,
         v1_ta.x, v1_ta.y, v1_ta.z,           0,0,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
         
-        v4_p2.x, v4_p2.y, v4_p2.z,           1,1,    -RIGHT.x,-RIGHT.y,-RIGHT.z,      c.r, c.g, c.b, c.a,
+        v4_p2.x, v4_p2.y, v4_p2.z,           1,1,       -r3.x,   -r3.y,   -r3.z,      c.r, c.g, c.b, c.a,
         v1_ta.x, v1_ta.y, v1_ta.z,           0,0,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
         v1_p2.x, v1_p2.y, v1_p2.z,           0,1,    -n_up2.x,-n_up2.y,-n_up2.z,      c.r, c.g, c.b, c.a,
     };
@@ -960,7 +958,7 @@ static void TakeKeyAction(const float &dt) {
         Quit();
     
     // move position of camera based on WASD keys, and QE keys for up and down
-    const float moveSpeed = gShiftDown ? 50.0 : 10.0; //units per second
+    const float moveSpeed = gShiftDown ? 250.0 : 50.0; //units per second
     if (keys['S'])
         gCamera1.offsetPosition(dt * moveSpeed * -gCamera1.forward());
     if (keys['W'])
@@ -1046,7 +1044,7 @@ static void Display() {
     double thisTime = double(glutGet(GLUT_ELAPSED_TIME)) / 1000;
     float dt = thisTime - lastTime;
     lastTime = thisTime;
-//    cout << "render time: " << round(dt * 1000) << " ms" << endl;
+    cout << "render time: " << round(dt * 1000) << " ms" << endl;
     
     // take tweakbar action
     gTweakBar.Update(dt);
@@ -1123,30 +1121,15 @@ void AppMain(int argc, char *argv[]) {
     gCamera2.SetAboveMode(true);
     
     // setup gLight
-    gLightPosition = glm::vec3(TERRAIN_WIDTH / 2, 10, -TERRAIN_DEPTH / 2);
+    gLightPosition = glm::vec3(TERRAIN_WIDTH / 2, 50, -TERRAIN_DEPTH / 2);
     gLightIntensities = glm::vec3(1,1,1); //white
-    gLightAttenuation = 0.0001f;
+    gLightAttenuation = 0.00001f;
     gLightAmbientCoefficient = 0.080f;
     
     // setup assets
     initSkyBox();
     initTeeModel();
     initTargetModel();
-    
-    // add perlin noise TODO testing
-//    gTerrain.hmap
-    //PerlinNoise HeightGenerator(/* ... */);
-//    PerlinNoise pn = PerlinNoise(1, 5, 3, 7, 4);
-//    for( int x = 0; x < 64; x++)
-//        for( int y = 0; y < 64; y++)
-//        {
-//            //double height = HeightGenerator.GetHeight(x,y);
-//            double height = pn.GetHeight(x,y);
-//            gTerrain.hmap[y][x] = height;
-//        }
-    
-    // glut settings
-    //    glutIgnoreKeyRepeat(1);
     
     // glut callbacks
     glutDisplayFunc(Display);

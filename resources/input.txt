@@ -1,4 +1,5 @@
 Name                x       y       z       off_x   off_y   off_z   radius  xtilt   ytilt   spread  functype
-ProtracerGreen      32      5       -32     0       0       0       5       0       0       5       2
-AnotherGreen        10      3       -40     0       0       0       3       0       0       10      1
-AnotherGreen        40      -3      -10     0       0       0       3       0       10      3       0
+ProtracerGreen      128     12       -128    0       0       0       23      0       10      6       2
+AnotherGreen        20      9       -226    0       0       0       17      -10     5       10      1
+AnotherGreen        43      14       -80    0       0       0       12      -8      -15     12      2
+AnotherGreen        170     8      -196     0       0       0       16      0       10      6       0

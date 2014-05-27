@@ -14,31 +14,26 @@
 
 const float p1_relative = 0.5;
 const float p2_relative = 0.7;
-const float H = 15;
 
-//const float extraHeightSteps = 1;
-//const float curveSteps = 1;
-//const int maxExtraHeightSteps = 20;
-//const int maxCurveSteps = 20;
-//const int maxSteps = 20;
-const int maxHeightSteps = 30;
-const int maxCurveSteps = 20;
-const int maxComboSteps = 15;
-const float heightPerStep = 1;
-const float curvePerStep = 1;
+const float DifficultyAnalyzer::IMPOSSIBLE = 400;       // Reflects a 400 yard shot, which can be considered impossible
 
-//DifficultyAnalyzer::DifficultyAnalyzer() {
-//    difficulty = 0;
-//}
+const float defaultShotHeight   = 20;
+
+// The following three parameters are documented to relate as 1, 1, 1/sqrt(2)
+const float heightPerStep       = 1;
+const float curvePerStep        = 1;
+const float comboPerStep        = 1.0f / sqrtf(2.0f);
 
 bool DifficultyAnalyzer::PathIsClear(const vec3 &tee, const vec3 & p1, const vec3 &p2, const vec3 &target) {
     return !IntersectionBetweenPoints(tee, p1) && !IntersectionBetweenPoints(p1, p2) && !IntersectionBetweenPoints(p2, target);
 }
 
-float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &target, vec3 &p1_adjusted, vec3 &p2_adjusted) {
+float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &target, vec3 &p1_adjusted, vec3 &p2_adjusted, float &distance) {
     /*
      See attached description of golf shot modelling.
      */
+    
+    distance = glm::length(target - tee);
     
     // Lift tee and target just slightly to avoid immediate collisions with ground
     vec3 adjustedTee = tee + vec3(0,0.1,0);
@@ -57,9 +52,9 @@ float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &targe
     
     // We need to adjust height if target is to high for our initial approach
     float initialHeightDifficulty = 0; // Stems from having to hit high enough to reach the green
-    float adjustedHeight = H; // The new height of the golf shot
-    if (h + heightPerStep > H) {
-        heightSteps = 1 + ceil((h - H) / heightPerStep); // Increase heightSteps to get future height difficulty calculations right
+    float adjustedHeight = defaultShotHeight; // The new height of the golf shot
+    if (h + heightPerStep > defaultShotHeight) {
+        heightSteps = 1 + ceil((h - defaultShotHeight) / heightPerStep); // Increase heightSteps to get future height difficulty calculations right
         adjustedHeight += heightSteps * heightPerStep;
         initialHeightDifficulty = HeightDifficulty(heightSteps * heightPerStep); // Difficulty to add to curve difficulty
     }
@@ -77,27 +72,22 @@ float DifficultyAnalyzer::CalculateDifficulty(const vec3 &tee, const vec3 &targe
     p1_adjusted = p1;
     p2_adjusted = p2;
     
-    
     // Is path clear to begin with?
     if (PathIsClear(adjustedTee, p1, p2, adjustedTarget))
-        return HeightDifficulty(heightSteps * heightPerStep) + initialHeightDifficulty;
+        return distance + HeightDifficulty(heightSteps * heightPerStep) + initialHeightDifficulty;
     
     while (true) {
         
         // Take next step depending on which is easiest.
-        float heightDifficulty = HeightDifficulty((heightSteps + 1) * heightPerStep);
-        float curveDifficulty  = CurveDifficulty((curveSteps + 1) * curvePerStep) + initialHeightDifficulty;
-        float comboDifficulty  = HeightDifficulty((comboSteps + 1) * heightPerStep) + CurveDifficulty((comboSteps + 1) * curvePerStep);
+        float heightDifficulty = distance + HeightDifficulty((heightSteps + 1) * heightPerStep);
+        float curveDifficulty  = distance + CurveDifficulty((curveSteps + 1) * curvePerStep) + initialHeightDifficulty;
+        float comboDifficulty  = distance + ComboDifficulty((comboSteps + 1) * comboPerStep, (comboSteps + 1) * comboPerStep);
         
-        // If number of steps have been exceeded in all directions, the difficulty is infinite
-        if (heightSteps == maxHeightSteps && curveSteps == maxCurveSteps && comboSteps == maxComboSteps)
+        // If difficulty exceeded IMPOSSIBLE, indicate this bu returning -1
+        if (heightDifficulty > IMPOSSIBLE && curveDifficulty > IMPOSSIBLE && comboDifficulty > IMPOSSIBLE)
             return -1;
-            
-        // If number of steps are exceeded, make sure steps more steps aren't taking by settings difficulty to infinite
-        if (heightSteps >= maxHeightSteps) { heightDifficulty = std::numeric_limits<float>::max(); }
-        if (curveSteps  >= maxCurveSteps ) { curveDifficulty  = std::numeric_limits<float>::max(); }
-        if (comboSteps  >= maxComboSteps ) { comboDifficulty  = std::numeric_limits<float>::max(); }
         
+        // Which approach offers the easiest shot?
         float minDifficulty = std::min(heightDifficulty, std::min(curveDifficulty, comboDifficulty));
         
         vec3 diff;

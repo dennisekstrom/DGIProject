@@ -16,9 +16,9 @@
 #include "perlinnoise.h"
 
 #define PI                  3.14159265359
-#define X_INTERVAL          128
-#define Y_INTERVAL          128
-#define GRID_RES            0.5f // 0.5 meter between points
+#define X_INTERVAL          256
+#define Y_INTERVAL          256
+#define GRID_RES            1.0f // 0.5 meter between points
 #define TERRAIN_WIDTH       (X_INTERVAL - 1) * GRID_RES
 #define TERRAIN_DEPTH       (Y_INTERVAL - 1) * GRID_RES
 

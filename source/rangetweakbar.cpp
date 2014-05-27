@@ -35,7 +35,8 @@ float       amplitude   = 0.8;
 float       octaves     = 2;
 
 // difficulty parameters
-string      difficulty = ""; // [TODO: implement support]
+string      shotDistance = "";
+string      difficulty = "";
 
 RangeTweakBar::RangeTweakBar() {
     objectCounter = 0;
@@ -181,7 +182,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwDefine("Controls text=light");
     
     TwAddVarRW(controlBar, "Height", TW_TYPE_FLOAT, &height,
-               "min=-100 max=100 step=0.25 precision=2 keyIncr=Y keyDecr=I help='Raise/lower selected segments.' ");
+               "min=-100 max=100 step=1 precision=2 keyIncr=Y keyDecr=I help='Raise/lower selected segments.' ");
     
     TwAddVarRW(controlBar, "X-Tilt", TW_TYPE_FLOAT, &xtilt,
                "min=-85 max=85 step=2 keyIncr=H keyDecr=K help='Tilt selected segments along x-axis.' ");
@@ -343,9 +344,11 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 "Calculate difficulty",
                 (TwButtonCallback) [] (void* clientData) {
                     vec3 p1, p2;
-                    float d = DifficultyAnalyzer::CalculateDifficulty(gRangeDrawer.TeeTerrainPos(), gRangeDrawer.TargetTerrainPos(), p1, p2);
+                    float dist;
+                    float d = DifficultyAnalyzer::CalculateDifficulty(gRangeDrawer.TeeTerrainPos(), gRangeDrawer.TargetTerrainPos(), p1, p2, dist);
+                    shotDistance = to_string(int(round(dist)));
                     if (d >= 0) {
-                        difficulty = to_string(d);
+                        difficulty = to_string(int(round(d)));
                         gPathTee = gRangeDrawer.TeeTerrainPos();
                         gPathP1 = p1;
                         gPathP2 = p2;
@@ -359,8 +362,11 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                 },
                 NULL,
                 "key=RETURN help='Calculate the difficulty from the current tee and target.' ");
-    
+
     TwAddSeparator(difficultyBar, NULL, NULL);
+    
+    TwAddVarRO(difficultyBar, "Distance", TW_TYPE_STDSTRING, &shotDistance,
+               "help='Distance that the calculated difficulty is based on.'");
     
     TwAddVarRO(difficultyBar, "Difficulty", TW_TYPE_STDSTRING, &difficulty,
                "help='Difficulty of a shot hit from tee to target.' ");

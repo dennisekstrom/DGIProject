@@ -29,11 +29,18 @@ class DifficultyAnalyzer {
 private:
     
     static float HeightDifficulty(const float &extraHeight) {
-        return extraHeight;
+        // ASSUMPTION: Hitting 10 meters further is as hard as hitting one meter higher
+        return 10 * extraHeight;
     }
     static float CurveDifficulty(const float &curve) { // Curve is maximum distance from of a straight
-        return curve;
+        // ASSUMPTION: Hitting 10 meters further is as hard as hitting one meter curve
+        return 10 * curve;
     }
+    static float ComboDifficulty(const float &extraHeight, const float &curve) {
+        // ASSUMPTION: Hitting height and curve difficulty may be added when combined
+        return HeightDifficulty(extraHeight) + CurveDifficulty(curve);
+    }
+    
 
     static bool IntersectionBetweenPoints(const vec3 &start, const vec3 &end);
     static bool ClosestIntersection(vec3 start, vec3 dir,Intersection& closestIntersection);
@@ -42,7 +49,10 @@ private:
     
 public:
     
-    static float CalculateDifficulty(const vec3 &tee, const vec3 &target, vec3 &p1_adjusted, vec3 &p2_adjusted);
+//    static const float SCALE_FACTOR; // To be able to test with smaller terrain but with realistic parameters
+    static const float IMPOSSIBLE; // The maximum level of difficulty
+    
+    static float CalculateDifficulty(const vec3 &tee, const vec3 &target, vec3 &p1_adjusted, vec3 &p2_adjusted, float &distance);
     
 };
 
