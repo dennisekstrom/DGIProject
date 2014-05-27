@@ -27,7 +27,7 @@ PerlinNoise::PerlinNoise(double _persistence, double _frequency, double _amplitu
     frequency = _frequency;
     amplitude  = _amplitude;
     octaves = _octaves;
-    seed = 2 + _randomseed * _randomseed;
+    seed = _randomseed;
 }
 
 void PerlinNoise::SetParams(double _persistence, double _frequency, double _amplitude, int _octaves, int _randomseed)
@@ -36,25 +36,25 @@ void PerlinNoise::SetParams(double _persistence, double _frequency, double _ampl
     frequency = _frequency;
     amplitude  = _amplitude;
     octaves = _octaves;
-    seed = 2 + _randomseed * _randomseed;
+    seed = _randomseed;
 }
 
 
 double PerlinNoise::GetHeight(double x, double y) const
 {
-    //properties of one octave (changing each loop)
-    double t = 0.0f;
-    double _amplitude = 1;
-    double freq = frequency;
+    double height = 0.0f;
+    double _changing_amp = 1;
+    double _freq = frequency;
     
-    for(int k = 0; k < octaves; k++)
+    //Iterate through the octaves, applying all the parameters to the noise value
+    for(int i = 0; i < octaves; i++)
     {
-        t += GetValue(y * freq + seed, x * freq + seed) * _amplitude;
-        _amplitude *= persistence;
-        freq *= 2;
+        height += GetValue(y * _freq + seed, x * _freq + seed) * _changing_amp;
+        _changing_amp *= persistence;
+        _freq *= 2; //increase frequency two-folds for each octave iteration
     }
     
-    return t * amplitude;
+    return height * amplitude;
 }
 
 double PerlinNoise::GetValue(double x, double y) const

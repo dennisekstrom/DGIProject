@@ -29,13 +29,13 @@ float       spread      = 5,    spreadPrev      = 5;
 ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
 
 // noise parameters
-float       persistance = 0.1; //0.3
-float       frequency   = 0.4; //0.05
-float       amplitude   = 1.5; // 15
-float       octaves     = 6;   //10
+float       persistance = 0.3;
+float       frequency   = 0.05;
+float       amplitude   = 15;
+float       octaves     = 10;
 
 // difficulty parameters
-string      difficulty = ""; // [TODO: implement support]
+string      difficulty = "";
 
 RangeTweakBar::RangeTweakBar() {
     objectCounter = 0;
@@ -154,7 +154,7 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddButton(noiseBar,
                 "Generate perlin noise",
                 (TwButtonCallback) [] (void* clientData) {
-                    gTerrain.SetNoise(persistance, frequency, amplitude, octaves, rand() % 1000);
+                    gTerrain.SetNoise(persistance, frequency, amplitude, octaves, rand() % 100000);
                 },
                 NULL,
                 "key=V help='Apply perlin noise to terrain.'");
