@@ -29,10 +29,10 @@ float       spread      = 5,    spreadPrev      = 5;
 ControlPointFuncType functype = FUNC_LINEAR, functypePrev = FUNC_LINEAR;
 
 // noise parameters
-float       persistance = 2;
-float       frequency   = 0.16;
-float       amplitude   = 0.8;
-float       octaves     = 2;
+float       persistance = 0.1; //0.3
+float       frequency   = 0.4; //0.05
+float       amplitude   = 1.5; // 15
+float       octaves     = 6;   //10
 
 // difficulty parameters
 string      difficulty = ""; // [TODO: implement support]

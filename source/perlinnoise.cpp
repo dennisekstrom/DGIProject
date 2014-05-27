@@ -5,6 +5,7 @@
 //  Created by Tobias Wikström on 17/05/14.
 //  Copyright (c) 2014 Tobias Wikström. All rights reserved.
 //
+// https://code.google.com/p/fractalterraingeneration/wiki/Perlin_Noise
 
 #include "perlinnoise.h"
 #include <iostream>
@@ -84,11 +85,11 @@ double PerlinNoise::GetValue(double x, double y) const
     
     double n34 = Noise(Xint+2, Yint+2);
     
-    //find the noise values of the four corners
-    double x0y0 = 0.125*(n01+n02+n03+n04+n05+n06+n07+n08+n09);
-    double x1y0 = 0.125*(n07+n12+n08+n14+n09+n16+n02+n04+n06);
-    double x0y1 = 0.125*(n05+n06+n23+n24+n03+n04+n09+n28+n08);
-    double x1y1 = 0.125*(n09+n16+n28+n34+n08+n14+n06+n24+n04);
+    //find the noise values/gradient of the four corners
+    double x0y0 = 0.0625*(n01+n02+n03+n04) + 0.125*(n05+n06+n07+n08) + 0.25*(n09);
+    double x1y0 = 0.0625*(n07+n12+n08+n14) + 0.125*(n09+n16+n02+n04) + 0.25*(n06);
+    double x0y1 = 0.0625*(n05+n06+n23+n24) + 0.125*(n03+n04+n09+n28) + 0.25*(n08);
+    double x1y1 = 0.0625*(n09+n16+n28+n34) + 0.125*(n08+n14+n06+n24) + 0.25*(n04);
     
     //interpolate between those values according to the x and y fractions
     double v1 = Interpolate(x0y0, x1y0, Xfrac); //interpolate in x direction (y)
