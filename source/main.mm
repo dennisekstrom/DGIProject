@@ -923,10 +923,16 @@ static void Render() {
             RenderSkyBox();
             glEnable(GL_DEPTH_TEST);
 
-            RenderTee();
-            RenderTarget();
             
-            if (gPathInitiated && gPathShouldBeDrawn)
+            bool drawPath = gPathInitiated && gPathShouldBeDrawn;
+        
+            if (!drawPath || gRangeDrawer.TeeTerrainPos() != gPathTee)
+                RenderTee();
+            
+            if (!drawPath || gRangeDrawer.TargetTerrainPos() != gPathTarget)
+                RenderTarget();
+            
+            if (drawPath)
                 RenderPath();
         }
         
@@ -1044,7 +1050,7 @@ static void Display() {
     double thisTime = double(glutGet(GLUT_ELAPSED_TIME)) / 1000;
     float dt = thisTime - lastTime;
     lastTime = thisTime;
-    cout << "render time: " << round(dt * 1000) << " ms" << endl;
+    //cout << "render time: " << round(dt * 1000) << " ms" << endl;
     
     // take tweakbar action
     gTweakBar.Update(dt);

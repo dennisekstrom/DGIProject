@@ -35,8 +35,9 @@ float       amplitude   = 15;
 float       octaves     = 10;
 
 // difficulty parameters
-string      shotDistance = "";
-string      difficulty = "";
+string shotDistance = "";
+string difficulty = "";
+string difficultyReadable = "";
 
 RangeTweakBar::RangeTweakBar() {
     objectCounter = 0;
@@ -112,11 +113,17 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddSeparator(generalBar, NULL, NULL);
     
     TwAddButton(generalBar,
-                "Camera tee to target",
+                "Place camera on tee",
                 (TwButtonCallback) [] (void* clientData) {
                     if (gRangeDrawer.teeMarked && gRangeDrawer.targetMarked) {
                         
-                        const vec3 cam_offset(0,1,0);
+                        vec3 xzdir = gRangeDrawer.TargetTerrainPos() - gRangeDrawer.TeeTerrainPos();
+                        xzdir.y = 0;
+                        
+                        vec3 cam_offset = glm::normalize(-xzdir);
+                        cam_offset *= 5;        // Place camera 5 meters behind tee
+                        cam_offset.y += 1.8;    // Place camera at height of average player (180 cm)
+                        
                         gCamera1.setPosition(gRangeDrawer.TeeTerrainPos() + cam_offset);
                         gCamera1.lookAt(gRangeDrawer.TargetTerrainPos());
                     }
@@ -349,6 +356,21 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                     shotDistance = to_string(int(round(dist)));
                     if (d >= 0) {
                         difficulty = to_string(int(round(d)));
+                        
+                        if (d < 50) {
+                            difficultyReadable = "Very Easy";
+                        } else if (d < 100) {
+                            difficultyReadable = "Easy";
+                        } else if (d < 150) {
+                            difficultyReadable = "Medium";
+                        } else if (d < 200) {
+                            difficultyReadable = "Hard";
+                        } else if (d < 250) {
+                            difficultyReadable = "Very Hard";
+                        } else {
+                            difficultyReadable = "Ridiculously Hard";
+                        }
+                        
                         gPathTee = gRangeDrawer.TeeTerrainPos();
                         gPathP1 = p1;
                         gPathP2 = p2;
@@ -356,7 +378,8 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
                         gPathChanged = true;
                         gPathShouldBeDrawn = true;
                     } else {
-                        difficulty = "Impossible!";
+                        difficulty = "";
+                        difficultyReadable = "Impossible!";
                         gPathShouldBeDrawn = false;
                     }
                 },
@@ -368,8 +391,11 @@ void RangeTweakBar::Init(const int &screenWidth, const int &screenHeight) {
     TwAddVarRO(difficultyBar, "Distance", TW_TYPE_STDSTRING, &shotDistance,
                "help='Distance that the calculated difficulty is based on.'");
     
-    TwAddVarRO(difficultyBar, "Difficulty", TW_TYPE_STDSTRING, &difficulty,
+    TwAddVarRO(difficultyBar, "Dif. value", TW_TYPE_STDSTRING, &difficulty,
                "help='Difficulty of a shot hit from tee to target.' ");
+    
+    TwAddVarRO(difficultyBar, "Dif. expl.", TW_TYPE_STDSTRING, &difficultyReadable,
+               "help='Difficulty in human readable format.' ");
 }
 
 void RangeTweakBar::Draw() {
