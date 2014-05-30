@@ -61,42 +61,40 @@ double PerlinNoise::GetValue(double x, double y) const
 {
     int Xint = (int)x;
     int Yint = (int)y;
-    double Xfrac = x - Xint;
-    double Yfrac = y - Yint;
+    double Xdif = x - Xint;
+    double Ydif = y - Yint;
     
-    //noise values
-    double n01 = Noise(Xint-1, Yint-1);
-    double n02 = Noise(Xint+1, Yint-1);
-    double n03 = Noise(Xint-1, Yint+1);
-    double n04 = Noise(Xint+1, Yint+1);
-    double n05 = Noise(Xint-1, Yint);
-    double n06 = Noise(Xint+1, Yint);
-    double n07 = Noise(Xint, Yint-1);
-    double n08 = Noise(Xint, Yint+1);
-    double n09 = Noise(Xint, Yint);
-    
-    double n12 = Noise(Xint+2, Yint-1);
-    double n14 = Noise(Xint+2, Yint+1);
-    double n16 = Noise(Xint+2, Yint);
-    
-    double n23 = Noise(Xint-1, Yint+2);
-    double n24 = Noise(Xint+1, Yint+2);
-    double n28 = Noise(Xint, Yint+2);
-    
-    double n34 = Noise(Xint+2, Yint+2);
+    //noise values from the surroundings
+    double n01 = GenNoise(Xint-1, Yint-1);
+    double n02 = GenNoise(Xint+1, Yint-1);
+    double n03 = GenNoise(Xint-1, Yint+1);
+    double n04 = GenNoise(Xint+1, Yint+1);
+    double n05 = GenNoise(Xint-1, Yint);
+    double n06 = GenNoise(Xint+1, Yint);
+    double n07 = GenNoise(Xint, Yint-1);
+    double n08 = GenNoise(Xint, Yint+1);
+    double n09 = GenNoise(Xint, Yint);
+    double n10 = GenNoise(Xint+2, Yint-1);
+    double n11 = GenNoise(Xint+2, Yint+1);
+    double n12 = GenNoise(Xint+2, Yint);
+    double n13 = GenNoise(Xint-1, Yint+2);
+    double n14 = GenNoise(Xint+1, Yint+2);
+    double n15 = GenNoise(Xint, Yint+2);
+    double n16 = GenNoise(Xint+2, Yint+2);
     
     //find the noise values/gradient of the four corners
+    //add some weight to each noise generated
     double x0y0 = 0.0625*(n01+n02+n03+n04) + 0.125*(n05+n06+n07+n08) + 0.25*(n09);
-    double x1y0 = 0.0625*(n07+n12+n08+n14) + 0.125*(n09+n16+n02+n04) + 0.25*(n06);
-    double x0y1 = 0.0625*(n05+n06+n23+n24) + 0.125*(n03+n04+n09+n28) + 0.25*(n08);
-    double x1y1 = 0.0625*(n09+n16+n28+n34) + 0.125*(n08+n14+n06+n24) + 0.25*(n04);
+    double x1y0 = 0.0625*(n07+n10+n08+n11) + 0.125*(n09+n12+n02+n04) + 0.25*(n06);
+    double x0y1 = 0.0625*(n05+n06+n13+n14) + 0.125*(n03+n04+n09+n15) + 0.25*(n08);
+    double x1y1 = 0.0625*(n09+n12+n15+n16) + 0.125*(n08+n11+n06+n14) + 0.25*(n04);
     
     //interpolate between those values according to the x and y fractions
-    double v1 = Interpolate(x0y0, x1y0, Xfrac); //interpolate in x direction (y)
-    double v2 = Interpolate(x0y1, x1y1, Xfrac); //interpolate in x direction (y+1)
-    double fin = Interpolate(v1, v2, Yfrac);  //interpolate in y direction
+    double row1 = Interpolate(x0y0, x1y0, Xdif); //interpolate in x direction (y)
+    double row2 = Interpolate(x0y1, x1y1, Xdif); //interpolate in x direction (y+1)
+    double value = Interpolate(row1, row2, Ydif);  //interpolate in y direction
     
-    return fin;
+    return value;
 }
 
 // Cosine interpolation, for smooth interpolation
@@ -111,7 +109,7 @@ double PerlinNoise::Interpolate(double a, double b, double mu) const
 
 // Base function for noise, seems to be a quite standardized way of generating the noise.
 // Basically a pseudo random generator with two inputs, returning a value between -1 and 1.
-double PerlinNoise::Noise(int x, int y) const
+double PerlinNoise::GenNoise(int x, int y) const
 {
     int n = x + y * 57;
     n = (n << 13) ^ n;

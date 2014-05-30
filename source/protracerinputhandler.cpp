@@ -17,7 +17,7 @@ vector<GreenInfo> ProtracerInputHandler::LoadFromFile(const string &filename) {
     
     vector<GreenInfo> greens;
     
-    std::ifstream infile(string("/Users/dennis/Programming/kth/dgi/DGIProject_new/resources/") + filename);
+    std::ifstream infile(string("/Users/tobbew92/Documents/workspace/DGIProject_glut/resources/") + filename);
     string dummyLine;
     getline(infile, dummyLine);
     
